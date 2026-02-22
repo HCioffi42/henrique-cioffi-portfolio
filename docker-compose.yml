@@ -1,0 +1,15 @@
+services:
+  database:
+    image: postgres:alpine
+    container_name: meu_site_db
+    environment:
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=sua_senha_segura
+      - POSTGRES_DB=meu_site_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
