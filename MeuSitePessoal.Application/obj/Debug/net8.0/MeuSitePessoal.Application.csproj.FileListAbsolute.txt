@@ -1,0 +1,11 @@
+C:\Users\henri\Cioffi\Rider Projects\MeuSitePessoal\MeuSitePessoal.Application\bin\Debug\net8.0\MeuSitePessoal.Application.deps.json
+C:\Users\henri\Cioffi\Rider Projects\MeuSitePessoal\MeuSitePessoal.Application\bin\Debug\net8.0\MeuSitePessoal.Application.dll
+C:\Users\henri\Cioffi\Rider Projects\MeuSitePessoal\MeuSitePessoal.Application\bin\Debug\net8.0\MeuSitePessoal.Application.pdb
+C:\Users\henri\Cioffi\Rider Projects\MeuSitePessoal\MeuSitePessoal.Application\obj\Debug\net8.0\MeuSitePessoal.Application.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\henri\Cioffi\Rider Projects\MeuSitePessoal\MeuSitePessoal.Application\obj\Debug\net8.0\MeuSitePessoal.Application.AssemblyInfoInputs.cache
+C:\Users\henri\Cioffi\Rider Projects\MeuSitePessoal\MeuSitePessoal.Application\obj\Debug\net8.0\MeuSitePessoal.Application.AssemblyInfo.cs
+C:\Users\henri\Cioffi\Rider Projects\MeuSitePessoal\MeuSitePessoal.Application\obj\Debug\net8.0\MeuSitePessoal.Application.csproj.CoreCompileInputs.cache
+C:\Users\henri\Cioffi\Rider Projects\MeuSitePessoal\MeuSitePessoal.Application\obj\Debug\net8.0\MeuSitePessoal.Application.dll
+C:\Users\henri\Cioffi\Rider Projects\MeuSitePessoal\MeuSitePessoal.Application\obj\Debug\net8.0\refint\MeuSitePessoal.Application.dll
+C:\Users\henri\Cioffi\Rider Projects\MeuSitePessoal\MeuSitePessoal.Application\obj\Debug\net8.0\MeuSitePessoal.Application.pdb
+C:\Users\henri\Cioffi\Rider Projects\MeuSitePessoal\MeuSitePessoal.Application\obj\Debug\net8.0\ref\MeuSitePessoal.Application.dll

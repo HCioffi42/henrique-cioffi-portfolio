@@ -1,0 +1,11 @@
+C:\Users\henri\Cioffi\Rider Projects\MeuSitePessoal\MeuSitePessoal.Domain\bin\Debug\net8.0\MeuSitePessoal.Domain.deps.json
+C:\Users\henri\Cioffi\Rider Projects\MeuSitePessoal\MeuSitePessoal.Domain\bin\Debug\net8.0\MeuSitePessoal.Domain.dll
+C:\Users\henri\Cioffi\Rider Projects\MeuSitePessoal\MeuSitePessoal.Domain\bin\Debug\net8.0\MeuSitePessoal.Domain.pdb
+C:\Users\henri\Cioffi\Rider Projects\MeuSitePessoal\MeuSitePessoal.Domain\obj\Debug\net8.0\MeuSitePessoal.Domain.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\henri\Cioffi\Rider Projects\MeuSitePessoal\MeuSitePessoal.Domain\obj\Debug\net8.0\MeuSitePessoal.Domain.AssemblyInfoInputs.cache
+C:\Users\henri\Cioffi\Rider Projects\MeuSitePessoal\MeuSitePessoal.Domain\obj\Debug\net8.0\MeuSitePessoal.Domain.AssemblyInfo.cs
+C:\Users\henri\Cioffi\Rider Projects\MeuSitePessoal\MeuSitePessoal.Domain\obj\Debug\net8.0\MeuSitePessoal.Domain.csproj.CoreCompileInputs.cache
+C:\Users\henri\Cioffi\Rider Projects\MeuSitePessoal\MeuSitePessoal.Domain\obj\Debug\net8.0\MeuSitePessoal.Domain.dll
+C:\Users\henri\Cioffi\Rider Projects\MeuSitePessoal\MeuSitePessoal.Domain\obj\Debug\net8.0\refint\MeuSitePessoal.Domain.dll
+C:\Users\henri\Cioffi\Rider Projects\MeuSitePessoal\MeuSitePessoal.Domain\obj\Debug\net8.0\MeuSitePessoal.Domain.pdb
+C:\Users\henri\Cioffi\Rider Projects\MeuSitePessoal\MeuSitePessoal.Domain\obj\Debug\net8.0\ref\MeuSitePessoal.Domain.dll
