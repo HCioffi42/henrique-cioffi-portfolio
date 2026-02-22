@@ -1,0 +1,30 @@
+## Camada de Compilação .NET
+bin/
+obj/
+out/
+[Bb]in/
+[Oo]bj/
+
+## Arquivos de Configuração do Usuário e Cache
+.vs/
+.idea/
+*.user
+*.userosscache
+*.sln.doccache
+*.suo
+
+## Arquivos do Sistema Operacional
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+## Node.js (Para quando criarmos o frontend)
+node_modules/
+npm-debug.log*
+
+## Arquivos de Log
+*.log
+
+## Publicação e Pacotes
+*.nupkg
+*.vsix
