@@ -33,4 +33,30 @@ public class ArtigoRepository : IArtigoRepository
         await _context.Artigos.AddAsync(artigo);
         await _context.SaveChangesAsync();
     }
+    
+    public async Task<bool> ExcluirAsync(Guid id)
+    {
+        // First, we find the entity to ensure it exists before attempting deletion.
+        var artigo = await _context.Artigos.FindAsync(id);
+        if (artigo == null) return false;
+
+        // Remove the entity from the context and save changes to the PostgreSQL database.
+        _context.Artigos.Remove(artigo);
+        await _context.SaveChangesAsync();
+        return true;
+    }
+    
+    public async Task<bool> AtualizarAsync(Artigo artigo)
+    {
+        // Checks if the article exists in the database before attempting to update.
+        var exists = await _context.Artigos.AnyAsync(a => a.Id == artigo.Id);
+        if (!exists) return false;
+
+        // Informs the tracker that the entity has been modified.
+        _context.Artigos.Update(artigo);
+    
+        // Persists changes to the PostgreSQL database.
+        await _context.SaveChangesAsync();
+        return true;
+    }
 }

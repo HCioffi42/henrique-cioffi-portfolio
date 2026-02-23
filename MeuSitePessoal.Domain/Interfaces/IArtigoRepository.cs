@@ -12,4 +12,10 @@ public interface IArtigoRepository
     
     // Persists a new article entity into the database.
     Task AdicionarAsync(Artigo artigo);
+    
+    // Removes an article from the database based on its unique ID.
+    Task<bool> ExcluirAsync(Guid id);
+    
+    // Updates an existing article in the database.
+    Task<bool> AtualizarAsync(Artigo artigo);
 }

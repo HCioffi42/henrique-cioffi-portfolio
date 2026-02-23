@@ -51,4 +51,40 @@ public class ArtigosController : ControllerBase
         // Returns the found article with a 200 OK status.
         return Ok(artigo);
     }
+    
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> Excluir(Guid id)
+    {
+        // Calls the repository to delete the record and checks if the operation succeeded.
+        var excluido = await _repository.ExcluirAsync(id);
+
+        if (!excluido)
+        {
+            return NotFound();
+        }
+
+        // Returns 204 No Content to indicate successful deletion without a response body.
+        return NoContent();
+    }
+    
+    [HttpPut("{id}")]
+    public async Task<IActionResult> Atualizar(Guid id, [FromBody] Artigo artigo)
+    {
+        // Ensures the ID in the URL matches the ID in the request body.
+        if (id != artigo.Id)
+        {
+            return BadRequest("ID mismatch.");
+        }
+
+        // Calls the repository to perform the update operation.
+        var atualizado = await _repository.AtualizarAsync(artigo);
+
+        if (!atualizado)
+        {
+            return NotFound();
+        }
+
+        // Returns 204 No Content to confirm the update was successful.
+        return NoContent();
+    }
 }
