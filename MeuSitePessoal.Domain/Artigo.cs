@@ -2,10 +2,10 @@
 
 public class Artigo
 {
-    public Guid Id { get; private set; }
-    public string Titulo { get; private set; }
-    public string Conteudo { get; private set; }
-    public DateTime DataCriacao { get; private set; }
+    public Guid Id { get; set; }
+    public string Titulo { get; set; }
+    public string Conteudo { get;  set; }
+    public DateTime DataCriacao { get; set; }
 
     public Artigo(string titulo, string conteudo)
     {
