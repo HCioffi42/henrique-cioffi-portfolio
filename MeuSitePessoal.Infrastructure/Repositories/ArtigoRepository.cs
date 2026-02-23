@@ -9,21 +9,27 @@ public class ArtigoRepository : IArtigoRepository
 {
     private readonly BlogDbContext _context;
 
-    // Recebe o contexto do banco de dados via injeção de dependência.
+    // Initializes the repository with the database context via dependency injection.
     public ArtigoRepository(BlogDbContext context)
     {
         _context = context;
     }
 
+    // Returns a collection of all articles stored in the PostgreSQL database.
     public async Task<IEnumerable<Artigo>> ObterTodosAsync()
     {
-        // Recupera a lista de artigos do PostgreSQL utilizando o Entity Framework.
         return await _context.Artigos.ToListAsync();
     }
 
+    // Searches for a single article by its primary key using the DbContext.
+    public async Task<Artigo?> ObterPorIdAsync(Guid id)
+    {
+        return await _context.Artigos.FindAsync(id);
+    }
+
+    // Adds a new article record and saves changes to the database.
     public async Task AdicionarAsync(Artigo artigo)
     {
-        // Adiciona o objeto artigo ao contexto e persiste as mudanças no banco.
         await _context.Artigos.AddAsync(artigo);
         await _context.SaveChangesAsync();
     }

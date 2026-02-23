@@ -4,9 +4,12 @@ namespace MeuSitePessoal.Domain.Interfaces;
 
 public interface IArtigoRepository
 {
-    // Define o contrato para buscar todos os artigos de forma assíncrona.
+    // Fetches all articles from the database asynchronously.
     Task<IEnumerable<Artigo>> ObterTodosAsync();
     
-    // Define o contrato para salvar um novo artigo no banco de dados.
+    // Retrieves a specific article by its unique identifier or returns null if not found.
+    Task<Artigo?> ObterPorIdAsync(Guid id);
+    
+    // Persists a new article entity into the database.
     Task AdicionarAsync(Artigo artigo);
 }

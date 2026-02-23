@@ -35,4 +35,20 @@ public class ArtigosController : ControllerBase
         // Retorna o status 200 OK para confirmar que o registro foi salvo com sucesso.
         return Ok(artigo);
     }
+    
+    [HttpGet("{id}")]
+    public async Task<IActionResult> ObterPorId(Guid id)
+    {
+        // Requests a specific article from the repository using the provided ID.
+        var artigo = await _repository.ObterPorIdAsync(id);
+
+        // Returns a 404 Not Found response if the article does not exist.
+        if (artigo == null)
+        {
+            return NotFound();
+        }
+
+        // Returns the found article with a 200 OK status.
+        return Ok(artigo);
+    }
 }
