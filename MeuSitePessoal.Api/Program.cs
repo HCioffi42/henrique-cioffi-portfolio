@@ -39,3 +39,9 @@ app.UseHttpsRedirection();
 app.MapControllers();
 
 app.Run();
+
+// Expose the Program class to the testing project
+namespace MeuSitePessoal.Api
+{
+    public partial class Program { }
+}

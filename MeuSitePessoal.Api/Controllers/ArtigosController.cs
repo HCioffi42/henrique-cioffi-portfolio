@@ -1,4 +1,4 @@
-﻿﻿using MeuSitePessoal.Domain;
+﻿using MeuSitePessoal.Domain;
 using MeuSitePessoal.Domain.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using MediatR;

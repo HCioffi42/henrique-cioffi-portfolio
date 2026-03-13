@@ -23,7 +23,8 @@ namespace MeuSitePessoal.Infrastructure.Migrations
                 name: "Tags",
                 table: "Artigos",
                 type: "text[]",
-                nullable: false);
+                nullable: false,
+                defaultValue: new List<string>());
         }
 
         /// <inheritdoc />
