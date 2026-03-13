@@ -5,7 +5,7 @@ using MeuSitePessoal.Application.Commands;
 using MeuSitePessoal.Application.Handlers;
 using Xunit;
 
-namespace MeuSitePessoal.Tests;
+namespace MeuSitePessoal.Tests.Unit.Application.Handlers;
 
 public class CreateArtigoHandlerTests
 {

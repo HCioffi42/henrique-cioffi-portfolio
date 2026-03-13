@@ -5,7 +5,7 @@ using MeuSitePessoal.Application.Commands;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Xunit;
 
-namespace MeuSitePessoal.Tests;
+namespace MeuSitePessoal.Tests.Integration;
 
 public class ArtigosIntegrationTests: IClassFixture<WebApplicationFactory<Program>>
 {

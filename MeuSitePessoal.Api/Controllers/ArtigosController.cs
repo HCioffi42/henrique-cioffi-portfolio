@@ -3,6 +3,7 @@ using MeuSitePessoal.Domain.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using MediatR;
 using MeuSitePessoal.Application.Commands;
+using MeuSitePessoal.Application.Queries;
 
 namespace MeuSitePessoal.Api.Controllers;
 
@@ -23,8 +24,8 @@ public class ArtigosController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> ListarTodos()
     {
-        // Solicita ao repositório a lista completa de artigos cadastrados no banco.
-        var artigos = await _repository.ObterTodosAsync();
+        // Envia a query para o handler via MediatR.
+        var artigos = await _mediator.Send(new GetTodosArtigosQuery());
         return Ok(artigos);
     }
 
@@ -41,8 +42,8 @@ public class ArtigosController : ControllerBase
     [HttpGet("{id}")]
     public async Task<IActionResult> ObterPorId(Guid id)
     {
-        // Requests a specific article from the repository using the provided ID.
-        var artigo = await _repository.ObterPorIdAsync(id);
+        // Envia a query para o handler via MediatR.
+        var artigo = await _mediator.Send(new GetArtigoByIdQuery(id));
 
         // Returns a 404 Not Found response if the article does not exist.
         if (artigo == null)

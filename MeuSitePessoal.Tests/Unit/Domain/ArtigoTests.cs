@@ -1,7 +1,7 @@
 ﻿using MeuSitePessoal.Domain;
 using Xunit;
 
-namespace MeuSitePessoal.Tests;
+namespace MeuSitePessoal.Tests.Unit.Domain;
 
 public class ArtigoTests
 {
