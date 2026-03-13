@@ -1,6 +1,6 @@
-using System.Net;
+﻿using System.Net;
 using System.Net.Http.Json;
-using MeuSitePessoal.Application.Commands;
+using MeuSitePessoal.Application.Artigos.Commands.CreateArtigo;
 using Xunit;
 
 namespace MeuSitePessoal.Tests.Integration;

@@ -1,9 +1,8 @@
 using MediatR;
 using MeuSitePessoal.Domain;
 using MeuSitePessoal.Domain.Interfaces;
-using MeuSitePessoal.Application.Queries;
 
-namespace MeuSitePessoal.Application.Handlers;
+namespace MeuSitePessoal.Application.Artigos.Queries.GetArtigoById;
 
 public class GetArtigoByIdHandler : IRequestHandler<GetArtigoByIdQuery, Artigo?>
 {

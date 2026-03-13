@@ -1,8 +1,8 @@
+using MeuSitePessoal.Application.Artigos.Queries.GetArtigoById;
 using Moq;
 using MeuSitePessoal.Domain;
 using MeuSitePessoal.Domain.Interfaces;
-using MeuSitePessoal.Application.Queries;
-using MeuSitePessoal.Application.Handlers;
+using MeuSitePessoal.Application.Artigos.Queries;
 using Xunit;
 
 namespace MeuSitePessoal.Tests.Unit.Application.Handlers;

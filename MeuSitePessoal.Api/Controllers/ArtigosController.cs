@@ -2,8 +2,9 @@
 using MeuSitePessoal.Domain.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using MediatR;
-using MeuSitePessoal.Application.Commands;
-using MeuSitePessoal.Application.Queries;
+using MeuSitePessoal.Application.Artigos.Commands.CreateArtigo;
+using MeuSitePessoal.Application.Artigos.Queries.GetArtigoById;
+using MeuSitePessoal.Application.Artigos.Queries.GetTodosArtigos;
 
 namespace MeuSitePessoal.Api.Controllers;
 

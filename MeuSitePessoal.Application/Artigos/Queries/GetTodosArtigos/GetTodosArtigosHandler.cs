@@ -1,9 +1,8 @@
 using MediatR;
 using MeuSitePessoal.Domain;
 using MeuSitePessoal.Domain.Interfaces;
-using MeuSitePessoal.Application.Queries;
 
-namespace MeuSitePessoal.Application.Handlers;
+namespace MeuSitePessoal.Application.Artigos.Queries.GetTodosArtigos;
 
 public class GetTodosArtigosHandler : IRequestHandler<GetTodosArtigosQuery, IEnumerable<Artigo>>
 {

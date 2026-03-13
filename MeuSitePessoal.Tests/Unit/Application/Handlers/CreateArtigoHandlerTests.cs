@@ -1,8 +1,8 @@
+using MeuSitePessoal.Application.Artigos.Commands.CreateArtigo;
 using Moq;
 using MeuSitePessoal.Domain;
 using MeuSitePessoal.Domain.Interfaces;
-using MeuSitePessoal.Application.Commands;
-using MeuSitePessoal.Application.Handlers;
+using MeuSitePessoal.Application.Artigos.Commands;
 using Xunit;
 
 namespace MeuSitePessoal.Tests.Unit.Application.Handlers;

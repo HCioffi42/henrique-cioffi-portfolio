@@ -1,8 +1,8 @@
-﻿using MeuSitePessoal.Domain.Interfaces;
+﻿using MeuSitePessoal.Application.Artigos.Commands.CreateArtigo;
+using MeuSitePessoal.Domain.Interfaces;
 using MeuSitePessoal.Infrastructure.Data;
 using MeuSitePessoal.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
-using MeuSitePessoal.Application.Commands;
 
 var builder = WebApplication.CreateBuilder(args);
 
