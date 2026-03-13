@@ -19,6 +19,7 @@
     <ItemGroup>
       <ProjectReference Include="..\MeuSitePessoal.Infrastructure\MeuSitePessoal.Infrastructure.csproj" />
       <ProjectReference Include="..\MeuSitePessoal.Application\MeuSitePessoal.Application.csproj" />
+      <ProjectReference Include="..\MeuSitePessoal.Infrastructure.Logging\MeuSitePessoal.Infrastructure.Logging.csproj" />
     </ItemGroup>
 
 </Project>

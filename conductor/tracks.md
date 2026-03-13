@@ -6,6 +6,8 @@ This file tracks all the development tracks for this project.
 *(No open tracks)*
 
 ## Completed Tracks
+- [x] **Track: Implement Custom Logging Infrastructure with Serilog**
+*Link: [./tracks/implement_logging_infrastructure/](./tracks/implement_logging_infrastructure/)*
 - [x] **Track: Implementar as Queries (ListarTodos e ObterPorId) seguindo o padrão CQRS com MediatR**
 *Link: [./tracks/implement_queries_cqrs_20260313/](./tracks/implement_queries_cqrs_20260313/)*
 - [x] **Track: Implementar testes de integração em ArtigosIntegrationTests.cs com Testcontainers**

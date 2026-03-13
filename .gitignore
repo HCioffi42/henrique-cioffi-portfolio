@@ -24,6 +24,8 @@ npm-debug.log*
 
 ## Arquivos de Log
 *.log
+*.logs
+MeuSitePessoal.Api/logs/
 
 ## Publicação e Pacotes
 *.nupkg

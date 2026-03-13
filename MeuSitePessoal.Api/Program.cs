@@ -1,10 +1,16 @@
 ﻿using MeuSitePessoal.Application.Artigos.Commands.CreateArtigo;
 using MeuSitePessoal.Domain.Interfaces;
 using MeuSitePessoal.Infrastructure.Data;
+using MeuSitePessoal.Infrastructure.Logging;
 using MeuSitePessoal.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Add custom logging
+builder.Services.AddCustomLogging(builder.Configuration);
+builder.Host.UseSerilog();
 
 // Configura o DbContext para utilizar o PostgreSQL com a connection string definida no appsettings.json.
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
@@ -25,6 +31,9 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
+
+// Enable Serilog request logging
+app.UseSerilogRequestLogging();
 
 // Habilita o Swagger apenas no ambiente de desenvolvimento para facilitar os testes da API.
 if (app.Environment.IsDevelopment())
