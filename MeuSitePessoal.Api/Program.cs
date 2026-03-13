@@ -1,7 +1,8 @@
-using MeuSitePessoal.Domain.Interfaces;
+﻿using MeuSitePessoal.Domain.Interfaces;
 using MeuSitePessoal.Infrastructure.Data;
 using MeuSitePessoal.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
+using MeuSitePessoal.Application.Commands;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,6 +13,9 @@ builder.Services.AddDbContext<BlogDbContext>(options =>
 
 // Registra o repositório utilizando o ciclo de vida Scoped, o que garante que uma nova instância seja criada para cada requisição HTTP, mantendo a consistência com o DbContext.
 builder.Services.AddScoped<IArtigoRepository, ArtigoRepository>();
+
+// Registra o MediatR para gerenciar os Commands e Handlers da camada de Application.
+builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(CreateArtigoCommand).Assembly));
 
 // Adiciona o suporte aos Controllers do ASP.NET Core, permitindo a organização das rotas em classes separadas.
 builder.Services.AddControllers();

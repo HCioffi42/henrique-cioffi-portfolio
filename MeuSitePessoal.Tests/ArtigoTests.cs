@@ -1,4 +1,4 @@
-using MeuSitePessoal.Domain;
+﻿using MeuSitePessoal.Domain;
 using Xunit;
 
 namespace MeuSitePessoal.Tests;
@@ -11,13 +11,17 @@ public class ArtigoTests
         // Arrange
         var tituloEsperado = "TDD na Prática";
         var conteudoEsperado = "Conteúdo sobre testes unitários.";
+        var resumoEsperado = "Um guia prático sobre TDD.";
+        var tagsEsperadas = new List<string> { "tdd", "dotnet" };
 
         // Act
-        var artigo = new Artigo(tituloEsperado, conteudoEsperado);
+        var artigo = new Artigo(tituloEsperado, conteudoEsperado, resumoEsperado, tagsEsperadas);
 
         // Assert
         Assert.NotNull(artigo);
         Assert.Equal(tituloEsperado, artigo.Titulo);
+        Assert.Equal(resumoEsperado, artigo.Resumo);
+        Assert.Equal(tagsEsperadas, artigo.Tags);
     }
 
     [Theory]
@@ -27,7 +31,6 @@ public class ArtigoTests
     public void CriarArtigo_ComTituloInvalido_DeveLancarExcecao(string tituloInvalido)
     {
         // Act & Assert
-        Assert.Throws<ArgumentException>(() => new Artigo(tituloInvalido, "Conteúdo qualquer"));
+        Assert.Throws<ArgumentException>(() => new Artigo(tituloInvalido, "Conteúdo qualquer", "Resumo", new List<string>()));
     }
 }
-// A classe de teste valida tanto o cenário de sucesso na criação de um artigo quanto o lançamento de exceção para títulos inválidos usando Theory do xUnit.

@@ -1,6 +1,8 @@
-﻿using MeuSitePessoal.Domain;
+﻿﻿using MeuSitePessoal.Domain;
 using MeuSitePessoal.Domain.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using MediatR;
+using MeuSitePessoal.Application.Commands;
 
 namespace MeuSitePessoal.Api.Controllers;
 
@@ -9,11 +11,13 @@ namespace MeuSitePessoal.Api.Controllers;
 public class ArtigosController : ControllerBase
 {
     private readonly IArtigoRepository _repository;
+    private readonly IMediator _mediator;
 
-    // Recebo o repositório via injeção de dependência para isolar a lógica de dados.
-    public ArtigosController(IArtigoRepository repository)
+    // Recebo o repositório e o mediator via injeção de dependência.
+    public ArtigosController(IArtigoRepository repository, IMediator mediator)
     {
         _repository = repository;
+        _mediator = mediator;
     }
 
     [HttpGet]
@@ -25,15 +29,13 @@ public class ArtigosController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> Criar(Artigo artigo)
+    public async Task<IActionResult> Criar([FromBody] CreateArtigoCommand command)
     {
-        // Define a data de criação no momento da inserção antes de enviar para o repositório.
-        artigo.DataCriacao = DateTime.UtcNow;
+        // Envia o comando para o handler via MediatR.
+        var id = await _mediator.Send(command);
         
-        await _repository.AdicionarAsync(artigo);
-        
-        // Retorna o status 200 OK para confirmar que o registro foi salvo com sucesso.
-        return Ok(artigo);
+        // Retorna o status 201 Created com o ID do novo artigo.
+        return CreatedAtAction(nameof(ObterPorId), new { id = id }, id);
     }
     
     [HttpGet("{id}")]
