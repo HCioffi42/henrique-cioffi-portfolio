@@ -1,29 +1,19 @@
-﻿using System.Net;
+using System.Net;
 using System.Net.Http.Json;
-using MeuSitePessoal.Api;
 using MeuSitePessoal.Application.Commands;
-using Microsoft.AspNetCore.Mvc.Testing;
 using Xunit;
 
 namespace MeuSitePessoal.Tests.Integration;
 
-public class ArtigosIntegrationTests: IClassFixture<WebApplicationFactory<Program>>
+public class ArtigosIntegrationTests : BaseIntegrationTest
 {
-    private readonly HttpClient _client;
-    
-    public ArtigosIntegrationTests(WebApplicationFactory<Program> factory)
-    {
-        // Initializes the HttpClient to point to the in-memory test server
-        _client = factory.CreateClient();
-    }
-    
     // Define a simple record to represent the response structure
     public record ArtigoResponse(Guid Id, string Titulo, string Conteudo, string Resumo, List<string> Tags);
     
     [Fact]
     public async Task PostArtigo_WithValidData_ShouldPersistInDatabase()
     {
-        // Arrange: Prepare a command with real data for integration testing
+        // Arrange
         var command = new CreateArtigoCommand(
             "Integration Test Title",
             "This is a full content for integration testing.",
@@ -31,27 +21,45 @@ public class ArtigosIntegrationTests: IClassFixture<WebApplicationFactory<Progra
             new List<string> { "integration", "test", "dotnet" }
         );
 
-        // Act: Send a real POST request to the API endpoint
+        // Act
         var response = await _client.PostAsJsonAsync("/api/artigos", command);
 
-        // Assert: Verify if the API returned 201 Created
+        // Assert
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
 
-        // Optional: Follow the location header to verify persistence via GET
         var location = response.Headers.Location?.ToString();
         Assert.NotNull(location);
 
         var getResponse = await _client.GetAsync(location);
         getResponse.EnsureSuccessStatusCode();
         
-        // Verify if the returned data matches what was sent
         var persistedArtigo = await getResponse.Content.ReadFromJsonAsync<ArtigoResponse>();
-        // Now you have full IntelliSense and type safety in Rider
         Assert.NotNull(persistedArtigo);
         Assert.Equal("Integration Test Title", persistedArtigo.Titulo);
         Assert.Equal("Quick summary for testing.", persistedArtigo.Resumo);
         Assert.Equal(3, persistedArtigo.Tags.Count);
+    }
+
+    [Fact]
+    public async Task ListarArtigos_DeveRetornarTodosOsArtigosCadastrados()
+    {
+        // Arrange
+        var command1 = new CreateArtigoCommand("Artigo 1", "Conteudo 1", "Resumo 1", new List<string>());
+        var command2 = new CreateArtigoCommand("Artigo 2", "Conteudo 2", "Resumo 2", new List<string>());
+
+        await _client.PostAsJsonAsync("/api/artigos", command1);
+        await _client.PostAsJsonAsync("/api/artigos", command2);
+
+        // Act
+        var response = await _client.GetAsync("/api/artigos");
+
+        // Assert
+        response.EnsureSuccessStatusCode();
+        var artigos = await response.Content.ReadFromJsonAsync<List<ArtigoResponse>>();
         
-        await _client.DeleteAsync($"/api/artigos/{persistedArtigo.Id}");
+        Assert.NotNull(artigos);
+        Assert.True(artigos.Count >= 2);
+        Assert.Contains(artigos, a => a.Titulo == "Artigo 1");
+        Assert.Contains(artigos, a => a.Titulo == "Artigo 2");
     }
 }
