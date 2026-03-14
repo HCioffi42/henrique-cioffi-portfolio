@@ -6,11 +6,13 @@ using MeuSitePessoal.Application.Artigos.Commands.UpdateArtigo;
 using MeuSitePessoal.Application.Artigos.Commands.DeleteArtigo;
 using MeuSitePessoal.Application.Artigos.Queries.GetArtigoById;
 using MeuSitePessoal.Application.Artigos.Queries.GetTodosArtigos;
+using Microsoft.AspNetCore.Authorization;
 
 namespace MeuSitePessoal.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
 public class ArtigosController : ControllerBase
 {
     private readonly IMediator _mediator;
@@ -21,6 +23,7 @@ public class ArtigosController : ControllerBase
     }
 
     [HttpGet]
+    [AllowAnonymous]
     public async Task<IActionResult> ListarTodos()
     {
         var artigos = await _mediator.Send(new GetTodosArtigosQuery());
@@ -35,6 +38,7 @@ public class ArtigosController : ControllerBase
     }
     
     [HttpGet("{id}")]
+    [AllowAnonymous]
     public async Task<IActionResult> ObterPorId(Guid id)
     {
         var artigo = await _mediator.Send(new GetArtigoByIdQuery(id));

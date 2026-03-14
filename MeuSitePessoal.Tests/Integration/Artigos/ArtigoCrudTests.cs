@@ -1,3 +1,4 @@
+using System.Net.Http.Headers;
 using System.Net;
 using System.Net.Http.Json;
 using Microsoft.AspNetCore.Mvc;
@@ -10,11 +11,28 @@ namespace MeuSitePessoal.Tests.Integration.Artigos;
 public class ArtigoCrudTests : BaseIntegrationTest
 {
     private record ArtigoResponse(Guid Id, string Titulo, string Conteudo, string Resumo, List<string> Tags);
+    private string? _token;
+
+    private async Task EnsureAuthenticatedAsync()
+    {
+        if (_token != null) return;
+
+        var loginRequest = new { Username = "admin", Password = "admin123" };
+        var response = await _client.PostAsJsonAsync("/api/Auth/login", loginRequest);
+        response.EnsureSuccessStatusCode();
+
+        var authResponse = await response.Content.ReadFromJsonAsync<AuthTokenResponse>();
+        _token = authResponse!.Token;
+        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _token);
+    }
+
+    private record AuthTokenResponse(string Token);
 
     [Fact]
     public async Task Update_WithValidData_ShouldReturn204NoContent()
     {
         // Arrange: Seed an article first.
+        await EnsureAuthenticatedAsync();
         var id = await SeedArtigoAsync();
         var updateCommand = new UpdateArtigoCommand(
             id,
@@ -43,6 +61,7 @@ public class ArtigoCrudTests : BaseIntegrationTest
     public async Task Update_WhenIdDoesNotExist_ShouldReturn404NotFound()
     {
         // Arrange: Use a non-existent Guid.
+        await EnsureAuthenticatedAsync();
         var nonExistentId = Guid.NewGuid();
         var updateCommand = new UpdateArtigoCommand(
             nonExistentId,
@@ -67,6 +86,7 @@ public class ArtigoCrudTests : BaseIntegrationTest
     public async Task Update_WithValidationError_ShouldReturn400BadRequest()
     {
         // Arrange: Seed an article and prepare an invalid command (Empty Title).
+        await EnsureAuthenticatedAsync();
         var id = await SeedArtigoAsync();
         var invalidCommand = new UpdateArtigoCommand(
             id,
@@ -92,6 +112,7 @@ public class ArtigoCrudTests : BaseIntegrationTest
     public async Task Delete_WithValidId_ShouldReturn204NoContent()
     {
         // Arrange: Seed an article.
+        await EnsureAuthenticatedAsync();
         var id = await SeedArtigoAsync();
 
         // Act: Delete the article.
@@ -108,6 +129,7 @@ public class ArtigoCrudTests : BaseIntegrationTest
     public async Task Delete_WhenIdDoesNotExist_ShouldReturn404NotFound()
     {
         // Arrange: Use a non-existent Guid.
+        await EnsureAuthenticatedAsync();
         var nonExistentId = Guid.NewGuid();
 
         // Act: Try to delete.

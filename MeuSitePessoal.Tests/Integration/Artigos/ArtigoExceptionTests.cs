@@ -1,3 +1,4 @@
+using System.Net.Http.Headers;
 using System.Net;
 using System.Net.Http.Json;
 using Microsoft.AspNetCore.Http;
@@ -8,10 +9,28 @@ namespace MeuSitePessoal.Tests.Integration.Artigos;
 
 public class ArtigoExceptionTests : BaseIntegrationTest
 {
+    private string? _token;
+
+    private async Task EnsureAuthenticatedAsync()
+    {
+        if (_token != null) return;
+
+        var loginRequest = new { Username = "admin", Password = "admin123" };
+        var response = await _client.PostAsJsonAsync("/api/Auth/login", loginRequest);
+        response.EnsureSuccessStatusCode();
+
+        var authResponse = await response.Content.ReadFromJsonAsync<AuthTokenResponse>();
+        _token = authResponse!.Token;
+        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _token);
+    }
+
+    private record AuthTokenResponse(string Token);
+
     [Fact]
     public async Task Post_WhenTitleIsEmpty_ShouldReturn400BadRequest()
     {
         // Arrange
+        await EnsureAuthenticatedAsync();
         var invalidCommand = new
         {
             Titulo = "", 
@@ -39,6 +58,7 @@ public class ArtigoExceptionTests : BaseIntegrationTest
     public async Task Post_WhenContentIsEmpty_ShouldReturn400BadRequest()
     {
         // Arrange
+        await EnsureAuthenticatedAsync();
         var command = new
         {
             Titulo = "Valid Title",
@@ -64,6 +84,7 @@ public class ArtigoExceptionTests : BaseIntegrationTest
     public async Task Post_WhenSummaryIsEmpty_ShouldReturn400BadRequest()
     {
         // Arrange
+        await EnsureAuthenticatedAsync();
         var command = new
         {
             Titulo = "Valid Title",
@@ -88,6 +109,7 @@ public class ArtigoExceptionTests : BaseIntegrationTest
     public async Task Post_WhenFieldsExceedMaxLength_ShouldReturn400BadRequest()
     {
         // Arrange
+        await EnsureAuthenticatedAsync();
         var command = new
         {
             Titulo = new string('a', 101),

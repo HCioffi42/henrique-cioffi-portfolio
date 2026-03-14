@@ -12,11 +12,14 @@
         <PrivateAssets>all</PrivateAssets>
         <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       </PackageReference>
+      <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="8.16.0" />
       <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.11" />
+      <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.16.0" />
     </ItemGroup>
 
     <ItemGroup>
       <ProjectReference Include="..\MeuSitePessoal.Domain\MeuSitePessoal.Domain.csproj" />
+      <ProjectReference Include="..\MeuSitePessoal.Application\MeuSitePessoal.Application.csproj" />
     </ItemGroup>
 
 </Project>

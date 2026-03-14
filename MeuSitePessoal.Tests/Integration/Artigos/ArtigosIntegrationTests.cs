@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System.Net.Http.Headers;
+using System.Net;
 using System.Net.Http.Json;
 using MeuSitePessoal.Application.Artigos.Commands.CreateArtigo;
 using Xunit;
@@ -9,11 +10,28 @@ public class ArtigosIntegrationTests : BaseIntegrationTest
 {
     // Define a simple record to represent the response structure
     public record ArtigoResponse(Guid Id, string Titulo, string Conteudo, string Resumo, List<string> Tags);
+    private string? _token;
+
+    private async Task EnsureAuthenticatedAsync()
+    {
+        if (_token != null) return;
+
+        var loginRequest = new { Username = "admin", Password = "admin123" };
+        var response = await _client.PostAsJsonAsync("/api/Auth/login", loginRequest);
+        response.EnsureSuccessStatusCode();
+
+        var authResponse = await response.Content.ReadFromJsonAsync<AuthTokenResponse>();
+        _token = authResponse!.Token;
+        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _token);
+    }
+
+    private record AuthTokenResponse(string Token);
     
     [Fact]
     public async Task PostArtigo_WithValidData_ShouldPersistInDatabase()
     {
         // Arrange
+        await EnsureAuthenticatedAsync();
         var command = new CreateArtigoCommand(
             "Integration Test Title",
             "This is a full content for integration testing.",
@@ -44,6 +62,7 @@ public class ArtigosIntegrationTests : BaseIntegrationTest
     public async Task ListarArtigos_DeveRetornarTodosOsArtigosCadastrados()
     {
         // Arrange
+        await EnsureAuthenticatedAsync();
         var command1 = new CreateArtigoCommand("Artigo 1", "Conteudo 1", "Resumo 1", new List<string>());
         var command2 = new CreateArtigoCommand("Artigo 2", "Conteudo 2", "Resumo 2", new List<string>());
 

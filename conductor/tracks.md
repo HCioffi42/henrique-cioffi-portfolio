@@ -3,15 +3,12 @@
 This file tracks all the development tracks for this project.
 
 ## Open Tracks
-- [ ] **Track: Implement Unit Tests for Artigo Validators**
-  *Link: [./tracks/unit_tests_validators_20260314/](./tracks/unit_tests_validators_20260314/)*
-  * Tasks:
-    - Install FluentValidation.TestHelper in the Tests project.
-    - Implement CreateArtigoCommandValidatorTests.
-    - Implement UpdateArtigoCommandValidatorTests.
-    - Ensure 100% coverage for property rules and edge cases.
 
 ## Completed Tracks
+- [x] **Track: Implement Unit Tests for Artigo Validators**
+  *Link: [./tracks/unit_tests_validators_20260314/](./tracks/unit_tests_validators_20260314/)*
+- [x] **Track: Implement JWT Security for Write Operations**
+  *Link: [./tracks/jwt_security_20260314/](./tracks/jwt_security_20260314/)*
 - [x] **Track: Implement Artigo CRUD Integration Tests**
   *Link: [./tracks/implement_crud_integration_tests_20260314/](./tracks/implement_crud_integration_tests_20260314/)*
 - [x] **Track: Complete Artigo CRUD (Update and Delete)**

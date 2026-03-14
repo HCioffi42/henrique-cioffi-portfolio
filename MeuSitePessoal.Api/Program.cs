@@ -1,12 +1,18 @@
-﻿using FluentValidation;
+﻿using System.Text;
+using FluentValidation;
 using MeuSitePessoal.Api.Middleware;
 using MeuSitePessoal.Application.Artigos.Commands.CreateArtigo;
 using MeuSitePessoal.Application.Common.Behaviors;
+using MeuSitePessoal.Application.Interfaces;
 using MeuSitePessoal.Domain.Interfaces;
 using MeuSitePessoal.Infrastructure.Data;
 using MeuSitePessoal.Infrastructure.Logging;
 using MeuSitePessoal.Infrastructure.Repositories;
+using MeuSitePessoal.Infrastructure.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -20,8 +26,34 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 builder.Services.AddDbContext<BlogDbContext>(options =>
     options.UseNpgsql(connectionString));
 
-// Registra o repositório utilizando o ciclo de vida Scoped, o que garante que uma nova instância seja criada para cada requisição HTTP, mantendo a consistência com o DbContext.
+// Register Services
 builder.Services.AddScoped<IArtigoRepository, ArtigoRepository>();
+builder.Services.AddScoped<ITokenService, TokenService>();
+
+// Configure JWT Authentication
+var jwtSettings = builder.Configuration.GetSection("JwtSettings");
+var key = Encoding.UTF8.GetBytes(jwtSettings["Key"]!);
+
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = jwtSettings["Issuer"],
+        ValidAudience = jwtSettings["Audience"],
+        IssuerSigningKey = new SymmetricSecurityKey(key)
+    };
+});
+
+builder.Services.AddAuthorization();
 
 // Registra o MediatR para gerenciar os Commands e Handlers da camada de Application.
 builder.Services.AddMediatR(cfg =>
@@ -36,9 +68,36 @@ builder.Services.AddValidatorsFromAssembly(typeof(CreateArtigoCommand).Assembly)
 // Adiciona o suporte aos Controllers do ASP.NET Core, permitindo a organização das rotas em classes separadas.
 builder.Services.AddControllers();
 
-// Configura o Swagger para documentação da API.
+// Configura o Swagger para documentação da API com suporte a JWT.
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "MeuSitePessoal API", Version = "v1" });
+    
+    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Description = "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",
+        Name = "Authorization",
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.ApiKey,
+        Scheme = "Bearer"
+    });
+
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            Array.Empty<string>()
+        }
+    });
+});
 
 // Registers the global exception handler and problem details services.
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
@@ -60,6 +119,9 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseAuthentication();
+app.UseAuthorization();
 
 // Mapeia as rotas definidas nos Controllers para que a aplicação possa responder às requisições.
 app.MapControllers();
