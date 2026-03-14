@@ -1,4 +1,7 @@
-﻿using MeuSitePessoal.Application.Artigos.Commands.CreateArtigo;
+﻿using FluentValidation;
+using MeuSitePessoal.Api.Middleware;
+using MeuSitePessoal.Application.Artigos.Commands.CreateArtigo;
+using MeuSitePessoal.Application.Common.Behaviors;
 using MeuSitePessoal.Domain.Interfaces;
 using MeuSitePessoal.Infrastructure.Data;
 using MeuSitePessoal.Infrastructure.Logging;
@@ -21,7 +24,14 @@ builder.Services.AddDbContext<BlogDbContext>(options =>
 builder.Services.AddScoped<IArtigoRepository, ArtigoRepository>();
 
 // Registra o MediatR para gerenciar os Commands e Handlers da camada de Application.
-builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(CreateArtigoCommand).Assembly));
+builder.Services.AddMediatR(cfg =>
+{
+    cfg.RegisterServicesFromAssembly(typeof(CreateArtigoCommand).Assembly);
+    cfg.AddOpenBehavior(typeof(ValidationBehavior<,>));
+});
+
+// Registra todos os validators definidos na camada de Application.
+builder.Services.AddValidatorsFromAssembly(typeof(CreateArtigoCommand).Assembly);
 
 // Adiciona o suporte aos Controllers do ASP.NET Core, permitindo a organização das rotas em classes separadas.
 builder.Services.AddControllers();
@@ -30,7 +40,14 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+// Registers the global exception handler and problem details services.
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+builder.Services.AddProblemDetails();
+
 var app = builder.Build();
+
+// Enables the global exception handling middleware at the beginning of the pipeline.
+app.UseExceptionHandler();
 
 // Enable Serilog request logging
 app.UseSerilogRequestLogging();

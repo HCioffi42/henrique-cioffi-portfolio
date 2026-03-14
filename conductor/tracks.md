@@ -14,3 +14,5 @@ This file tracks all the development tracks for this project.
 *Link: [./tracks/implement_integration_tests_20260313/](./tracks/implement_integration_tests_20260313/)*
 - [x] **Track: Implementar o Command e Handler para criação de novos artigos do blog seguindo o padrão CQRS**
 *Link: [./tracks/create_artigo_cqrs_20260313/](./tracks/create_artigo_cqrs_20260313/)*
+- [x] **Track: Implementar FluentValidation para o CreateArtigoCommand e integrar ao pipeline do MediatR**
+  *Link: [./tracks/implement_fluent_validation_20260314/](./tracks/implement_fluent_validation_20260314/)*
