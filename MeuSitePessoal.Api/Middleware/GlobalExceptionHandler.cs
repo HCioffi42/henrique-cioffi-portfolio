@@ -44,13 +44,21 @@ public class GlobalExceptionHandler : IExceptionHandler
             return true;
         }
 
-        // For real system failures, maintain the LogError with the full stack trace.
-        _logger.LogError(exception, "An unhandled exception occurred: {Message}", exception.Message);
+        if (exception is KeyNotFoundException)
+        {
+            _logger.LogInformation("Resource not found: {Message}", exception.Message);
+        }
+        else
+        {
+            // For real system failures, maintain the LogError with the full stack trace.
+            _logger.LogError(exception, "An unhandled exception occurred: {Message}", exception.Message);
+        }
         
         // Maps specific domain exceptions to appropriate HTTP status codes.
         var (statusCode, title) = exception switch
         {
             ArgumentException => (StatusCodes.Status400BadRequest, "Invalid Request Data"),
+            KeyNotFoundException => (StatusCodes.Status404NotFound, "Resource Not Found"),
             _ => (StatusCodes.Status500InternalServerError, "Internal Server Error")
         };
 
