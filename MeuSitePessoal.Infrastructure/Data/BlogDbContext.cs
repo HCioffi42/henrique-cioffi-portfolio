@@ -22,6 +22,8 @@ public class BlogDbContext : DbContext
             builder.HasKey(a => a.Id);
             builder.Property(a => a.Titulo).IsRequired().HasMaxLength(200);
             builder.Property(a => a.Conteudo).IsRequired();
+            builder.Property(a => a.Resumo).IsRequired().HasMaxLength(500);
+            builder.Property(a => a.Tags).IsRequired();
             builder.Property(a => a.DataCriacao).IsRequired();
         });
 

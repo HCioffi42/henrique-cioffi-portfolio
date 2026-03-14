@@ -1,90 +1,72 @@
-﻿using MeuSitePessoal.Domain;
-using MeuSitePessoal.Domain.Interfaces;
+﻿using MeuSitePessoal.Api.Middleware;
 using Microsoft.AspNetCore.Mvc;
+using MediatR;
+using MeuSitePessoal.Application.Artigos.Commands.CreateArtigo;
+using MeuSitePessoal.Application.Artigos.Commands.UpdateArtigo;
+using MeuSitePessoal.Application.Artigos.Commands.DeleteArtigo;
+using MeuSitePessoal.Application.Artigos.Queries.GetArtigoById;
+using MeuSitePessoal.Application.Artigos.Queries.GetTodosArtigos;
+using Microsoft.AspNetCore.Authorization;
 
 namespace MeuSitePessoal.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
 public class ArtigosController : ControllerBase
 {
-    private readonly IArtigoRepository _repository;
+    private readonly IMediator _mediator;
 
-    // Recebo o repositório via injeção de dependência para isolar a lógica de dados.
-    public ArtigosController(IArtigoRepository repository)
+    public ArtigosController(IMediator mediator)
     {
-        _repository = repository;
+        _mediator = mediator;
     }
 
     [HttpGet]
+    [AllowAnonymous]
     public async Task<IActionResult> ListarTodos()
     {
-        // Solicita ao repositório a lista completa de artigos cadastrados no banco.
-        var artigos = await _repository.ObterTodosAsync();
+        var artigos = await _mediator.Send(new GetTodosArtigosQuery());
         return Ok(artigos);
     }
 
     [HttpPost]
-    public async Task<IActionResult> Criar(Artigo artigo)
+    public async Task<IActionResult> Criar([FromBody] CreateArtigoCommand command)
     {
-        // Define a data de criação no momento da inserção antes de enviar para o repositório.
-        artigo.DataCriacao = DateTime.UtcNow;
-        
-        await _repository.AdicionarAsync(artigo);
-        
-        // Retorna o status 200 OK para confirmar que o registro foi salvo com sucesso.
-        return Ok(artigo);
+        var id = await _mediator.Send(command);
+        return CreatedAtAction(nameof(ObterPorId), new { id = id }, id);
     }
     
     [HttpGet("{id}")]
+    [AllowAnonymous]
     public async Task<IActionResult> ObterPorId(Guid id)
     {
-        // Requests a specific article from the repository using the provided ID.
-        var artigo = await _repository.ObterPorIdAsync(id);
+        var artigo = await _mediator.Send(new GetArtigoByIdQuery(id));
 
-        // Returns a 404 Not Found response if the article does not exist.
         if (artigo == null)
         {
             return NotFound();
         }
 
-        // Returns the found article with a 200 OK status.
         return Ok(artigo);
     }
     
     [HttpDelete("{id}")]
     public async Task<IActionResult> Excluir(Guid id)
     {
-        // Calls the repository to delete the record and checks if the operation succeeded.
-        var excluido = await _repository.ExcluirAsync(id);
-
-        if (!excluido)
-        {
-            return NotFound();
-        }
-
-        // Returns 204 No Content to indicate successful deletion without a response body.
+        await _mediator.Send(new DeleteArtigoCommand(id));
         return NoContent();
     }
     
     [HttpPut("{id}")]
-    public async Task<IActionResult> Atualizar(Guid id, [FromBody] Artigo artigo)
+    public async Task<IActionResult> Atualizar(Guid id, [FromBody] UpdateArtigoCommand command)
     {
-        // Ensures the ID in the URL matches the ID in the request body.
-        if (id != artigo.Id)
+        if (id != command.Id)
         {
             return BadRequest("ID mismatch.");
         }
 
-        // Calls the repository to perform the update operation.
-        var atualizado = await _repository.AtualizarAsync(artigo);
-
-        if (!atualizado)
-        {
-            return NotFound();
-        }
-
-        // Returns 204 No Content to confirm the update was successful.
+        await _mediator.Send(command);
         return NoContent();
     }
 }

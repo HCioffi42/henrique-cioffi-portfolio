@@ -1,5 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
+# 
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MeuSitePessoal.Api", "MeuSitePessoal.Api\MeuSitePessoal.Api.csproj", "{F0559AA1-3056-4DBA-843D-7A8158F06551}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MeuSitePessoal.Domain", "MeuSitePessoal.Domain\MeuSitePessoal.Domain.csproj", "{40EEA623-D48D-42A2-A482-0A66F3760935}"
@@ -9,6 +10,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MeuSitePessoal.Infrastructure", "MeuSitePessoal.Infrastructure\MeuSitePessoal.Infrastructure.csproj", "{9E3F73C2-FD95-40FD-89FC-B7E3B2951E44}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MeuSitePessoal.Tests", "MeuSitePessoal.Tests\MeuSitePessoal.Tests.csproj", "{9CB55F11-7C7E-4C68-8545-7072A098C72D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MeuSitePessoal.Infrastructure.Logging", "MeuSitePessoal.Infrastructure.Logging\MeuSitePessoal.Infrastructure.Logging.csproj", "{1BFBFF87-5A9D-443B-8A7A-E7990B58C875}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -36,5 +39,9 @@ Global
 		{9CB55F11-7C7E-4C68-8545-7072A098C72D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9CB55F11-7C7E-4C68-8545-7072A098C72D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9CB55F11-7C7E-4C68-8545-7072A098C72D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1BFBFF87-5A9D-443B-8A7A-E7990B58C875}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1BFBFF87-5A9D-443B-8A7A-E7990B58C875}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1BFBFF87-5A9D-443B-8A7A-E7990B58C875}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1BFBFF87-5A9D-443B-8A7A-E7990B58C875}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

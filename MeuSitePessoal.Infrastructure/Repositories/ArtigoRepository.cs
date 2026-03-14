@@ -9,25 +9,22 @@ public class ArtigoRepository : IArtigoRepository
 {
     private readonly BlogDbContext _context;
 
-    // Initializes the repository with the database context via dependency injection.
     public ArtigoRepository(BlogDbContext context)
     {
         _context = context;
     }
 
-    // Returns a collection of all articles stored in the PostgreSQL database.
+    // Returns all articles without tracking for better performance in read-only queries.
     public async Task<IEnumerable<Artigo>> ObterTodosAsync()
     {
-        return await _context.Artigos.ToListAsync();
+        return await _context.Artigos.AsNoTracking().ToListAsync();
     }
 
-    // Searches for a single article by its primary key using the DbContext.
     public async Task<Artigo?> ObterPorIdAsync(Guid id)
     {
         return await _context.Artigos.FindAsync(id);
     }
 
-    // Adds a new article record and saves changes to the database.
     public async Task AdicionarAsync(Artigo artigo)
     {
         await _context.Artigos.AddAsync(artigo);
@@ -36,27 +33,18 @@ public class ArtigoRepository : IArtigoRepository
     
     public async Task<bool> ExcluirAsync(Guid id)
     {
-        // First, we find the entity to ensure it exists before attempting deletion.
+        // We fetch the article here. If the Handler already did it, EF Core will use the local tracker.
         var artigo = await _context.Artigos.FindAsync(id);
         if (artigo == null) return false;
 
-        // Remove the entity from the context and save changes to the PostgreSQL database.
         _context.Artigos.Remove(artigo);
-        await _context.SaveChangesAsync();
-        return true;
+        return await _context.SaveChangesAsync() > 0;
     }
     
     public async Task<bool> AtualizarAsync(Artigo artigo)
     {
-        // Checks if the article exists in the database before attempting to update.
-        var exists = await _context.Artigos.AnyAsync(a => a.Id == artigo.Id);
-        if (!exists) return false;
-
-        // Informs the tracker that the entity has been modified.
+        // Since the Handler will verify existence, we can use the tracker directly.
         _context.Artigos.Update(artigo);
-    
-        // Persists changes to the PostgreSQL database.
-        await _context.SaveChangesAsync();
-        return true;
+        return await _context.SaveChangesAsync() > 0;
     }
 }

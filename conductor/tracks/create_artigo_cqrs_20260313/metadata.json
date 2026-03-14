@@ -1,0 +1,8 @@
+{
+  "track_id": "create_artigo_cqrs_20260313",
+  "type": "feature",
+  "status": "new",
+  "created_at": "2026-03-13T12:52:00Z",
+  "updated_at": "2026-03-13T12:52:00Z",
+  "description": "Implementar o Command e Handler para criação de novos artigos do blog seguindo o padrão CQRS"
+}
