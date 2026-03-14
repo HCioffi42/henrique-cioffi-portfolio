@@ -24,10 +24,13 @@ public class ArtigosController : ControllerBase
 
     [HttpGet]
     [AllowAnonymous]
-    public async Task<IActionResult> ListarTodos()
+    public async Task<IActionResult> ListarTodos([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
     {
-        var artigos = await _mediator.Send(new GetTodosArtigosQuery());
-        return Ok(artigos);
+        // Passes pagination parameters from the URL query string to the MediatR query.
+        var query = new GetTodosArtigosQuery(pageNumber, pageSize);
+        var result = await _mediator.Send(query);
+        
+        return Ok(result);
     }
 
     [HttpPost]

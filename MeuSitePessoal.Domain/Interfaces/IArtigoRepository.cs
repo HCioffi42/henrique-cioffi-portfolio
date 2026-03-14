@@ -5,8 +5,8 @@ namespace MeuSitePessoal.Domain.Interfaces;
 // Defines the contract for the Artigo repository, providing methods for complete data persistence.
 public interface IArtigoRepository
 {
-    // Fetches all article records from the database asynchronously.
-    Task<IEnumerable<Artigo>> ObterTodosAsync();
+    // Fetches a paginated list of articles and the total count.
+    Task<(IEnumerable<Artigo> Items, int TotalCount)> ObterPaginadoAsync(int pageNumber, int pageSize);
     
     // Retrieves a specific article by its unique identifier. Returns null if no match is found.
     Task<Artigo?> ObterPorIdAsync(Guid id);

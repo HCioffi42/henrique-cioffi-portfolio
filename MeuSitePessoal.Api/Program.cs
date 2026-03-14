@@ -5,6 +5,7 @@ using MeuSitePessoal.Application.Artigos.Commands.CreateArtigo;
 using MeuSitePessoal.Application.Common.Behaviors;
 using MeuSitePessoal.Application.Interfaces;
 using MeuSitePessoal.Domain.Interfaces;
+using MeuSitePessoal.Infrastructure.Configuration;
 using MeuSitePessoal.Infrastructure.Data;
 using MeuSitePessoal.Infrastructure.Logging;
 using MeuSitePessoal.Infrastructure.Repositories;
@@ -103,6 +104,16 @@ builder.Services.AddSwaggerGen(c =>
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("WebAppPolicy", policy =>
+    {
+        policy.WithOrigins("http://localhost:4200") // Porta padrão do Angular, ajuste se necessário
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+    });
+});
+
 var app = builder.Build();
 
 // Enables the global exception handling middleware at the beginning of the pipeline.
@@ -120,11 +131,25 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseCors("WebAppPolicy");
+
 app.UseAuthentication();
 app.UseAuthorization();
 
 // Mapeia as rotas definidas nos Controllers para que a aplicação possa responder às requisições.
 app.MapControllers();
+
+// Executa o Seed de dados de forma assíncrona durante a inicialização.
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    var context = services.GetRequiredService<BlogDbContext>();
+    
+    // Opcional: Garante que o banco de dados foi criado e as migrations aplicadas.
+    // await context.Database.MigrateAsync(); 
+    
+    await DbInitializer.SeedAsync(context);
+}
 
 app.Run();
 

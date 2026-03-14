@@ -14,10 +14,21 @@ public class ArtigoRepository : IArtigoRepository
         _context = context;
     }
 
-    // Returns all articles without tracking for better performance in read-only queries.
-    public async Task<IEnumerable<Artigo>> ObterTodosAsync()
+    // Fetches a chunk of articles with AsNoTracking to optimize memory usage (8 GB RAM friendly).
+    public async Task<(IEnumerable<Artigo> Items, int TotalCount)> ObterPaginadoAsync(int pageNumber, int pageSize)
     {
-        return await _context.Artigos.AsNoTracking().ToListAsync();
+        var query = _context.Artigos.AsNoTracking();
+
+        // Count is performed before Skip/Take to get the real total in the DB.
+        var totalCount = await query.CountAsync();
+
+        var items = await query
+            .OrderByDescending(a => a.DataCriacao) // Ensuring consistent order for pagination
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        return (items, totalCount);
     }
 
     public async Task<Artigo?> ObterPorIdAsync(Guid id)
