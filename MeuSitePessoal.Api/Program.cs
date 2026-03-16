@@ -108,7 +108,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("WebAppPolicy", policy =>
     {
-        policy.WithOrigins("http://localhost:4200") // Porta padrão do Angular, ajuste se necessário
+        policy.WithOrigins("http://localhost:5173") // Vite/React
             .AllowAnyHeader()
             .AllowAnyMethod();
     });

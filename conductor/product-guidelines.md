@@ -1,16 +1,24 @@
 # Product Guidelines
 
 ## Development Principles
-- **Clean Architecture:** Maintain a clear separation of concerns between layers.
-- **Test-Driven Development (TDD):** Prefer writing tests before or alongside implementation.
-- **SOLID Principles:** Follow object-oriented design principles to ensure maintainability.
-- **Clear Documentation:** Use XML comments and high-quality Markdown documentation.
+- **Clean Architecture:** Maintain a clear separation of concerns between layers (Domain, Application, Infrastructure, API).
+- **Test-Driven Development (TDD):** Prefer writing tests before or alongside implementation to ensure code reliability.
+- **SOLID Principles:** Follow object-oriented design principles to ensure maintainability and scalability.
+- **Clear Documentation:** Maintain up-to-date XML comments for C# and JSDoc for TypeScript, alongside high-quality Markdown documentation.
+- **Language Standard:** All code (classes, variables, methods), commits, and technical documentation must be written in **English** to maintain professional standards and portability.
+- **Mandatory Documentation:** Every new method, interface, or component must include descriptive documentation:
+    - **C#**: Use XML Summary tags (`/// <summary>`) explaining the purpose, parameters, and return values.
+    - **TypeScript/React**: Use JSDoc comments (`/** ... */`) for functions, interfaces, and hooks to ensure IntelliSense clarity in the JetBrains Rider.
 
 ## User Experience
-- **Responsiveness:** If UI components are added, they must be mobile-friendly.
-- **Performance:** Ensure API endpoints are optimized and database queries are efficient.
+- **Responsiveness:** All UI components must be mobile-friendly and adaptable to different screen sizes.
+- **Performance:** Ensure API endpoints are optimized (using NoTracking and Pagination) and frontend components avoid unnecessary re-renders.
 
 ## Code Style
-- **Naming:** Follow standard .NET naming conventions (PascalCase for classes/methods, camelCase for local variables).
-- **Asynchronous Code:** Prefer `async`/`await` for I/O-bound operations.
-- **Type Safety:** Use C#'s strong typing features effectively.
+- **Naming (C#):** Follow standard .NET naming conventions (PascalCase for classes/methods/interfaces, camelCase for local variables and private fields).
+- **Naming (TypeScript):** Follow standard TS conventions (PascalCase for Components, Interfaces, and Types; camelCase for variables, functions, and hooks).
+- **Asynchronous Code:** Prefer `async`/`await` for all I/O-bound operations in both backend and frontend.
+- **Type Safety:** Use strong typing features effectively. Avoid the `any` type in TypeScript and prefer records or DTOs in C#.
+- **Component Pattern:** Prefer Functional Components with Hooks for React development.
+- **File Naming:** Use PascalCase for React components (e.g., `ArticleCard.tsx`) and camelCase for hooks, utility functions, or services (e.g., `useAuth.ts`, `apiService.ts`).
+- **Strict Typing:** Always define interfaces or types for API responses and component props to maintain a predictable data flow.
