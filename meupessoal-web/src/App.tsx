@@ -1,23 +1,20 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { ArtigoList } from './pages/ArtigoList';
 import { ArtigoDetalhes } from './pages/ArtigoDetalhes';
+import { Layout } from './components/Layout';
 
 /**
- * Root component that defines the application's routing structure.
- * @returns The BrowserRouter with defined routes.
+ * Main application entry point that manages routing and wraps content in a global Layout.
  */
-function App() {
-  return (
-      <BrowserRouter>
-        <Routes>
-          {/* Home Route: Shows the list of articles */}
-          <Route path="/" element={<ArtigoList />} />
-
-          {/* Detail Route: Shows a single article based on ID */}
-          <Route path="/artigo/:id" element={<ArtigoDetalhes />} />
-        </Routes>
-      </BrowserRouter>
-  );
+export default function App() {
+    return (
+        <BrowserRouter>
+            <Layout>
+                <Routes>
+                    <Route path="/" element={<ArtigoList />} />
+                    <Route path="/artigo/:id" element={<ArtigoDetalhes />} />
+                </Routes>
+            </Layout>
+        </BrowserRouter>
+    );
 }
-
-export default App;
