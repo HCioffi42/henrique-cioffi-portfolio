@@ -1,9 +1,20 @@
 ﻿import api from './api';
 import type {Artigo, PagedArtigos} from '../models/Artigo';
+import type {ArtigoSummary} from '../models/ArtigoSummary';
 
 // Centraliza as chamadas de busca de artigos para manter o componente App limpo.
 export const getArtigos = async (page: number = 1, size: number = 10): Promise<PagedArtigos> => {
     const response = await api.get<PagedArtigos>(`/Artigos?pageNumber=${page}&pageSize=${size}`);
+    return response.data;
+};
+
+/**
+ * Retrieves a list of article summaries from the optimized backend endpoint.
+ * This is primarily used for the home page listing.
+ * @returns A promise that resolves to an array of ArtigoSummary objects.
+ */
+export const getArtigoSummaries = async (): Promise<ArtigoSummary[]> => {
+    const response = await api.get<ArtigoSummary[]>('/Artigos/summaries');
     return response.data;
 };
 

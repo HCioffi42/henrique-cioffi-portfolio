@@ -1,66 +1,78 @@
-﻿import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import type { Artigo } from '../models/Artigo';
-import { getArtigos } from '../services/artigoService';
+import { useEffect, useState } from 'react';
+import { getArtigoSummaries } from '../services/artigoService';
+import type { ArtigoSummary } from '../models/ArtigoSummary';
+import { ArticleCard } from '../components/ArticleCard';
 
 /**
- * Component responsible for fetching and displaying the list of blog articles.
- * @returns A structured list of articles with navigation to details.
+ * The main article listing page (Home).
+ * It fetches summarized data from the optimized backend endpoint and renders a grid of cards.
  */
 export const ArtigoList = () => {
-    const [artigos, setArtigos] = useState<Artigo[]>([]);
+    const [articles, setArticles] = useState<ArtigoSummary[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
-    const navigate = useNavigate();
+    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        const carregarArtigos = async () => {
+        /**
+         * Orchestrates the data fetching process from the backend.
+         */
+        const loadArticles = async () => {
             try {
-                const data = await getArtigos();
-                setArtigos(data.items);
-            } catch (error) {
-                console.error("Error fetching articles:", error);
+                const data = await getArtigoSummaries();
+                setArticles(data);
+            } catch (err) {
+                console.error("Failed to load article summaries:", err);
+                setError("Unable to load articles at this time. Please try again later.");
             } finally {
                 setLoading(false);
             }
         };
-        void carregarArtigos();
+
+        void loadArticles();
     }, []);
 
-    if (loading) return <p className="p-8 text-center text-gray-500">Loading articles...</p>;
+    if (loading) {
+        return (
+            <div className="flex justify-center items-center min-h-[400px]">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+                <span className="ml-4 text-gray-500 font-medium">Loading stories...</span>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="max-w-4xl mx-auto p-8 text-center">
+                <p className="text-red-500 font-medium bg-red-50 p-4 rounded-lg border border-red-100">{error}</p>
+            </div>
+        );
+    }
 
     return (
-        <div className="max-w-4xl mx-auto p-8 font-sans">
-        <h1 className="text-3xl font-bold text-gray-900">My Personal Blog</h1>
-    <hr className="my-6 border-gray-200" />
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <header className="mb-12 text-center">
+                <h1 className="text-4xl font-extrabold text-gray-900 tracking-tight sm:text-5xl mb-4">
+                    Insights & Articles
+                </h1>
+                <p className="text-lg text-gray-500 max-w-2xl mx-auto">
+                    Exploring the intersection of technology, design, and software engineering.
+                </p>
+                <div className="mt-8 flex justify-center">
+                    <div className="w-24 h-1 bg-indigo-600 rounded-full"></div>
+                </div>
+            </header>
 
-        {artigos.length === 0 ? (
-                <p className="text-gray-600">No articles found.</p>
-) : (
-        <div className="flex flex-col gap-6">
-            {artigos.map(artigo => (
-                    <article key={artigo.id} className="border border-gray-200 p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow flex flex-col items-start">
-                <h2 className="text-2xl font-semibold text-indigo-600 mb-2">{artigo.titulo}</h2>
-                    <p className="text-gray-700 italic mb-4">{artigo.resumo}</p>
-
-                    <div className="flex flex-wrap gap-2 mb-6">
-                    {artigo.tags.map(tag => (
-                            <span key={tag} className="bg-gray-100 text-gray-600 px-3 py-1 rounded-full text-xs font-medium">
-                            {tag}
-                            </span>
-    ))}
-    </div>
-
-    {/* Navigation Button */}
-    <button
-        onClick={() => navigate(`/artigo/${artigo.id}`)}
-    className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors font-medium text-sm"
-        >
-        Read Full Article
-    </button>
-    </article>
-))}
-    </div>
-)}
-    </div>
-);
+            {articles.length === 0 ? (
+                <div className="text-center py-20 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200">
+                    <p className="text-gray-500 text-lg">No articles found yet. Stay tuned!</p>
+                </div>
+            ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    {articles.map(article => (
+                        <ArticleCard key={article.id} article={article} />
+                    ))}
+                </div>
+            )}
+        </main>
+    );
 };

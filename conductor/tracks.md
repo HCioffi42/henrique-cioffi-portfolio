@@ -5,7 +5,7 @@ This file tracks all the development tracks for this project.
 ## Open Tracks
 
 ## Completed Tracks
-- [x] **Track: Implement GET /api/Artigos/summaries for Home Page**
+- [x] **Track: Implement Article Listing and Home Page Integration**
   *Link: [./tracks/01-home-page-listing/](./tracks/01-home-page-listing/)*
 - [x] **Track: Implement Unit Tests for Artigo Validators**
   *Link: [./tracks/unit_tests_validators_20260314/](./tracks/unit_tests_validators_20260314/)*
