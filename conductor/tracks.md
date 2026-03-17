@@ -5,6 +5,8 @@ This file tracks all the development tracks for this project.
 ## Open Tracks
 
 ## Completed Tracks
+- [x] **Track: Implement GET /api/Artigos/summaries for Home Page**
+  *Link: [./tracks/01-home-page-listing/](./tracks/01-home-page-listing/)*
 - [x] **Track: Implement Unit Tests for Artigo Validators**
   *Link: [./tracks/unit_tests_validators_20260314/](./tracks/unit_tests_validators_20260314/)*
 - [x] **Track: Implement JWT Security for Write Operations**

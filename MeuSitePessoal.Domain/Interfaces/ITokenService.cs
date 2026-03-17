@@ -1,4 +1,4 @@
-namespace MeuSitePessoal.Application.Interfaces;
+namespace MeuSitePessoal.Domain.Interfaces;
 
 public interface ITokenService
 {

@@ -33,6 +33,15 @@ public class ArtigosController : ControllerBase
         return Ok(result);
     }
 
+    [HttpGet("summaries")]
+    [AllowAnonymous]
+    public async Task<IActionResult> GetSummaries()
+    {
+        // HC: Requests a list of article summaries for the home page.
+        var result = await _mediator.Send(new MeuSitePessoal.Application.Artigos.Queries.GetArtigos.GetArtigosQuery());
+        return Ok(result);
+    }
+
     [HttpPost]
     [AllowAnonymous]
     public async Task<IActionResult> Criar([FromBody] CreateArtigoCommand command)

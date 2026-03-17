@@ -3,7 +3,6 @@ using FluentValidation;
 using MeuSitePessoal.Api.Middleware;
 using MeuSitePessoal.Application.Artigos.Commands.CreateArtigo;
 using MeuSitePessoal.Application.Common.Behaviors;
-using MeuSitePessoal.Application.Interfaces;
 using MeuSitePessoal.Domain.Interfaces;
 using MeuSitePessoal.Infrastructure.Configuration;
 using MeuSitePessoal.Infrastructure.Data;

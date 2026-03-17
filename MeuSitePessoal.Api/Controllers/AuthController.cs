@@ -1,4 +1,4 @@
-using MeuSitePessoal.Application.Interfaces;
+using MeuSitePessoal.Domain.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MeuSitePessoal.Api.Controllers;
