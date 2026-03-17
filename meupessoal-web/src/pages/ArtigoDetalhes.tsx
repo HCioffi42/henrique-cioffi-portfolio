@@ -1,11 +1,13 @@
 ﻿import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import type {Artigo} from '../models/Artigo';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import type { Artigo } from '../models/Artigo';
 import { getArtigoById } from '../services/artigoService';
 
 /**
- * Page component that displays the full content of a specific article.
- * @returns The detailed article view.
+ * Specialized component to render Markdown code blocks with syntax highlighting.
+ * Mimics the JetBrains Rider / GitHub Dark aesthetic.
  */
 export const ArtigoDetalhes = () => {
     const { id } = useParams<{ id: string }>();
@@ -20,7 +22,7 @@ export const ArtigoDetalhes = () => {
                 const data = await getArtigoById(id);
                 setArtigo(data);
             } catch (error) {
-                console.error("Error fetching article details:", error);
+                console.error("Erro ao carregar detalhes do artigo:", error);
             } finally {
                 setLoading(false);
             }
@@ -33,28 +35,37 @@ export const ArtigoDetalhes = () => {
     if (!artigo) return <div className="p-8 text-center text-red-500">Article not found.</div>;
 
     return (
-        <div className="max-w-3xl mx-auto p-8">
-        <button
-            onClick={() => navigate(-1)}
-    className="mb-8 text-indigo-600 hover:text-indigo-800 font-medium flex items-center gap-2"
-        >
-                ← Back to list
-    </button>
+        <div className="max-w-3xl mx-auto p-8 animate-in fade-in duration-500">
+            <button
+                onClick={() => navigate(-1)}
+                className="mb-8 text-indigo-600 hover:text-indigo-800 font-medium flex items-center gap-2 transition-colors"
+            >
+                &larr; Back to list
+            </button>
 
-    <h1 className="text-4xl font-bold text-gray-900 mb-4">{artigo.titulo}</h1>
-        <p className="text-sm text-gray-500 mb-8">Created at: {new Date(artigo.dataCriacao).toLocaleDateString()}</p>
+            <header className="mb-10">
+                <h1 className="text-4xl font-extrabold text-gray-900 mb-4 tracking-tight">
+                    {artigo.titulo}
+                </h1>
+                <p className="text-sm text-gray-500">
+                    Published on {new Date(artigo.dataCriacao).toLocaleDateString()}
+                </p>
+            </header>
 
-    <div className="prose max-w-none text-gray-800 leading-relaxed text-lg">
-        {artigo.conteudo}
+            {/* Container que utiliza as regras do seu index.css (.markdown-content) */}
+            <section className="markdown-content prose max-w-none text-gray-800 leading-relaxed text-lg">
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                    {artigo.conteudo}
+                </ReactMarkdown>
+            </section>
+
+            <footer className="mt-12 pt-8 border-t border-gray-100 flex flex-wrap gap-2">
+                {artigo.tags.map(tag => (
+                    <span key={tag} className="bg-indigo-50 text-indigo-600 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider">
+                        #{tag}
+                    </span>
+                ))}
+            </footer>
         </div>
-
-        <div className="mt-12 flex gap-2">
-        {artigo.tags.map(tag => (
-                <span key={tag} className="bg-indigo-50 text-indigo-600 px-3 py-1 rounded-full text-sm">
-#{tag}
-    </span>
-))}
-    </div>
-    </div>
-);
+    );
 };

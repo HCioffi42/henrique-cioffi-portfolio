@@ -23,5 +23,7 @@ This file tracks all the development tracks for this project.
 *Link: [./tracks/create_artigo_cqrs_20260313/](./tracks/create_artigo_cqrs_20260313/)*
 - [x] **Track: Implementar FluentValidation para o CreateArtigoCommand e integrar ao pipeline do MediatR**
   *Link: [./tracks/implement_fluent_validation_20260314/](./tracks/implement_fluent_validation_20260314/)*
+- [x] **Track: Implement Create Article Frontend**
+  *Link: [./tracks/create_artigo_frontend_20260316/](./tracks/create_artigo_frontend_20260316/)*
 - [x] **Track: Implement Pagination for Artigo List**
   *Link: [./tracks/pagination_20260314/](./tracks/pagination_20260314/)*

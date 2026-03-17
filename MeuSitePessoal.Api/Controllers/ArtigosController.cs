@@ -12,7 +12,7 @@ namespace MeuSitePessoal.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize]
+// [Authorize]
 public class ArtigosController : ControllerBase
 {
     private readonly IMediator _mediator;
@@ -34,6 +34,7 @@ public class ArtigosController : ControllerBase
     }
 
     [HttpPost]
+    [AllowAnonymous]
     public async Task<IActionResult> Criar([FromBody] CreateArtigoCommand command)
     {
         var id = await _mediator.Send(command);

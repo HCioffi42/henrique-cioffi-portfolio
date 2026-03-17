@@ -19,9 +19,9 @@ export const Layout = ({ children }: LayoutProps) => {
         </Link>
         <div className="flex gap-6">
     <Link to="/" className="text-gray-600 hover:text-indigo-600 font-medium">Blog</Link>
-        <button className="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-indigo-700 transition-all">
+        <Link to="/admin/new-post" className="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-indigo-700 transition-all">
         New Post
-    </button>
+    </Link>
     </div>
     </nav>
     </header>

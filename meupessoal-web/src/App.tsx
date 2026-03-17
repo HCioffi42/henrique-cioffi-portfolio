@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { ArtigoList } from './pages/ArtigoList';
 import { ArtigoDetalhes } from './pages/ArtigoDetalhes';
+import { CreateArtigo } from './pages/CreateArtigo';
 import { Layout } from './components/Layout';
 
 /**
@@ -13,6 +14,7 @@ export default function App() {
                 <Routes>
                     <Route path="/" element={<ArtigoList />} />
                     <Route path="/artigo/:id" element={<ArtigoDetalhes />} />
+                    <Route path="/admin/new-post" element={<CreateArtigo />} />
                 </Routes>
             </Layout>
         </BrowserRouter>
