@@ -10,6 +10,9 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace MeuSitePessoal.Api.Controllers;
 
+/// <summary>
+/// Manages HTTP requests related to blog articles.
+/// </summary>
 [ApiController]
 [Route("api/[controller]")]
 // [Authorize]
@@ -17,11 +20,17 @@ public class ArtigosController : ControllerBase
 {
     private readonly IMediator _mediator;
 
+    /// <summary>
+    /// Initializes a new instance of the controller with the MediatR instance.
+    /// </summary>
     public ArtigosController(IMediator mediator)
     {
         _mediator = mediator;
     }
 
+    /// <summary>
+    /// Retrieves a paginated list of all articles including their full content.
+    /// </summary>
     [HttpGet]
     [AllowAnonymous]
     public async Task<IActionResult> ListarTodos([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
@@ -33,15 +42,22 @@ public class ArtigosController : ControllerBase
         return Ok(result);
     }
 
+    /// <summary>
+    /// Retrieves a paginated list of article summaries, optionally filtered by a tag.
+    /// </summary>
     [HttpGet("summaries")]
     [AllowAnonymous]
-    public async Task<IActionResult> GetSummaries([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
+    // Added the optional tag parameter to the query string binding.
+    public async Task<IActionResult> GetSummaries([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10, [FromQuery] string? tag = null)
     {
-        // HC: Requests a paginated list of article summaries for the home page.
-        var result = await _mediator.Send(new MeuSitePessoal.Application.Artigos.Queries.GetArtigos.GetArtigosQuery(pageNumber, pageSize));
+        // Passes the tag parameter to the MediatR query alongside pagination parameters.
+        var result = await _mediator.Send(new Application.Artigos.Queries.GetArtigos.GetArtigosQuery(pageNumber, pageSize, tag));
         return Ok(result);
     }
 
+    /// <summary>
+    /// Handles the creation of a new article.
+    /// </summary>
     [HttpPost]
     [AllowAnonymous]
     public async Task<IActionResult> Criar([FromBody] CreateArtigoCommand command)
@@ -50,6 +66,9 @@ public class ArtigosController : ControllerBase
         return CreatedAtAction(nameof(ObterPorId), new { id = id }, id);
     }
     
+    /// <summary>
+    /// Retrieves a single article by its unique identifier.
+    /// </summary>
     [HttpGet("{id}")]
     [AllowAnonymous]
     public async Task<IActionResult> ObterPorId(Guid id)
@@ -64,6 +83,9 @@ public class ArtigosController : ControllerBase
         return Ok(artigo);
     }
     
+    /// <summary>
+    /// Deletes an article by its unique identifier.
+    /// </summary>
     [HttpDelete("{id}")]
     public async Task<IActionResult> Excluir(Guid id)
     {
@@ -71,6 +93,9 @@ public class ArtigosController : ControllerBase
         return NoContent();
     }
     
+    /// <summary>
+    /// Updates an existing article using its unique identifier.
+    /// </summary>
     [HttpPut("{id}")]
     public async Task<IActionResult> Atualizar(Guid id, [FromBody] UpdateArtigoCommand command)
     {
