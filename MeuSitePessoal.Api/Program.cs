@@ -138,15 +138,15 @@ app.UseAuthorization();
 // Mapeia as rotas definidas nos Controllers para que a aplicação possa responder às requisições.
 app.MapControllers();
 
-// Executa o Seed de dados de forma assíncrona durante a inicialização.
-using (var scope = app.Services.CreateScope())
+// Executes the data seed asynchronously during startup, skipping it if running in the testing environment.
+if (!app.Environment.IsEnvironment("Testing"))
 {
+    using var scope = app.Services.CreateScope();
     var services = scope.ServiceProvider;
     var context = services.GetRequiredService<BlogDbContext>();
-    
-    // Opcional: Garante que o banco de dados foi criado e as migrations aplicadas.
-    // await context.Database.MigrateAsync(); 
-    
+        
+    await context.Database.MigrateAsync(); 
+        
     await DbInitializer.SeedAsync(context);
 }
 

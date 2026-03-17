@@ -35,10 +35,10 @@ public class ArtigosController : ControllerBase
 
     [HttpGet("summaries")]
     [AllowAnonymous]
-    public async Task<IActionResult> GetSummaries()
+    public async Task<IActionResult> GetSummaries([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
     {
-        // HC: Requests a list of article summaries for the home page.
-        var result = await _mediator.Send(new MeuSitePessoal.Application.Artigos.Queries.GetArtigos.GetArtigosQuery());
+        // HC: Requests a paginated list of article summaries for the home page.
+        var result = await _mediator.Send(new MeuSitePessoal.Application.Artigos.Queries.GetArtigos.GetArtigosQuery(pageNumber, pageSize));
         return Ok(result);
     }
 

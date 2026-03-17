@@ -1,13 +1,14 @@
 using MediatR;
+using MeuSitePessoal.Application.Common.Models;
 using MeuSitePessoal.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
 namespace MeuSitePessoal.Application.Artigos.Queries.GetArtigos;
 
 /// <summary>
-/// HC: A handler that retrieves a list of article summaries directly from the database context.
+/// HC: A handler that retrieves a paginated list of article summaries.
 /// </summary>
-public class GetArtigosHandler : IRequestHandler<GetArtigosQuery, List<ArtigoSummaryDto>>
+public class GetArtigosHandler : IRequestHandler<GetArtigosQuery, PagedResult<ArtigoSummaryDto>>
 {
     private readonly BlogDbContext _context;
 
@@ -16,13 +17,19 @@ public class GetArtigosHandler : IRequestHandler<GetArtigosQuery, List<ArtigoSum
         _context = context;
     }
 
-    public async Task<List<ArtigoSummaryDto>> Handle(GetArtigosQuery request, CancellationToken cancellationToken)
+    public async Task<PagedResult<ArtigoSummaryDto>> Handle(GetArtigosQuery request, CancellationToken cancellationToken)
     {
-        // HC: Fetching only the necessary columns and ordering by creation date descending.
-        // HC: Conteudo column is explicitly ignored by the projection.
-        return await _context.Artigos
+        var query = _context.Artigos
             .AsNoTracking()
-            .OrderByDescending(a => a.DataCriacao)
+            .OrderByDescending(a => a.DataCriacao);
+
+        var totalCount = await query.CountAsync(cancellationToken);
+
+        // HC: Fetching only the necessary columns and applying pagination.
+        // HC: Conteudo column is explicitly ignored by the projection.
+        var items = await query
+            .Skip((request.PageNumber - 1) * request.PageSize)
+            .Take(request.PageSize)
             .Select(a => new ArtigoSummaryDto
             {
                 Id = a.Id,
@@ -32,5 +39,7 @@ public class GetArtigosHandler : IRequestHandler<GetArtigosQuery, List<ArtigoSum
                 Tags = a.Tags
             })
             .ToListAsync(cancellationToken);
+
+        return new PagedResult<ArtigoSummaryDto>(items, totalCount, request.PageNumber, request.PageSize);
     }
 }
