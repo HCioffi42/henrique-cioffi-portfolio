@@ -48,6 +48,11 @@ const CodeBlock = ({ inline, className, children, ...props }: any) => {
         return (
             // Outer div to control the rounded borders and the dark background of the frame.
             <div className="my-6 rounded-lg overflow-hidden bg-[#24292e] shadow-md">
+                {/* Header section. It displays the detected programming language. */}
+                <div className="bg-[#1b1f23] px-4 py-2 text-xs font-mono text-gray-200 capitalize tracking-wider border-b border-gray-700/50">
+                    {language}
+                </div>
+
                 <SyntaxHighlighter
                     style={vscDarkPlus}
                     language={language}
@@ -55,13 +60,17 @@ const CodeBlock = ({ inline, className, children, ...props }: any) => {
                     customStyle={{
                         margin: 0,
                         padding: '1rem',
-                        background: 'transparent', 
+                        background: 'transparent',
                         fontSize: '1rem',
                         fontWeight: 'bold',
                         lineHeight: '1.4',
                     }}
                     codeTagProps={{
-                        style: { backgroundColor: 'transparent' }
+                        style: { 
+                            backgroundColor: 'transparent',
+                            borderWidth: 0,
+                            padding: 0 
+                        }
                     }}
                     {...props}
                 >
@@ -86,8 +95,7 @@ const MarkdownRenderer = ({ content }: { content: string }) => (
     <section className="markdown-content prose max-w-none text-gray-800 leading-relaxed text-lg">
         <ReactMarkdown
             remarkPlugins={[remarkGfm]}
-            components={{ code: CodeBlock }}
-        >
+            components={{ code: CodeBlock, pre: ({ children }) => <>{children}</> }} >
             {content}
         </ReactMarkdown>
     </section>
