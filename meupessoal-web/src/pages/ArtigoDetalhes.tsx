@@ -43,16 +43,40 @@ const useArtigo = (id: string | undefined) => {
 const CodeBlock = ({ inline, className, children, ...props }: any) => {
     const match = /language-(\w+)/.exec(className || '');
     const language = match ? match[1] : '';
+    // State that tracks whether the code was recently copied to provide visual feedback.
+    const [isCopied, setIsCopied] = useState(false);
+
+    /**
+     * Function that extracts the raw text from the code block and
+     * uses the modern Clipboard API to copy it to the user's clipboard.
+     */
+    const handleCopy = async () => {
+        const codeText = String(children).replace(/\n$/, '');
+        try {
+            await navigator.clipboard.writeText(codeText);
+            setIsCopied(true);
+            setTimeout(() => setIsCopied(false), 2000);
+        } catch (err) {
+            console.error("Failed to copy text:", err);
+        }
+    };
 
     if (!inline && match) {
         return (
             // Outer div to control the rounded borders and the dark background of the frame.
             <div className="my-6 rounded-lg overflow-hidden bg-[#24292e] shadow-md">
-                {/* Header section. It displays the detected programming language. */}
-                <div className="bg-[#1b1f23] px-4 py-2 text-xs font-mono text-gray-200 capitalize tracking-wider border-b border-gray-700/50">
-                    {language}
+                {/* Header section. It displays the detected programming language and the new copy button.*/}
+                <div className="bg-[#1b1f23] px-4 py-2 text-xs font-mono text-gray-200 capitalize tracking-wider border-b border-gray-700/50 flex justify-between items-center">
+                    <span>{language}</span>
+                    <button
+                        onClick={handleCopy}
+                        className="text-gray-200 hover:text-white transition-colors focus:outline-none cursor-pointer"
+                        aria-label="Copy code to clipboard"
+                        title="Copy code">
+                        {isCopied ? "Copied!" : "Copy"}
+                    </button>
                 </div>
-
+                
                 <SyntaxHighlighter
                     style={vscDarkPlus}
                     language={language}
