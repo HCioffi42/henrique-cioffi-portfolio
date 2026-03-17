@@ -5,6 +5,8 @@ This file tracks all the development tracks for this project.
 ## Open Tracks
 
 ## Completed Tracks
+- [x] **Track: Implement Multi-Tag Filtering (Intersection)**
+  *Link: [./tracks/03-tag-based-filtering/](./tracks/03-tag-based-filtering/)*
 - [x] **Track: Implement Server-Side Pagination (Full Stack)**
   *Link: [./tracks/02-server-side-pagination/](./tracks/02-server-side-pagination/)*
 - [x] **Track: Implement Article Listing and Home Page Integration**

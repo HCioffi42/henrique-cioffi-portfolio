@@ -63,9 +63,7 @@ const CodeBlock = ({ inline, className, children, ...props }: any) => {
 
     if (!inline && match) {
         return (
-            // Outer div to control the rounded borders and the dark background of the frame.
             <div className="my-6 rounded-lg overflow-hidden bg-[#24292e] shadow-md">
-                {/* Header section. It displays the detected programming language and the new copy button.*/}
                 <div className="bg-[#1b1f23] px-4 py-2 text-xs font-mono text-gray-200 capitalize tracking-wider border-b border-gray-700/50 flex justify-between items-center">
                     <span>{language}</span>
                     <button
@@ -76,7 +74,7 @@ const CodeBlock = ({ inline, className, children, ...props }: any) => {
                         {isCopied ? "Copied!" : "Copy"}
                     </button>
                 </div>
-                
+
                 <SyntaxHighlighter
                     style={vscDarkPlus}
                     language={language}
@@ -88,13 +86,13 @@ const CodeBlock = ({ inline, className, children, ...props }: any) => {
                         fontSize: '1rem',
                         fontWeight: 'bold',
                         lineHeight: '1.4',
-                        overflowX: 'auto', // Ensures the horizontal scrollbar appears when needed
+                        overflowX: 'auto',
                     }}
                     codeTagProps={{
-                        style: { 
+                        style: {
                             backgroundColor: 'transparent',
                             borderWidth: 0,
-                            padding: 0 
+                            padding: 0
                         }
                     }}
                     {...props}
@@ -127,7 +125,7 @@ const MarkdownRenderer = ({ content }: { content: string }) => (
 );
 
 /**
- * Component that renders the article header.
+ * Component that renders the article header containing the title and publication date.
  */
 const ArticleHeader = ({ titulo, dataCriacao }: { titulo: string; dataCriacao: string }) => (
     <header className="mb-10">
@@ -156,8 +154,8 @@ export const ArtigoDetalhes = () => {
         <div className="max-w-3xl mx-auto p-8 animate-in fade-in duration-500">
             <button
                 onClick={() => navigate(-1)}
-                className="mb-8 text-indigo-600 hover:text-indigo-800 font-medium flex items-center gap-2 transition-colors"
-            >
+                className="mb-8 text-indigo-600 hover:text-indigo-800 font-medium
+                            flex items-center gap-2 transition-colors focus:outline-none">
                 &larr; Back to list
             </button>
 
@@ -167,12 +165,16 @@ export const ArtigoDetalhes = () => {
 
             <footer className="mt-12 pt-8 border-t border-gray-100 flex flex-wrap gap-2">
                 {artigo.tags.map(tag => (
-                    <span
+                    // I updated the query parameter key from 'tag' to 'tags' to match the new multi-tag routing logic.
+                    <button
                         key={tag}
-                        className="bg-indigo-50 text-indigo-600 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider"
-                    >
+                        onClick={() => navigate(`/?page=1&tags=${encodeURIComponent(tag)}`)}
+                        className="bg-indigo-50 text-indigo-600 px-3 py-1 
+                                    rounded-full text-xs font-semibold capitalize tracking-wider 
+                                    hover:bg-indigo-100 hover:text-indigo-800 transition-colors cursor-pointer 
+                                    focus:outline-none focus:ring-2 focus:ring-indigo-500">
                         #{tag}
-                    </span>
+                    </button>
                 ))}
             </footer>
         </div>

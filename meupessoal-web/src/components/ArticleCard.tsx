@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import type { ArtigoSummary } from '../models/ArtigoSummary';
 
 interface ArticleCardProps {
@@ -7,10 +7,11 @@ interface ArticleCardProps {
 
 /**
  * A reusable card component for displaying article summaries.
- * It provides a clean, minimalist layout with navigation to the full article.
+ * It provides a clean, minimalist layout with navigation to the full article and clickable tags for filtering.
  */
 export const ArticleCard = ({ article }: ArticleCardProps) => {
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
 
     // Formats the ISO date string into a localized, human-readable format.
     const formattedDate = new Intl.DateTimeFormat('en-US', {
@@ -38,16 +39,31 @@ export const ArticleCard = ({ article }: ArticleCardProps) => {
             <footer className="mt-auto">
                 <div className="flex flex-wrap gap-1.5 mb-4">
                     {article.tags.map(tag => (
-                        <span key={tag} className="px-2.5 py-0.5 bg-indigo-50 text-indigo-600 rounded-full text-[10px] font-semibold uppercase tracking-wider">
+                        <button
+                            key={tag}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                const newParams = new URLSearchParams(searchParams);
+                                newParams.set('page', '1');
+
+                                const currentTags = newParams.getAll('tags');
+                                if (!currentTags.includes(tag)) {
+                                    newParams.append('tags', tag);
+                                }
+
+                                navigate(`/?${newParams.toString()}`);
+                            }}
+                            className="px-2.5 py-0.5 bg-indigo-50 text-indigo-600 rounded-full text-[10px] font-semibold capitalize
+                                        tracking-wider hover:bg-indigo-100 hover:text-indigo-800 transition-colors cursor-pointer">
                             {tag}
-                        </span>
+                        </button>
                     ))}
                 </div>
 
                 <button
                     onClick={() => navigate(`/artigo/${article.id}`)}
-                    className="w-full py-2 px-4 bg-gray-50 text-gray-700 text-sm font-semibold rounded-lg hover:bg-indigo-600 hover:text-white transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                >
+                    className="w-full py-2 px-4 bg-gray-50 text-gray-700 text-sm font-semibold rounded-lg hover:bg-indigo-600 
+                            hover:text-white transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
                     Read More
                 </button>
             </footer>
