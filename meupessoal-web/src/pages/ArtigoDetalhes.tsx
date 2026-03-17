@@ -88,6 +88,7 @@ const CodeBlock = ({ inline, className, children, ...props }: any) => {
                         fontSize: '1rem',
                         fontWeight: 'bold',
                         lineHeight: '1.4',
+                        overflowX: 'auto', // Ensures the horizontal scrollbar appears when needed
                     }}
                     codeTagProps={{
                         style: { 
