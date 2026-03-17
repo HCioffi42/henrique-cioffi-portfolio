@@ -8,35 +8,40 @@ import Pagination from '../components/Pagination';
 /**
  * The main article listing page (Home).
  * It fetches paginated summarized data from the optimized backend endpoint and renders a grid of cards.
+ * It also supports URL-based tag filtering.
  */
 export const ArtigoList = () => {
-    // Initialized URL search parameters state to drive pagination
+    // Initializes URL search parameters state to drive pagination and filtering.
     const [searchParams, setSearchParams] = useSearchParams();
-    
-    // State to track the total number of pages returned by the API
+
+    // State to track the total number of pages returned by the API.
     const [totalPages, setTotalPages] = useState<number>(0);
 
-    const [articles, setArticles] = useState<ArtigoSummary[]>([]);    
+    const [articles, setArticles] = useState<ArtigoSummary[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
 
-    // Derives the current page directly from the URL (e.g., ?page=2), defaulting to 1
+    // Derives the current page directly from the URL (e.g., ?page=2), defaulting to 1.
     const currentPage = Number(searchParams.get('page')) || 1;
-    // Defines the fixed page size for the grid
+
+    // Extracts the active tag filter from the URL parameters.
+    const currentTags = searchParams.getAll('tags');
+
+    // Defines the fixed page size for the grid.
     const pageSize = 6;
 
     useEffect(() => {
         /**
-         * Orchestrates the paginated data fetching process from the backend.
+         * Orchestrates the paginated data fetching process from the backend, applying filters if necessary.
          */
         const loadArticles = async () => {
-            // Ensures loading state is active when transitioning between pages
+            // Ensures loading state is active when transitioning between pages or tags.
             setLoading(true);
             try {
-                // Passes pagination arguments and expects a PagedResult structure
-                const data = await getArtigoSummaries(currentPage, pageSize);
+                // Passes both pagination arguments and the active tag to the API.
+                const data = await getArtigoSummaries(currentPage, pageSize, currentTags);
 
-                // Accesses the inner arrays and metadata from the PagedResult
+                // Accesses the inner arrays and metadata from the PagedResult.
                 setArticles(data.items);
                 setTotalPages(data.totalPages);
                 setError(null);
@@ -50,15 +55,30 @@ export const ArtigoList = () => {
 
         void loadArticles();
 
-        // Forces the browser window to scroll to the top upon changing pages
         window.scrollTo(0, 0);
-    }, [currentPage]); // Re-runs the effect whenever the URL page parameter changes
+    }, [currentPage, currentTags.join(',')]);
 
     /**
-     * Updates the URL search parameters to trigger a page transition.
+     * Updates the URL search parameters to trigger a page transition while preserving the active tag.
      */
     const handlePageChange = (newPage: number) => {
-        setSearchParams({ page: newPage.toString() });
+        const newParams = new URLSearchParams();
+        newParams.append('page', newPage.toString());
+        currentTags.forEach(tag => newParams.append('tags', tag));
+        setSearchParams(newParams);
+    };
+
+    /**
+     * Removes a specific tag from the active filters and resets the view to the first page.
+     */
+    const removeTagFilter = (tagToRemove: string) => {
+        const newParams = new URLSearchParams();
+        newParams.append('page', '1');
+
+        const remainingTags = currentTags.filter(t => t !== tagToRemove);
+        remainingTags.forEach(tag => newParams.append('tags', tag));
+
+        setSearchParams(newParams);
     };
 
     if (loading) {
@@ -92,9 +112,32 @@ export const ArtigoList = () => {
                 </div>
             </header>
 
+            {currentTags.length > 0 && (
+                <div className="mb-8 flex flex-col items-center justify-center gap-3">
+                    <span className="text-sm text-gray-500 uppercase tracking-widest font-semibold">Active Filters</span>
+                    <div className="flex flex-wrap gap-2 justify-center">
+                        {currentTags.map(tag => (
+                            <div key={tag} className="inline-flex items-center gap-2 bg-indigo-50 border border-indigo-100 px-4 py-1.5 rounded-full shadow-sm">
+                                <span className="text-sm text-indigo-800 font-bold tracking-wide capitalize">
+                                    {tag}
+                                </span>
+                                <button
+                                    onClick={() => removeTagFilter(tag)}
+                                    className="text-indigo-400 hover:text-red-500 hover:bg-red-50 rounded-full p-0.5 transition-colors focus:outline-none"
+                                    aria-label={`Remove ${tag} filter`}>
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+
             {articles.length === 0 ? (
                 <div className="text-center py-20 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200">
-                    <p className="text-gray-500 text-lg">No articles found yet. Stay tuned!</p>
+                    <p className="text-gray-500 text-lg">No articles match the selected filters. Try removing some tags.</p>
                 </div>
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -104,7 +147,6 @@ export const ArtigoList = () => {
                 </div>
             )}
 
-            {/* Conditionally renders the Pagination component if there is more than one page */}
             {articles.length > 0 && totalPages > 1 && (
                 <div className="mt-12">
                     <Pagination

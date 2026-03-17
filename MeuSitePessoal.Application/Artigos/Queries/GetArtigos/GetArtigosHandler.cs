@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 namespace MeuSitePessoal.Application.Artigos.Queries.GetArtigos;
 
 /// <summary>
-/// Handles the retrieval of paginated article summaries and applies tag filtering if requested.
+/// Handles the retrieval of paginated article summaries and applies multi-tag filtering if requested.
 /// </summary>
 public class GetArtigosHandler : IRequestHandler<GetArtigosQuery, PagedResult<ArtigoSummaryDto>>
 {
@@ -25,23 +25,24 @@ public class GetArtigosHandler : IRequestHandler<GetArtigosQuery, PagedResult<Ar
     /// </summary>
     public async Task<PagedResult<ArtigoSummaryDto>> Handle(GetArtigosQuery request, CancellationToken cancellationToken)
     {
-        var query = _context.Artigos
-            .AsNoTracking();
+        var query = _context.Artigos.AsNoTracking();
 
-        // Applies the tag filter if a tag is provided in the request.
-        if (!string.IsNullOrWhiteSpace(request.Tag))
+        // Applied a loop to dynamically chain Where clauses. This creates an intersection (AND) filter.
+        if (request.Tags != null && request.Tags.Any())
         {
-            query = query.Where(a => a.Tags.Contains(request.Tag));
+            var validTags = request.Tags.Where(t => !string.IsNullOrWhiteSpace(t)).ToList();
+            foreach (var tag in validTags)
+            {
+                // Captured the loop variable to prevent EF Core expression tree closure issues.
+                var tagToSearch = tag; 
+                query = query.Where(a => a.Tags.Contains(tagToSearch));
+            }
         }
 
-        // Orders the filtered results by creation date to maintain chronological display.
         query = query.OrderByDescending(a => a.DataCriacao);
 
-        // Calculates the total count based on the filtered query, ensuring accurate pagination metadata.
         var totalCount = await query.CountAsync(cancellationToken);
 
-        // Fetches only the necessary columns and applies pagination limits.
-        // The heavy 'Conteudo' column is explicitly ignored by the projection.
         var items = await query
             .Skip((request.PageNumber - 1) * request.PageSize)
             .Take(request.PageSize)

@@ -43,15 +43,13 @@ public class ArtigosController : ControllerBase
     }
 
     /// <summary>
-    /// Retrieves a paginated list of article summaries, optionally filtered by a tag.
+    /// Retrieves a paginated list of article summaries, optionally filtered by multiple tags.
     /// </summary>
     [HttpGet("summaries")]
     [AllowAnonymous]
-    // Added the optional tag parameter to the query string binding.
-    public async Task<IActionResult> GetSummaries([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10, [FromQuery] string? tag = null)
+    public async Task<IActionResult> GetSummaries([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10, [FromQuery] List<string>? tags = null)
     {
-        // Passes the tag parameter to the MediatR query alongside pagination parameters.
-        var result = await _mediator.Send(new Application.Artigos.Queries.GetArtigos.GetArtigosQuery(pageNumber, pageSize, tag));
+        var result = await _mediator.Send(new Application.Artigos.Queries.GetArtigos.GetArtigosQuery(pageNumber, pageSize, tags));
         return Ok(result);
     }
 

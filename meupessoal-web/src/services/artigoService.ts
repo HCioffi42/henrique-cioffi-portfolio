@@ -18,18 +18,23 @@ export const getArtigos = async (page: number = 1, size: number = 10): Promise<P
  * This is the primary method for the home page article listing.
  * @param pageNumber The page number to fetch.
  * @param pageSize The number of items to display per page.
+ * @param tags An optional array of tags to filter the results.
  * @returns A promise that resolves to a PagedResult containing ArtigoSummary objects.
  */
 export const getArtigoSummaries = async (
     pageNumber: number = 1,
-    pageSize: number = 6
+    pageSize: number = 6,
+    tags?: string[] 
 ): Promise<PagedResult<ArtigoSummary>> => {
-    const response = await api.get<PagedResult<ArtigoSummary>>('/Artigos/summaries', {
-        params: {
-            pageNumber,
-            pageSize
-        }
-    });
+    const params = new URLSearchParams();
+    params.append('pageNumber', pageNumber.toString());
+    params.append('pageSize', pageSize.toString());
+
+    if (tags && tags.length > 0) {
+        tags.forEach(tag => params.append('tags', tag));
+    }
+
+    const response = await api.get<PagedResult<ArtigoSummary>>(`/Artigos/summaries?${params.toString()}`);
     return response.data;
 };
 
