@@ -37,4 +37,37 @@ Verify the changes using integration tests and manual API testing.
   - Ensure `TotalCount` is correct.
   - Ensure `Items.Count` matches `PageSize`.
   - Ensure the response structure matches `PagedResult`.
-- [ ] **Manual Test:** Use Swagger or a tool like Postman to verify the `GET /api/artigos/summaries` endpoint.
+- [x] **Manual Test:** Use Swagger or a tool like Postman to verify the `GET /api/artigos/summaries` endpoint.
+
+## Phase 2: Frontend Implementation
+
+### 5. Data Model and Service
+Align the frontend models and services with the new paginated API.
+
+- [x] Create `meupessoal-web/src/models/PagedResult.ts`.
+  - Define generic `PagedResult<T>` interface.
+- [x] Update `meupessoal-web/src/services/artigoService.ts`.
+  - Update `getArtigoSummaries` to accept `page: number` and `pageSize: number`.
+  - Update return type to `Promise<PagedResult<ArtigoSummary>>`.
+
+### 6. UI Components
+Build the pagination controls.
+
+- [x] Create `meupessoal-web/src/components/Pagination.tsx`.
+  - Implement functional component with Props defined in spec.
+  - Apply Tailwind CSS styles for buttons and current page indicator.
+  - Implement disabled states for first/last page.
+
+### 7. Page Integration (URL Sync)
+Integrate pagination into the article list.
+
+- [x] Update `meupessoal-web/src/pages/ArtigoList.tsx` (or the home page listing component).
+  - Use `useSearchParams` to manage the `page` parameter.
+  - Update `useEffect` to trigger a fetch when the `page` parameter changes.
+  - Implement `handlePageChange` to update the URL via `setSearchParams`.
+  - Pass pagination metadata and the callback to the `Pagination` component.
+
+### 8. Verification and Polishing
+- [x] Verify that navigating to `/?page=2` correctly fetches the second page.
+- [x] Verify that clicking "Previous"/"Next" updates the URL and fetches data.
+- [x] Ensure the loading state is shown correctly during page transitions.

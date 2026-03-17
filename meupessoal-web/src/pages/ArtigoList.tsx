@@ -1,25 +1,45 @@
 import { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { getArtigoSummaries } from '../services/artigoService';
 import type { ArtigoSummary } from '../models/ArtigoSummary';
 import { ArticleCard } from '../components/ArticleCard';
+import Pagination from '../components/Pagination';
 
 /**
  * The main article listing page (Home).
- * It fetches summarized data from the optimized backend endpoint and renders a grid of cards.
+ * It fetches paginated summarized data from the optimized backend endpoint and renders a grid of cards.
  */
 export const ArtigoList = () => {
-    const [articles, setArticles] = useState<ArtigoSummary[]>([]);
+    // Initialized URL search parameters state to drive pagination
+    const [searchParams, setSearchParams] = useSearchParams();
+    
+    // State to track the total number of pages returned by the API
+    const [totalPages, setTotalPages] = useState<number>(0);
+
+    const [articles, setArticles] = useState<ArtigoSummary[]>([]);    
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
 
+    // Derives the current page directly from the URL (e.g., ?page=2), defaulting to 1
+    const currentPage = Number(searchParams.get('page')) || 1;
+    // Defines the fixed page size for the grid
+    const pageSize = 6;
+
     useEffect(() => {
         /**
-         * Orchestrates the data fetching process from the backend.
+         * Orchestrates the paginated data fetching process from the backend.
          */
         const loadArticles = async () => {
+            // Ensures loading state is active when transitioning between pages
+            setLoading(true);
             try {
-                const data = await getArtigoSummaries();
-                setArticles(data);
+                // Passes pagination arguments and expects a PagedResult structure
+                const data = await getArtigoSummaries(currentPage, pageSize);
+
+                // Accesses the inner arrays and metadata from the PagedResult
+                setArticles(data.items);
+                setTotalPages(data.totalPages);
+                setError(null);
             } catch (err) {
                 console.error("Failed to load article summaries:", err);
                 setError("Unable to load articles at this time. Please try again later.");
@@ -29,7 +49,17 @@ export const ArtigoList = () => {
         };
 
         void loadArticles();
-    }, []);
+
+        // Forces the browser window to scroll to the top upon changing pages
+        window.scrollTo(0, 0);
+    }, [currentPage]); // Re-runs the effect whenever the URL page parameter changes
+
+    /**
+     * Updates the URL search parameters to trigger a page transition.
+     */
+    const handlePageChange = (newPage: number) => {
+        setSearchParams({ page: newPage.toString() });
+    };
 
     if (loading) {
         return (
@@ -71,6 +101,17 @@ export const ArtigoList = () => {
                     {articles.map(article => (
                         <ArticleCard key={article.id} article={article} />
                     ))}
+                </div>
+            )}
+
+            {/* Conditionally renders the Pagination component if there is more than one page */}
+            {articles.length > 0 && totalPages > 1 && (
+                <div className="mt-12">
+                    <Pagination
+                        currentPage={currentPage}
+                        totalPages={totalPages}
+                        onPageChange={handlePageChange}
+                    />
                 </div>
             )}
         </main>

@@ -45,3 +45,44 @@ Update the `GET /api/artigos/summaries` endpoint.
 ### Response
 - **Status Code:** 200 OK
 - **Body:** `PagedResult<ArtigoSummaryDto>`
+
+## 6. Phase 2: Frontend Implementation
+
+### 6.1. Data Contract (TypeScript)
+Define a generic `PagedResult<T>` interface in the frontend to match the backend structure.
+
+```typescript
+export interface PagedResult<T> {
+    items: T[];
+    totalCount: number;
+    pageNumber: number;
+    pageSize: number;
+    totalPages: number;
+}
+```
+
+### 6.2. Pagination Component
+Design a reusable `Pagination.tsx` component.
+
+**Props:**
+- `currentPage: number`: The current active page.
+- `totalPages: number`: Total number of available pages.
+- `onPageChange: (page: number) => void`: Callback triggered when a page is selected.
+
+**UI Requirements:**
+- "Previous" and "Next" buttons.
+- Styled with Tailwind CSS (matching the existing clean/minimalist design).
+- Buttons should be disabled when on the first or last page.
+
+### 6.3. URL Synchronization
+The home page article list must be driven by the URL search parameters.
+
+- **URL Pattern:** `/?page=n`
+- Use `useSearchParams` from `react-router-dom` to read and write the `page` parameter.
+- Default to `page=1` if the parameter is missing.
+
+### 6.4. Integration Logic
+1.  **Effect:** When the `page` parameter in the URL changes, trigger a new fetch.
+2.  **Service:** Update `getArtigoSummaries` in `artigoService.ts` to accept `pageNumber` and `pageSize`.
+3.  **Loading State:** Display the existing `Skeleton` loader while fetching new data.
+4.  **Error Handling:** Gracefully handle API errors.

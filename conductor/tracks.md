@@ -5,7 +5,7 @@ This file tracks all the development tracks for this project.
 ## Open Tracks
 
 ## Completed Tracks
-- [x] **Track: Implement Server-Side Pagination in Backend**
+- [x] **Track: Implement Server-Side Pagination (Full Stack)**
   *Link: [./tracks/02-server-side-pagination/](./tracks/02-server-side-pagination/)*
 - [x] **Track: Implement Article Listing and Home Page Integration**
   *Link: [./tracks/01-home-page-listing/](./tracks/01-home-page-listing/)*
