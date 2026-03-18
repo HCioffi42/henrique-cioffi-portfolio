@@ -64,8 +64,8 @@ This plan outlines the steps to implement a complete authentication system.
     - [x] Token is stored and sent in API requests (if applicable for write operations).
 - **Test Suite Stabilization**
     - [x] Implement Unit Tests for `TokenService` and `Handlers`.
-    - [ ] Fix integration tests failing due to credential mismatch (`Admin123!`).
-    - [ ] Resolve JSON deserialization issues in Auth tests.
+    - [x] Fix integration tests failing due to credential mismatch (`Admin123!`).
+    - [x] Resolve JSON deserialization issues in Auth tests.
 
 ### 3.2 Documentation & Polish
 - **Action**: Ensure all new methods have XML/JSDoc documentation. Refine the UI styles.

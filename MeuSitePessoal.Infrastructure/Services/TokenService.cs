@@ -50,7 +50,7 @@ public class TokenService : ITokenService
             issuer: jwtSettings["Issuer"],
             audience: jwtSettings["Audience"],
             claims: claims,
-            expires: DateTime.UtcNow.AddMinutes(double.TryParse(jwtSettings["ExpiryInMinutes"], out var minutes) ? minutes : 60),
+            expires: DateTime.UtcNow.AddMinutes(double.TryParse(jwtSettings["ExpiresInMinutes"], out var minutes) ? minutes : 60),
             signingCredentials: creds
         );
 

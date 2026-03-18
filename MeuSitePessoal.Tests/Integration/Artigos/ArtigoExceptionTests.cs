@@ -1,4 +1,3 @@
-using System.Net.Http.Headers;
 using System.Net;
 using System.Net.Http.Json;
 using Microsoft.AspNetCore.Http;
@@ -7,30 +6,16 @@ using Xunit;
 
 namespace MeuSitePessoal.Tests.Integration.Artigos;
 
+/// <summary>
+/// Integration tests for validating article creation constraints and exception handling.
+/// </summary>
 public class ArtigoExceptionTests : BaseIntegrationTest
 {
-    private string? _token;
-
-    private async Task EnsureAuthenticatedAsync()
-    {
-        if (_token != null) return;
-
-        var loginRequest = new { Username = "admin", Password = "admin123" };
-        var response = await _client.PostAsJsonAsync("/api/Auth/login", loginRequest);
-        response.EnsureSuccessStatusCode();
-
-        var authResponse = await response.Content.ReadFromJsonAsync<AuthTokenResponse>();
-        _token = authResponse!.Token;
-        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _token);
-    }
-
-    private record AuthTokenResponse(string Token);
-
     [Fact]
     public async Task Post_WhenTitleIsEmpty_ShouldReturn400BadRequest()
     {
-        // Arrange
-        await EnsureAuthenticatedAsync();
+        // Arrange: Authenticates the client using the centralized method.
+        await AuthenticateAsync();
         var invalidCommand = new
         {
             Titulo = "", 
@@ -39,10 +24,10 @@ public class ArtigoExceptionTests : BaseIntegrationTest
             Tags = new List<string> { "dotnet" }
         };
 
-        // Act
+        // Act: Sends an invalid request to the articles endpoint.
         var response = await _client.PostAsJsonAsync("/api/Artigos", invalidCommand);
 
-        // Assert
+        // Assert: Verifies that the server returns a Bad Request response with validation details.
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
 
         var problem = await response.Content.ReadFromJsonAsync<ValidationProblemDetails>();
@@ -57,8 +42,8 @@ public class ArtigoExceptionTests : BaseIntegrationTest
     [Fact]
     public async Task Post_WhenContentIsEmpty_ShouldReturn400BadRequest()
     {
-        // Arrange
-        await EnsureAuthenticatedAsync();
+        // Arrange: Authenticates and prepares a command with missing content.
+        await AuthenticateAsync();
         var command = new
         {
             Titulo = "Valid Title",
@@ -67,10 +52,10 @@ public class ArtigoExceptionTests : BaseIntegrationTest
             Tags = new List<string> { "test" }
         };
 
-        // Act
+        // Act: Executes the post request.
         var response = await _client.PostAsJsonAsync("/api/Artigos", command);
 
-        // Assert
+        // Assert: Validates the expected validation failure.
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
 
         var problem = await response.Content.ReadFromJsonAsync<ValidationProblemDetails>();
@@ -83,8 +68,8 @@ public class ArtigoExceptionTests : BaseIntegrationTest
     [Fact]
     public async Task Post_WhenSummaryIsEmpty_ShouldReturn400BadRequest()
     {
-        // Arrange
-        await EnsureAuthenticatedAsync();
+        // Arrange: Authenticates and prepares a command with an empty summary.
+        await AuthenticateAsync();
         var command = new
         {
             Titulo = "Valid Title",
@@ -93,10 +78,10 @@ public class ArtigoExceptionTests : BaseIntegrationTest
             Tags = new List<string> { "test" }
         };
 
-        // Act
+        // Act: Executes the post request.
         var response = await _client.PostAsJsonAsync("/api/Artigos", command);
 
-        // Assert
+        // Assert: Verifies that the summary requirement is enforced.
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
 
         var problem = await response.Content.ReadFromJsonAsync<ValidationProblemDetails>();
@@ -108,8 +93,8 @@ public class ArtigoExceptionTests : BaseIntegrationTest
     [Fact]
     public async Task Post_WhenFieldsExceedMaxLength_ShouldReturn400BadRequest()
     {
-        // Arrange
-        await EnsureAuthenticatedAsync();
+        // Arrange: Authenticates and prepares a command with oversized fields.
+        await AuthenticateAsync();
         var command = new
         {
             Titulo = new string('a', 101),
@@ -118,10 +103,10 @@ public class ArtigoExceptionTests : BaseIntegrationTest
             Tags = new List<string> { "test" }
         };
 
-        // Act
+        // Act: Executes the request against the validator limits.
         var response = await _client.PostAsJsonAsync("/api/Artigos", command);
 
-        // Assert
+        // Assert: Verifies that length constraints are triggered.
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
 
         var problem = await response.Content.ReadFromJsonAsync<ValidationProblemDetails>();

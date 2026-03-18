@@ -4,33 +4,32 @@ using Xunit;
 
 namespace MeuSitePessoal.Tests.Integration;
 
+/// <summary>
+/// Integration tests specifically for the article summary pagination logic.
+/// </summary>
 public class ArtigoSummaryPaginationTests : BaseIntegrationTest
 {
     public record ArtigoSummaryResponse(Guid Id, string Titulo, string Resumo, DateTime DataCriacao, List<string> Tags);
     public record PagedSummaryResponse(List<ArtigoSummaryResponse> Items, int TotalCount, int PageNumber, int PageSize, int TotalPages);
-    public record AuthResponse(string Token);
 
     [Fact]
     public async Task GetSummaries_WithPagination_ShouldReturnPagedResult()
     {
-        // Arranges the login request to obtain the JWT token for restricted endpoint access.
-        var loginRequest = new { Username = "admin", Password = "admin123" };
-        var loginResponse = await _client.PostAsJsonAsync("/api/Auth/login", loginRequest);
-        var auth = await loginResponse.Content.ReadFromJsonAsync<AuthResponse>();
+        // Arrange: Authenticates for data setup.
+        await AuthenticateAsync();
 
-        // Sets the authorization header using the strongly typed token property.
-        _client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", auth!.Token);
-        // Seed some data
+        // Seeds the database with multiple articles.
         for (int i = 1; i <= 5; i++)
         {
             var command = new CreateArtigoCommand($"Summary Artigo {i}", "Full content", $"Summary {i}", new List<string> { "tag" });
             await _client.PostAsJsonAsync("/api/artigos", command);
         }
 
-        // Act
+        // Act: Requests paginated summaries (Anonymous access allowed).
+        _client.DefaultRequestHeaders.Authorization = null;
         var response = await _client.GetAsync("/api/artigos/summaries?pageNumber=1&pageSize=3");
 
-        // Assert
+        // Assert: Validates pagination metadata and response projection.
         response.EnsureSuccessStatusCode();
         var pagedResult = await response.Content.ReadFromJsonAsync<PagedSummaryResponse>();
 
