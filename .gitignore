@@ -32,4 +32,4 @@ MeuSitePessoal.Api/logs/
 *.vsix
 
 ## Arquivos de configuração
-.env
+.env*
