@@ -2,6 +2,7 @@
 
 ## Back-end
 - **Framework:** ASP.NET Core (.NET 8.0/9.0)
+- **Security:** ASP.NET Core Identity, JWT Bearer Authentication
 - **Architecture:** Clean Architecture, CQRS
 - **Patterns/Libraries:** MediatR, FluentValidation
 - **Language:** C#
@@ -10,7 +11,7 @@
 ## Front-end
 - **Framework:** React 18+ (Vite)
 - **Language:** TypeScript
-- **State Management:** React Hooks (useState, useEffect, useContext)
+- **State Management:** React Hooks (useState, useEffect, useContext), React Context API
 - **HTTP Client:** Axios
 - **Styling:** Tailwind CSS (Planned)
 

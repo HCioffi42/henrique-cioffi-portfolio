@@ -30,3 +30,6 @@ MeuSitePessoal.Api/logs/
 ## Publicação e Pacotes
 *.nupkg
 *.vsix
+
+## Arquivos de configuração
+.env*
