@@ -5,6 +5,8 @@ This file tracks all the development tracks for this project.
 ## Open Tracks
 
 ## Completed Tracks
+- [x] **Track: Authentication & Protected Routes**
+  *Link: [./tracks/04-auth-and-protected-routes/](./tracks/04-auth-and-protected-routes/)*
 - [x] **Track: Implement Multi-Tag Filtering (Intersection)**
   *Link: [./tracks/03-tag-based-filtering/](./tracks/03-tag-based-filtering/)*
 - [x] **Track: Implement Server-Side Pagination (Full Stack)**

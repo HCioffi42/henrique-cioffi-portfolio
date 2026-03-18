@@ -31,4 +31,4 @@ This project uses the Conductor extension for structured development.
 - **Style Check**: Ensure the code matches the approved `spec.md`.
 - **Implementation Summary**: Upon completion, a comprehensive `index.md` must be created in the track subfolder, summarizing the final state of the implementation and any technical debts or observations.
 - **Tracks Registry**: The root `conductor/tracks.md` file must be automatically updated to reflect the progress and "Completed" status of the task.
-- **Commit Readiness**: Prepare a semantic commit message based on the changes documented in the track.
+- **Commit Readiness**: Prepare a semantic commit message based on the changes documented in the track but do not try to commit. This should be a suggestion only.

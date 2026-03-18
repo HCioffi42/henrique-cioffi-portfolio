@@ -13,3 +13,4 @@ A personal website to showcase projects, blog posts, and professional informatio
 - **Project Showcase:** Display personal projects with descriptions and links.
 - **Contact Info:** Provide ways to reach out.
 - **Admin Dashboard:** Interface for managing blog posts and project details (if applicable).
+- **Secure Authentication:** Identity-based access control for administrative operations using JWT.

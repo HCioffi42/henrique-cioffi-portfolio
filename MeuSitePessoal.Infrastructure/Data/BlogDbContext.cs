@@ -1,11 +1,12 @@
 ﻿using MeuSitePessoal.Domain;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace MeuSitePessoal.Infrastructure.Data;
 
-public class BlogDbContext : DbContext
+public class BlogDbContext : IdentityDbContext
 {
-    // Defino o contexto que herda de DbContext para gerenciar a comunicação com o PostgreSQL.
+    // Defino o contexto que herda de IdentityDbContext para gerenciar a comunicação com o PostgreSQL e tabelas de Identity.
     public BlogDbContext(DbContextOptions<BlogDbContext> options) : base(options)
     {
     }

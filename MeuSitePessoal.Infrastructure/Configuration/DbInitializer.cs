@@ -1,14 +1,40 @@
 ﻿using MeuSitePessoal.Domain;
 using MeuSitePessoal.Infrastructure.Data;
+using Microsoft.AspNetCore.Identity;
 
 namespace MeuSitePessoal.Infrastructure.Configuration;
 
-// Responsável por popular o banco de dados com dados iniciais caso ele esteja vazio.
+/// <summary>
+/// Responsible for seeding the database with initial data if it is empty.
+/// </summary>
 public static class DbInitializer
 {
-    public static async Task SeedAsync(BlogDbContext context)
+    public static async Task SeedAsync(BlogDbContext context, UserManager<IdentityUser> userManager, RoleManager<IdentityRole> roleManager)
     {
-        // Verifica se já existem artigos para evitar duplicidade.
+        // 1. Seed Roles
+        if (!context.Roles.Any())
+        {
+            await roleManager.CreateAsync(new IdentityRole("Admin"));
+        }
+
+        // 2. Seed Admin User
+        if (!context.Users.Any())
+        {
+            var adminUser = new IdentityUser
+            {
+                UserName = "admin",
+                Email = "admin@meusitepessoal.com",
+                EmailConfirmed = true
+            };
+
+            var result = await userManager.CreateAsync(adminUser, "Admin123!");
+            if (result.Succeeded)
+            {
+                await userManager.AddToRoleAsync(adminUser, "Admin");
+            }
+        }
+
+        // 3. Seed Artigos
         if (context.Artigos.Any()) return;
 
         var artigosIniciais = new List<Artigo>

@@ -57,7 +57,7 @@ public class ArtigosController : ControllerBase
     /// Handles the creation of a new article.
     /// </summary>
     [HttpPost]
-    [AllowAnonymous]
+    [Authorize]
     public async Task<IActionResult> Criar([FromBody] CreateArtigoCommand command)
     {
         var id = await _mediator.Send(command);
@@ -85,6 +85,7 @@ public class ArtigosController : ControllerBase
     /// Deletes an article by its unique identifier.
     /// </summary>
     [HttpDelete("{id}")]
+    [Authorize]
     public async Task<IActionResult> Excluir(Guid id)
     {
         await _mediator.Send(new DeleteArtigoCommand(id));
@@ -95,6 +96,7 @@ public class ArtigosController : ControllerBase
     /// Updates an existing article using its unique identifier.
     /// </summary>
     [HttpPut("{id}")]
+    [Authorize]
     public async Task<IActionResult> Atualizar(Guid id, [FromBody] UpdateArtigoCommand command)
     {
         if (id != command.Id)

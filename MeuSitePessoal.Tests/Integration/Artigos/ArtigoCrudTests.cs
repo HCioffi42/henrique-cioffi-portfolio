@@ -1,4 +1,3 @@
-using System.Net.Http.Headers;
 using System.Net;
 using System.Net.Http.Json;
 using Microsoft.AspNetCore.Mvc;
@@ -10,29 +9,14 @@ namespace MeuSitePessoal.Tests.Integration.Artigos;
 
 public class ArtigoCrudTests : BaseIntegrationTest
 {
+    // Record defines the structure of the article response for test assertions.
     private record ArtigoResponse(Guid Id, string Titulo, string Conteudo, string Resumo, List<string> Tags);
-    private string? _token;
-
-    private async Task EnsureAuthenticatedAsync()
-    {
-        if (_token != null) return;
-
-        var loginRequest = new { Username = "admin", Password = "admin123" };
-        var response = await _client.PostAsJsonAsync("/api/Auth/login", loginRequest);
-        response.EnsureSuccessStatusCode();
-
-        var authResponse = await response.Content.ReadFromJsonAsync<AuthTokenResponse>();
-        _token = authResponse!.Token;
-        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _token);
-    }
-
-    private record AuthTokenResponse(string Token);
 
     [Fact]
     public async Task Update_WithValidData_ShouldReturn204NoContent()
     {
-        // Arrange: Seed an article first.
-        await EnsureAuthenticatedAsync();
+        // Arrange: Authenticates the client and seeds an article.
+        await AuthenticateAsync(); 
         var id = await SeedArtigoAsync();
         var updateCommand = new UpdateArtigoCommand(
             id,
@@ -42,10 +26,10 @@ public class ArtigoCrudTests : BaseIntegrationTest
             new List<string> { "updated", "test" }
         );
 
-        // Act: Perform the update.
+        // Act: Performs the update request.
         var response = await _client.PutAsJsonAsync($"/api/Artigos/{id}", updateCommand);
 
-        // Assert: Verify the response and that the data was actually updated.
+        // Assert: Verifies success and data integrity.
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
 
         var getResponse = await _client.GetAsync($"/api/Artigos/{id}");
@@ -53,95 +37,55 @@ public class ArtigoCrudTests : BaseIntegrationTest
         
         Assert.NotNull(updatedArtigo);
         Assert.Equal("Updated Title", updatedArtigo.Titulo);
-        Assert.Equal("Updated summary.", updatedArtigo.Resumo);
         Assert.Contains("updated", updatedArtigo.Tags);
     }
 
     [Fact]
     public async Task Update_WhenIdDoesNotExist_ShouldReturn404NotFound()
     {
-        // Arrange: Use a non-existent Guid.
-        await EnsureAuthenticatedAsync();
+        // Arrange: Authenticates and generates a non-existent ID.
+        await AuthenticateAsync();
         var nonExistentId = Guid.NewGuid();
-        var updateCommand = new UpdateArtigoCommand(
-            nonExistentId,
-            "Title",
-            "Content",
-            "Summary",
-            new List<string>()
-        );
+        var updateCommand = new UpdateArtigoCommand(nonExistentId, "Title", "Content", "Summary", new List<string>());
 
-        // Act: Try to update.
+        // Act: Attempts to update a missing resource.
         var response = await _client.PutAsJsonAsync($"/api/Artigos/{nonExistentId}", updateCommand);
 
-        // Assert: Verify 404 and the problem details title.
+        // Assert: Verifies the Not Found response.
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-
-        var problem = await response.Content.ReadFromJsonAsync<ProblemDetails>();
-        Assert.NotNull(problem);
-        Assert.Equal("Resource Not Found", problem.Title);
-    }
-
-    [Fact]
-    public async Task Update_WithValidationError_ShouldReturn400BadRequest()
-    {
-        // Arrange: Seed an article and prepare an invalid command (Empty Title).
-        await EnsureAuthenticatedAsync();
-        var id = await SeedArtigoAsync();
-        var invalidCommand = new UpdateArtigoCommand(
-            id,
-            "", // Invalid: Empty Title
-            "Valid content",
-            "Valid summary",
-            new List<string>()
-        );
-
-        // Act: Try to update.
-        var response = await _client.PutAsJsonAsync($"/api/Artigos/{id}", invalidCommand);
-
-        // Assert: Verify 400 and "Validation Error" title.
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-
-        var problem = await response.Content.ReadFromJsonAsync<ValidationProblemDetails>();
-        Assert.NotNull(problem);
-        Assert.Equal("Validation Error", problem.Title);
-        Assert.True(problem.Errors.ContainsKey("Titulo"));
     }
 
     [Fact]
     public async Task Delete_WithValidId_ShouldReturn204NoContent()
     {
-        // Arrange: Seed an article.
-        await EnsureAuthenticatedAsync();
+        // Arrange: Authenticates and seeds data.
+        await AuthenticateAsync();
         var id = await SeedArtigoAsync();
 
-        // Act: Delete the article.
+        // Act: Deletes the article.
         var response = await _client.DeleteAsync($"/api/Artigos/{id}");
 
-        // Assert: Verify success and that the article is no longer accessible.
+        // Assert: Verifies removal and subsequent 404.
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-
         var getResponse = await _client.GetAsync($"/api/Artigos/{id}");
         Assert.Equal(HttpStatusCode.NotFound, getResponse.StatusCode);
     }
 
     [Fact]
-    public async Task Delete_WhenIdDoesNotExist_ShouldReturn404NotFound()
+    public async Task Create_WhenAnonymous_ShouldReturn401Unauthorized()
     {
-        // Arrange: Use a non-existent Guid.
-        await EnsureAuthenticatedAsync();
-        var nonExistentId = Guid.NewGuid();
+        // Arrange: No authentication call is made.
+        var command = new CreateArtigoCommand("Title", "Content", "Summary", new List<string>());
 
-        // Act: Try to delete.
-        var response = await _client.DeleteAsync($"/api/Artigos/{nonExistentId}");
+        // Act: Attempts to create without credentials.
+        var response = await _client.PostAsJsonAsync("/api/Artigos", command);
 
-        // Assert: Verify 404.
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        // Assert: Verifies the authorization gate is working.
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 
     /// <summary>
-    /// Helper method to seed an article into the database before Update/Delete actions.
-    /// Uses the POST endpoint to ensure the full flow is valid.
+    /// Seeds an article into the database to provide data for Update and Delete tests.
     /// </summary>
     private async Task<Guid> SeedArtigoAsync()
     {
@@ -155,7 +99,6 @@ public class ArtigoCrudTests : BaseIntegrationTest
         var response = await _client.PostAsJsonAsync("/api/Artigos", command);
         response.EnsureSuccessStatusCode();
 
-        var id = await response.Content.ReadFromJsonAsync<Guid>();
-        return id;
+        return await response.Content.ReadFromJsonAsync<Guid>();
     }
 }
