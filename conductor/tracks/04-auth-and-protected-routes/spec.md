@@ -34,15 +34,18 @@ Implement a complete authentication and authorization system using ASP.NET Core 
 
 ## 3. Frontend Requirements (React + TypeScript)
 
-### 3.1 Auth Context
-- Create `src/context/AuthContext.tsx` using React Context API.
-- Manage `user`, `token`, and `isAuthenticated` state.
-- Implement `login(token: string, user: User)` and `logout()` functions.
+### 3.1 Auth Context & Storage Utility
+- Create `src/context/AuthContext.tsx`.
+- Implement `src/util/storage.ts` to abstract `localStorage` access (Clean Code).
+- Manage `user`, `token`, and `isInitialized` states.
 - Persist the JWT token in `localStorage`.
 
-### 3.2 Protected Route Wrapper
+### 3.2 Protected Route & Interceptors
 - Create `src/components/ProtectedRoute.tsx`.
-- Wrap routes that require authentication.
+- Implement **Axios Interceptors** in `src/services/api.ts`:
+    - **Request**: Inject Bearer Token automatically.
+    - **Response**: Handle `401 Unauthorized` by clearing session and redirecting (Reactive Security).
+- Configure environment variables using `.env` for API base URL.- Wrap routes that require authentication.
 - Redirect unauthenticated users to the `/login` page using `Navigate` from `react-router-dom`.
 
 ### 3.3 Login Page
