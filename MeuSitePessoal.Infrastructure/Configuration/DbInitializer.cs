@@ -34,31 +34,37 @@ public static class DbInitializer
             }
         }
 
-        // 3. Seed Artigos
-        if (context.Artigos.Any()) return;
+        // 3. Seed Articles
+        if (context.Articles.Any()) return;
 
-        var artigosIniciais = new List<Artigo>
+        var initialArticles = new List<Article>
         {
-            new Artigo(
+            new Article(
                 "Iniciando com .NET 8 e C#", 
                 "Este é o conteúdo do meu primeiro artigo técnico sobre a plataforma .NET.", 
                 "Um guia introdutório ao ecossistema .NET moderno.", 
                 new List<string> { ".net", "csharp", "backend" }),
             
-            new Artigo(
+            new Article(
                 "PostgreSQL no Docker", 
                 "Aprenda a subir um container do Postgres de forma rápida para seus testes.", 
                 "Configuração rápida de ambiente de banco de dados.", 
                 new List<string> { "docker", "database", "postgres" }),
             
-            new Artigo(
+            new Article(
                 "Arquitetura Limpa na Prática", 
                 "Como organizar suas camadas para manter um código sustentável a longo prazo.", 
                 "Dicas de organização de projetos ASP.NET Core.", 
-                new List<string> { "architecture", "clean-code" })
+                new List<string> { "architecture", "clean-code" }),
+            
+            new Article(
+                "Welcome to my new Blog",
+                "This is the first article after the English refactoring.",
+                "A fresh start with clean code.",
+                new List<string> { "dotnet", "clean-code" })
         };
 
-        await context.Artigos.AddRangeAsync(artigosIniciais);
+        await context.Articles.AddRangeAsync(initialArticles);
         await context.SaveChangesAsync();
     }
 }

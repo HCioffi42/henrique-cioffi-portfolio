@@ -1,0 +1,52 @@
+using MeuSitePessoal.Application.Articles.Queries.GetArticleById;
+using Moq;
+using MeuSitePessoal.Domain;
+using MeuSitePessoal.Domain.Interfaces;
+using MeuSitePessoal.Application.Articles.Queries;
+using Xunit;
+
+namespace MeuSitePessoal.Tests.Unit.Application.Handlers;
+
+public class GetArticleByIdHandlerTests
+{
+    private readonly Mock<IArticleRepository> _repositoryMock;
+    private readonly GetArticleByIdHandler _handler;
+
+    public GetArticleByIdHandlerTests()
+    {
+        _repositoryMock = new Mock<IArticleRepository>();
+        _handler = new GetArticleByIdHandler(_repositoryMock.Object);
+    }
+
+    [Fact]
+    public async Task Handle_QuandoArtigoExiste_DeveRetornarArtigo()
+    {
+        // Arrange
+        var artigo = new Article("Title", "Content", "Summary", new List<string>());
+        var id = artigo.Id;
+        _repositoryMock.Setup(r => r.GetByIdAsync(id)).ReturnsAsync(artigo);
+
+        // Act
+        var result = await _handler.Handle(new GetArticleByIdQuery(id), CancellationToken.None);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(id, result.Id);
+        _repositoryMock.Verify(r => r.GetByIdAsync(id), Times.Once);
+    }
+
+    [Fact]
+    public async Task Handle_QuandoArtigoNaoExiste_DeveRetornarNull()
+    {
+        // Arrange
+        var id = Guid.NewGuid();
+        _repositoryMock.Setup(r => r.GetByIdAsync(id)).ReturnsAsync((Article?)null);
+
+        // Act
+        var result = await _handler.Handle(new GetArticleByIdQuery(id), CancellationToken.None);
+
+        // Assert
+        Assert.Null(result);
+        _repositoryMock.Verify(r => r.GetByIdAsync(id), Times.Once);
+    }
+}
