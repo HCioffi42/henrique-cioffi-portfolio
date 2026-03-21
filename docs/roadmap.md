@@ -28,37 +28,37 @@
 
 ## Phase 2: Content Management & Admin UX - IN PROGRESS
 
-### [ ] Track 05: Article CRUD (Edit & Delete)
+### [x] Track 05: Article CRUD (Edit & Delete)
 - **5.1**: Implement `PUT /api/artigos/{id}` and `DELETE /api/artigos/{id}`.
 - **5.2**: Create the `EditArtigo` page, reusing the form component.
 - **5.3**: Admin Dashboard table with "Edit" and "Delete" actions.
 - **5.4**: Delete confirmation modal.
 
 ### [ ] Track 06: Media Handling & Image Upload
-- **10.1**: `ImageController` for `IFormFile` handling.
-- **10.2**: Local storage logic or AWS S3 integration.
-- **10.3**: Upload button returning URL to the Markdown editor.
+- **6.1**: `ImageController` for `IFormFile` handling.
+- **6.2**: Local storage logic or AWS S3 integration.
+- **6.3**: Upload button returning URL to the Markdown editor.
 
 ### [ ] Track 07: Interactive Markdown Editor
-- **6.1**: Toolbar for Bold, Italic, Titles, and Lists.
-- **6.2**: Text selection manipulation logic (wrap selection with tags).
-- **6.3**: Live Preview toggle.
+- **7.1**: Toolbar for Bold, Italic, Titles, and Lists.
+- **7.2**: Text selection manipulation logic (wrap selection with tags).
+- **7.3**: Live Preview toggle.
 
 ### [ ] Track 08: Tag & Category Management
-- **3.1**: Advanced MediatR filtering logic for tags.
-- **3.2**: Dynamic routing `/tags/:tag` for filtered discovery.
+- **8.1**: Advanced MediatR filtering logic for tags.
+- **8.2**: Dynamic routing `/tags/:tag` for filtered discovery.
 
 ---
 
 ## Phase 3: Infrastructure, Polish & Deployment
 
 ### [ ] Track 09: Global Systems (Logging & Toasts)
-- **7.1**: Integration with `Infrastructure.Logging`.
-- **8.1**: Global Notification System (e.g., `react-hot-toast`).
+- **9.1**: Integration with `Infrastructure.Logging`.
+- **9.1**: Global Notification System (e.g., `react-hot-toast`).
 
 ### [ ] Track 10: SEO & Metadata
-- **9.1**: `react-helmet-async` for dynamic Meta Tags.
-- **9.2**: Open Graph (OG) tags for social media.
+- **10.1**: `react-helmet-async` for dynamic Meta Tags.
+- **10.2**: Open Graph (OG) tags for social media.
 
 ### [ ] Track 11: CI/CD & Production
 - **11.1**: GitHub Actions for Build & Test.

@@ -33,3 +33,6 @@ MeuSitePessoal.Api/logs/
 
 ## Arquivos de configuração
 .env*
+
+# JetBrains Rider HTTP Client environment files
+http-client.private.env.json
