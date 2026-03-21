@@ -123,8 +123,11 @@ const Dashboard: React.FC = () => {
                 </td>
                 <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm text-center">
                   <div className="flex justify-center space-x-3">
+                    <Link to={`/article/${article.id}`} className="text-green-600 hover:text-green-900 font-medium">
+                      Read
+                    </Link>
                     <Link to={`/admin/articles/edit/${article.id}`} className="text-indigo-600 hover:text-indigo-900">
-                      Edit Article
+                      Edit
                     </Link>
                     <button onClick={() => openDeleteModal(article.id, article.title)} className="text-red-600 hover:text-red-900">
                       Delete
@@ -148,7 +151,7 @@ const Dashboard: React.FC = () => {
             disabled={currentPage === 1}
             className="text-sm bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold py-2 px-4 rounded-l disabled:opacity-50"
           >
-            Previows
+            Previous
           </button>
           <button 
             onClick={() => setCurrentPage(prev => prev + 1)}

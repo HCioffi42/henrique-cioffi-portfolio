@@ -78,4 +78,18 @@ Content-Type: {{contentType}}
 DELETE {{host}}/api/articles/{{articleId}}
 Authorization: Bearer {{auth_token}}
 
+### Upload an Image
+# Uploads an image file to the storage system and returns its URL.
+# Note: You can pick a local image file to test this in Rider.
+POST {{host}}/api/images/upload
+Authorization: Bearer {{auth_token}}
+Content-Type: multipart/form-data; boundary=WebAppBoundary
+
+--WebAppBoundary
+Content-Disposition: form-data; name="file"; filename="test.png"
+Content-Type: image/png
+
+< ./wwwroot/uploads/test.png
+--WebAppBoundary--
+
 ###

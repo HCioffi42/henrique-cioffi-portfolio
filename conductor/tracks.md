@@ -5,6 +5,8 @@ This file tracks all the development tracks for this project.
 ## Open Tracks
 
 ## Completed Tracks
+- [x] **Track: Media Handling & Image Upload**
+  *Link: [./tracks/06-media-handling-image-upload/index.md](./tracks/06-media-handling-image-upload/index.md)*
 - [x] **Track: Authentication & Protected Routes**
   *Link: [./tracks/04-auth-and-protected-routes/](./tracks/04-auth-and-protected-routes/)*
 - [x] **Track: Implement Multi-Tag Filtering (Intersection)**

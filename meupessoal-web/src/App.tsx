@@ -10,8 +10,8 @@ import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 
 /**
- * Main application entry point that manages routing and wraps content in a global Layout and AuthProvider.
- * It defines public routes for readers and protected routes for administrative tasks.
+ * HC: Main application entry point.
+ * Synchronized paths with Dashboard and Layout buttons to avoid blank screens.
  */
 export default function App() {
     return (
@@ -19,22 +19,26 @@ export default function App() {
             <BrowserRouter>
                 <Layout>
                     <Routes>
-                        {/* Public Routes accessible to all visitors */}
+                        {/* 1. Public Routes */}
                         <Route path="/" element={<ArticleList />} />
+                        
+                        {/* Matches the "Read" button from Dashboard. URL: /article/90fba8f2... */}
                         <Route path="/article/:id" element={<ArticleDetails />} />
+                        
                         <Route path="/login" element={<Login />} />
 
-                        {/* Protected Routes that require a valid JWT session */}
+                        {/* 2. Protected Admin Routes */}
                         <Route element={<ProtectedRoute />}>
-                            {/* Central administrative panel for article management */}
                             <Route path="/admin/dashboard" element={<Dashboard />} />
                             
-                            {/* Route for creating new content */}
-                            <Route path="/admin/articles/new" element={<CreateArticle />} />
+                            <Route path="/admin/new-post" element={<CreateArticle />} />
                             
-                            {/* Dynamic route for editing existing articles by ID */}
+                            {/* Matches the "Edit" button from Dashboard */}
                             <Route path="/admin/articles/edit/:id" element={<EditArticle />} />
                         </Route>
+
+                        {/* 3. Fallback for undefined routes (Optional) */}
+                        <Route path="*" element={<div className="p-8 text-center">Page not found.</div>} />
                     </Routes>
                 </Layout>
             </BrowserRouter>

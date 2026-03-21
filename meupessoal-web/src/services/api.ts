@@ -1,11 +1,13 @@
 import axios from 'axios';
 import { storage } from '../util/storage';
 
+export const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:25683/api';
+
 /**
  * Creates a centralized Axios instance configured with the backend base URL.
  */
 const api = axios.create({
-    baseURL: import.meta.env.VITE_API_URL || 'http://localhost:25683/api'
+    baseURL: API_BASE_URL
 });
 
 /**
