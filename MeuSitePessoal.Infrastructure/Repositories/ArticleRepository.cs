@@ -24,13 +24,13 @@ public class ArticleRepository : IArticleRepository
     public async Task<(IEnumerable<Article> Items, int TotalCount)> GetPaginatedAsync(int pageNumber, int pageSize)
     {
         // Assuming the DbSet property is still named 'Articles' in the context
-        // and the property 'CreationDate' was renamed from 'DataCriacao'.
+        // and the property 'CreatedAt' was renamed from 'DataCriacao'.
         var query = _context.Articles.AsNoTracking();
 
         var totalCount = await query.CountAsync();
 
         var items = await query
-            .OrderByDescending(a => a.CreationDate) 
+            .OrderByDescending(a => a.CreatedAt) 
             .Skip((pageNumber - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync();

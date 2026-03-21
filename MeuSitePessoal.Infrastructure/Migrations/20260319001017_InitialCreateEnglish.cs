@@ -22,7 +22,7 @@ namespace MeuSitePessoal.Infrastructure.Migrations
                     Content = table.Column<string>(type: "text", nullable: false),
                     Summary = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: false),
                     Tags = table.Column<List<string>>(type: "text[]", nullable: false),
-                    CreationDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {

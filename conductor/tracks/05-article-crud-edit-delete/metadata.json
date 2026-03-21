@@ -1,0 +1,8 @@
+{
+  "id": "05-article-crud-edit-delete",
+  "title": "Complete Article CRUD (Update and Delete)",
+  "status": "completed",
+  "date_completed": "2026-03-21",
+  "tags": ["dotnet", "react", "crud", "security", "refactor"],
+  "related_tracks": ["04-auth-and-protected-routes"]
+}

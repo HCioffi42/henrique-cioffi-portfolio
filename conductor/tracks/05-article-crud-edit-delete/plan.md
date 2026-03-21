@@ -1,10 +1,11 @@
 # Implementation Plan: Article CRUD (Edit & Delete)
 
 **Track ID**: `05-article-crud-edit-delete`
+**Status**: DONE
 
 This plan outlines the steps to implement `Update` and `Delete` operations for articles, including an administrative dashboard.
 
-## Phase 1: Backend Infrastructure (AutoMapper & MediatR)
+## Phase 1: Backend Infrastructure (AutoMapper & MediatR) [DONE]
 
 ### 1.1 Setup AutoMapper
 - **Task**: Install and configure AutoMapper.
@@ -17,7 +18,7 @@ This plan outlines the steps to implement `Update` and `Delete` operations for a
 ### 1.2 Implement Update Article
 - **Task**: Create `UpdateArtigoCommand` and its handler.
 - **Action**:
-    - Implement `UpdateArtigoCommand` with `Id`, `Titulo`, `Conteudo`, `Resumo`, and `Tags`.
+    - Implement `UpdateArtigoCommand` with `Id`, `Title`, `Content`, `Summary`, and `Tags`.
     - Implement `UpdateArtigoCommandHandler` using `IMapper` to map the command to the existing entity.
 - **Verification**: Unit test the handler to confirm entity fields are correctly updated.
 
@@ -33,7 +34,11 @@ This plan outlines the steps to implement `Update` and `Delete` operations for a
     - Apply the `[Authorize]` attribute to both.
 - **Verification**: Use Swagger or Postman to verify that unauthorized requests are blocked and authorized requests work as expected.
 
-## Phase 2: Frontend Implementation (Dashboard & Forms)
+- [x] Refactor Domain and DTOs to English nomenclature.
+- [x] Upgrade AutoMapper to 15.1.3 (Security Patch).
+- [x] Implement Update/Delete Commands and Handlers.
+
+## Phase 2: Frontend Implementation (Dashboard & Forms) [DONE]
 
 ### 2.1 Admin Dashboard with Pagination
 - **Task**: Create `src/pages/Dashboard.tsx`.
@@ -58,7 +63,11 @@ This plan outlines the steps to implement `Update` and `Delete` operations for a
     - Trigger the deletion via `DELETE /api/artigos/{id}` upon confirmation.
 - **Verification**: Confirm that an article is removed only after clicking "Confirm" in the modal.
 
-## Phase 3: Final Validation & Polish
+- [x] Admin Dashboard with server-side pagination.
+- [x] EditArticle page with data pre-filling.
+- [x] DeleteModal component for confirmation.
+
+## Phase 3: Final Validation & Polish [DONE]
 
 ### 3.1 Integration & Security Check
 - **Action**:
@@ -69,3 +78,5 @@ This plan outlines the steps to implement `Update` and `Delete` operations for a
 ### 3.2 UI/UX Polish
 - **Action**: Refine Tailwind styles for the dashboard and modal. Ensure responsiveness.
 - **Verification**: Check the UI on different screen sizes.
+
+- [x] Full integration testing with JWT security.

@@ -4,7 +4,7 @@ This track implements the frontend listing of articles using the optimized summa
 
 ## Backend Refactoring (Completed)
 - Removed "HC" prefixes from the summary-related files and classes (`ArtigoSummaryDto`, `GetArtigosQuery`, `GetArtigosHandler`).
-- Maintained the optimized query that excludes the `Conteudo` column and uses `AsNoTracking`.
+- Maintained the optimized query that excludes the `Content` column and uses `AsNoTracking`.
 
 ## Frontend Implementation Steps
 

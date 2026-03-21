@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { getArtigoSummaries } from '../services/artigoService';
-import type { ArtigoSummary } from '../models/ArtigoSummary';
+import { getArticleSummaries } from '../services/articleService';
+import type { ArticleSummary } from '../models/ArticleSummary';
 import { ArticleCard } from '../components/ArticleCard';
 import Pagination from '../components/Pagination';
 
@@ -10,14 +10,14 @@ import Pagination from '../components/Pagination';
  * It fetches paginated summarized data from the optimized backend endpoint and renders a grid of cards.
  * It also supports URL-based tag filtering.
  */
-export const ArtigoList = () => {
+export const ArticleList = () => {
     // Initializes URL search parameters state to drive pagination and filtering.
     const [searchParams, setSearchParams] = useSearchParams();
 
     // State to track the total number of pages returned by the API.
     const [totalPages, setTotalPages] = useState<number>(0);
 
-    const [articles, setArticles] = useState<ArtigoSummary[]>([]);
+    const [articles, setArticles] = useState<ArticleSummary[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -39,7 +39,7 @@ export const ArtigoList = () => {
             setLoading(true);
             try {
                 // Passes both pagination arguments and the active tag to the API.
-                const data = await getArtigoSummaries(currentPage, pageSize, currentTags);
+                const data = await getArticleSummaries(currentPage, pageSize, currentTags);
 
                 // Accesses the inner arrays and metadata from the PagedResult.
                 setArticles(data.items);

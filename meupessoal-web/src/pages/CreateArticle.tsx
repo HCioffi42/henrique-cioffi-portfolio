@@ -1,17 +1,17 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { createArtigo } from '../services/artigoService';
+import { createArticle } from '../services/articleService';
 
 /**
  * Page component for creating a new article.
  * Provides a form with validation and handles submission to the backend API.
  */
-export const CreateArtigo = () => {
+export const CreateArticle = () => {
     const navigate = useNavigate();
     const [formData, setFormData] = useState({
-        titulo: '',
-        resumo: '',
-        conteudo: '',
+        title: '',
+        summary: '',
+        content: '',
         tags: '',
     });
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -36,7 +36,7 @@ export const CreateArtigo = () => {
         setError(null);
 
         // Simple client-side validation
-        if (!formData.titulo.trim() || !formData.resumo.trim() || !formData.conteudo.trim()) {
+        if (!formData.title.trim() || !formData.summary.trim() || !formData.content.trim()) {
             setError('Title, Summary, and Content are required fields.');
             return;
         }
@@ -49,15 +49,15 @@ export const CreateArtigo = () => {
                 .map((tag) => tag.trim())
                 .filter((tag) => tag !== '');
 
-            await createArtigo({
-                titulo: formData.titulo,
-                resumo: formData.resumo,
-                conteudo: formData.conteudo,
+            await createArticle({
+                title: formData.title,
+                summary: formData.summary,
+                content: formData.content,
                 tags: tagsArray,
             });
 
             // Navigate back to the article list on success.
-            navigate('/');
+            navigate('/admin/dashboard');
         } catch (err: unknown) {
             console.error('Failed to create article:', err);
             setError('An error occurred while saving the article. Please check your connection and try again.');
@@ -85,14 +85,14 @@ export const CreateArtigo = () => {
 
             <form onSubmit={handleSubmit} className="space-y-6 bg-white p-8 rounded-xl shadow-sm border border-gray-100">
                 <div>
-                    <label htmlFor="titulo" className="block text-sm font-bold text-gray-700 mb-2">
+                    <label htmlFor="title" className="block text-sm font-bold text-gray-700 mb-2">
                         Title
                     </label>
                     <input
                         type="text"
-                        id="titulo"
-                        name="titulo"
-                        value={formData.titulo}
+                        id="title"
+                        name="title"
+                        value={formData.title}
                         onChange={handleChange}
                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all outline-none"
                         placeholder="Enter a compelling title"
@@ -100,14 +100,14 @@ export const CreateArtigo = () => {
                 </div>
 
                 <div>
-                    <label htmlFor="resumo" className="block text-sm font-bold text-gray-700 mb-2">
+                    <label htmlFor="summary" className="block text-sm font-bold text-gray-700 mb-2">
                         Summary
                     </label>
                     <input
                         type="text"
-                        id="resumo"
-                        name="resumo"
-                        value={formData.resumo}
+                        id="summary"
+                        name="summary"
+                        value={formData.summary}
                         onChange={handleChange}
                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all outline-none"
                         placeholder="A short summary for the article list"
@@ -115,14 +115,14 @@ export const CreateArtigo = () => {
                 </div>
 
                 <div>
-                    <label htmlFor="conteudo" className="block text-sm font-bold text-gray-700 mb-2">
+                    <label htmlFor="content" className="block text-sm font-bold text-gray-700 mb-2">
                         Content (Markdown supported)
                     </label>
                     <textarea
-                        id="conteudo"
-                        name="conteudo"
+                        id="content"
+                        name="content"
                         rows={10}
-                        value={formData.conteudo}
+                        value={formData.content}
                         onChange={handleChange}
                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all outline-none resize-none"
                         placeholder="Write the full story here..."

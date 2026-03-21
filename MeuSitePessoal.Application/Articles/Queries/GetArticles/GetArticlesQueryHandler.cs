@@ -37,7 +37,7 @@ public class GetArticlesQueryHandler : IRequestHandler<GetArticlesQuery, PagedRe
         var totalCount = await query.CountAsync(cancellationToken);
 
         var items = await query
-            .OrderByDescending(a => a.CreationDate)
+            .OrderByDescending(a => a.CreatedAt)
             .Skip((request.PageNumber - 1) * request.PageSize)
             .Take(request.PageSize)
             .Select(a => new ArticleSummaryDto
@@ -45,7 +45,7 @@ public class GetArticlesQueryHandler : IRequestHandler<GetArticlesQuery, PagedRe
                 Id = a.Id,
                 Title = a.Title,
                 Summary = a.Summary,
-                CreationDate = a.CreationDate,
+                CreatedAt = a.CreatedAt,
                 Tags = a.Tags
             })
             .ToListAsync(cancellationToken);

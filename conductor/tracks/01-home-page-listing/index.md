@@ -9,7 +9,7 @@ This track implemented the frontend listing of articles using an optimized summa
   - `HCArtigoSummaryDto` -> `ArtigoSummaryDto`
   - `HCGetArtigosQuery` -> `GetArtigosQuery`
   - `HCGetArtigosHandler` -> `GetArtigosHandler`
-- Maintained performance optimizations (no `Conteudo` fetching, `AsNoTracking`).
+- Maintained performance optimizations (no `Content` fetching, `AsNoTracking`).
 
 ### Frontend
 - **Type Definition**: Created `ArtigoSummary` model matching the backend DTO.

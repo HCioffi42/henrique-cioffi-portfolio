@@ -1,16 +1,16 @@
 ﻿// Define a estrutura de um artigo vindo da API para garantir tipagem forte no frontend.
-export interface Artigo {
+export interface Article {
     id: string;
-    titulo: string;
-    conteudo: string;
-    resumo: string;
+    title: string;
+    content: string;
+    summary: string;
     tags: string[];
-    dataCriacao: string;
+    createdAt: string;
 }
 
 // Representa a estrutura de paginação que o seu PagedList.cs retorna.
-export interface PagedArtigos {
-    items: Artigo[];
+export interface PagedArticles {
+    items: Article[];
     currentPage: number;
     totalPages: number;
     pageSize: number;

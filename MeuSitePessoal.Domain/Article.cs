@@ -7,7 +7,7 @@ public class Article
     public string Content { get;  set; }
     public string Summary { get; set; }
     public List<string> Tags { get; set; }
-    public DateTime CreationDate { get; set; }
+    public DateTime CreatedAt { get; set; }
 
     public Article(string title, string content, string summary, List<string> tags)
     {
@@ -22,6 +22,6 @@ public class Article
         Content = content;
         Summary = summary;
         Tags = tags ?? new List<string>();
-        CreationDate = DateTime.UtcNow;
+        CreatedAt = DateTime.UtcNow;
     }
 }

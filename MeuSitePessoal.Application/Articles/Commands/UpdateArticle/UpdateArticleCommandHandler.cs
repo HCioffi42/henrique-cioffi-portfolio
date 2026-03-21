@@ -4,10 +4,9 @@ using MeuSitePessoal.Domain.Interfaces;
 
 namespace MeuSitePessoal.Application.Articles.Commands.UpdateArticle;
 
-/**
- * Handles the logic for updating an article.
- * It fetches the existing entity, maps new values, and persists changes.
- */
+/// <summary>
+/// Handles the update process for an existing article entity.
+/// </summary>
 public class UpdateArticleCommandHandler : IRequestHandler<UpdateArticleCommand, bool>
 {
     private readonly IArticleRepository _repository;
@@ -19,9 +18,9 @@ public class UpdateArticleCommandHandler : IRequestHandler<UpdateArticleCommand,
         _mapper = mapper;
     }
 
-    /**
- * Handles the logic for updating an article using the English naming conventions.
- */
+    /// <summary>
+    /// Processes the update by fetching the entity and applying changes via AutoMapper.
+    /// </summary>
     public async Task<bool> Handle(UpdateArticleCommand request, CancellationToken cancellationToken)
     {
         // Fetches the existing entity from the repository using the new naming.
@@ -29,7 +28,6 @@ public class UpdateArticleCommandHandler : IRequestHandler<UpdateArticleCommand,
 
         if (article == null)
         {
-            // throw new Exception($"Article {request.Id} not found.");
             return false;
         }
 
@@ -37,8 +35,6 @@ public class UpdateArticleCommandHandler : IRequestHandler<UpdateArticleCommand,
         _mapper.Map(request, article);
 
         // Persists changes through the updated repository method.
-        var success = await _repository.UpdateAsync(article);
-
-        return success ? true : throw new Exception("Failed to update the article in the database.");
+        return await _repository.UpdateAsync(article) ? true : throw new Exception("Failed to update the article in the database.");
     }
 }

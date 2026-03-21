@@ -9,7 +9,7 @@ namespace MeuSitePessoal.Tests.Integration.Articles;
 /// </summary>
 public class ArticleSummaryTagFilterTests : BaseIntegrationTest
 {
-    public record ArticleSummaryResponse(Guid Id, string Title, string Summary, DateTime CreationDate, List<string> Tags);
+    public record ArticleSummaryResponse(Guid Id, string Title, string Summary, DateTime CreatedAt, List<string> Tags);
     public record PagedSummaryResponse(List<ArticleSummaryResponse> Items, int TotalCount, int PageNumber, int PageSize, int TotalPages);
 
     [Fact]

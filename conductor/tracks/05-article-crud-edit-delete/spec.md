@@ -1,7 +1,7 @@
 # Specification: Article CRUD (Edit & Delete)
 
 **Track ID**: `05-article-crud-edit-delete`
-**Status**: IN_PROGRESS
+**Status**: COMPLETE
 
 ## 1. Goal
 Implement complete CRUD operations for articles, specifically the `Update` and `Delete` features, both on the backend and frontend. This track includes creating an administrative dashboard with server-side pagination for article management and a deletion confirmation modal.
@@ -10,7 +10,7 @@ Implement complete CRUD operations for articles, specifically the `Update` and `
 
 ### 2.1 MediatR Commands & Handlers
 - **UpdateArtigoCommand**: 
-    - Include `Guid Id`, `string Titulo`, `string Conteudo`, `string Resumo`, and `List<string> Tags`.
+    - Include `Guid Id`, `string Title`, `string Content`, `string Summary`, and `List<string> Tags`.
     - Implement `UpdateArtigoCommandHandler`:
         - Fetch the article by ID.
         - Update fields using **AutoMapper** (`IMapper`).
