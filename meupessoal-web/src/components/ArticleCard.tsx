@@ -1,8 +1,8 @@
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import type { ArtigoSummary } from '../models/ArtigoSummary';
+import type { ArticleSummary } from '../models/ArticleSummary';
 
 interface ArticleCardProps {
-    article: ArtigoSummary;
+    article: ArticleSummary;
 }
 
 /**
@@ -18,22 +18,22 @@ export const ArticleCard = ({ article }: ArticleCardProps) => {
         year: 'numeric',
         month: 'short',
         day: 'numeric'
-    }).format(new Date(article.dataCriacao));
+    }).format(new Date(article.createdAt));
 
     return (
         <article className="bg-white border border-gray-100 rounded-xl p-6 shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col h-full">
             <header className="mb-4">
                 <div className="flex items-center justify-between text-xs text-gray-400 mb-2">
-                    <time dateTime={article.dataCriacao}>{formattedDate}</time>
+                    <time dateTime={article.createdAt}>{formattedDate}</time>
                 </div>
                 <h2 className="text-xl font-bold text-gray-900 leading-tight hover:text-indigo-600 transition-colors cursor-pointer"
-                    onClick={() => navigate(`/artigo/${article.id}`)}>
-                    {article.titulo}
+                    onClick={() => navigate(`/article/${article.id}`)}>
+                    {article.title}
                 </h2>
             </header>
 
             <p className="text-gray-600 text-sm line-clamp-3 mb-6 flex-grow">
-                {article.resumo}
+                {article.summary}
             </p>
 
             <footer className="mt-auto">
@@ -61,7 +61,7 @@ export const ArticleCard = ({ article }: ArticleCardProps) => {
                 </div>
 
                 <button
-                    onClick={() => navigate(`/artigo/${article.id}`)}
+                    onClick={() => navigate(`/article/${article.id}`)}
                     className="w-full py-2 px-4 bg-gray-50 text-gray-700 text-sm font-semibold rounded-lg hover:bg-indigo-600 
                             hover:text-white transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
                     Read More

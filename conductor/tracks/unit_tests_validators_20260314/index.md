@@ -11,9 +11,9 @@
 
 ### 2. Implementation: CreateArtigoCommandValidatorTests
 - Test scenarios for:
-  - **Titulo**: Error when empty, null, whitespace, or exceeding 100 characters.
-  - **Conteudo**: Error when empty or null.
-  - **Resumo**: Error when empty, null, whitespace, or exceeding 500 characters.
+  - **Title**: Error when empty, null, whitespace, or exceeding 100 characters.
+  - **Content**: Error when empty or null.
+  - **Summary**: Error when empty, null, whitespace, or exceeding 500 characters.
 - Success scenario for valid data.
 - Boundary test for Title (length 101).
 - Boundary test for Summary (length 501).
@@ -21,9 +21,9 @@
 ### 3. Implementation: UpdateArtigoCommandValidatorTests
 - Test scenarios for:
   - **Id**: Error when empty Guid.
-  - **Titulo**: Error when empty, null, whitespace, or exceeding 100 characters.
-  - **Conteudo**: Error when empty or null.
-  - **Resumo**: Error when empty, null, whitespace, or exceeding 500 characters.
+  - **Title**: Error when empty, null, whitespace, or exceeding 100 characters.
+  - **Content**: Error when empty or null.
+  - **Summary**: Error when empty, null, whitespace, or exceeding 500 characters.
 - Success scenario for valid data.
 - Boundary test for Title (length 101).
 - Boundary test for Summary (length 501).

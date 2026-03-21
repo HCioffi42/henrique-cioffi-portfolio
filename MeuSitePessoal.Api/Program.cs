@@ -1,7 +1,7 @@
 ﻿using System.Text;
 using FluentValidation;
 using MeuSitePessoal.Api.Middleware;
-using MeuSitePessoal.Application.Artigos.Commands.CreateArtigo;
+using MeuSitePessoal.Application.Articles.Commands.CreateArticle;
 using MeuSitePessoal.Application.Common.Behaviors;
 using MeuSitePessoal.Domain.Interfaces;
 using MeuSitePessoal.Infrastructure.Configuration;
@@ -40,7 +40,7 @@ builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
 .AddDefaultTokenProviders();
 
 // Register Services
-builder.Services.AddScoped<IArtigoRepository, ArtigoRepository>();
+builder.Services.AddScoped<IArticleRepository, ArticleRepository>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 
 // Configure JWT Authentication
@@ -68,15 +68,18 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddAuthorization();
 
+// Registers AutoMapper to handle mapping between DTOs/Commands and Entities.
+builder.Services.AddAutoMapper(typeof(CreateArticleCommand).Assembly);
+
 // Registra o MediatR para gerenciar os Commands e Handlers da camada de Application.
 builder.Services.AddMediatR(cfg =>
 {
-    cfg.RegisterServicesFromAssembly(typeof(CreateArtigoCommand).Assembly);
+    cfg.RegisterServicesFromAssembly(typeof(CreateArticleCommand).Assembly);
     cfg.AddOpenBehavior(typeof(ValidationBehavior<,>));
 });
 
 // Registra todos os validators definidos na camada de Application.
-builder.Services.AddValidatorsFromAssembly(typeof(CreateArtigoCommand).Assembly);
+builder.Services.AddValidatorsFromAssembly(typeof(CreateArticleCommand).Assembly);
 
 // Adiciona o suporte aos Controllers do ASP.NET Core, permitindo a organização das rotas em classes separadas.
 builder.Services.AddControllers();

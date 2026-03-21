@@ -20,7 +20,7 @@ This file tracks all the development tracks for this project.
 - [x] **Track: Implement Artigo CRUD Integration Tests**
   *Link: [./tracks/implement_crud_integration_tests_20260314/](./tracks/implement_crud_integration_tests_20260314/)*
 - [x] **Track: Complete Artigo CRUD (Update and Delete)**
-  *Link: [./tracks/complete_artigo_crud_20260314/](./tracks/complete_artigo_crud_20260314/)*
+  *Link: [./tracks/05-article-crud-edit-delete/]*
 - [x] **Track: Implement Custom Logging Infrastructure with Serilog**
 *Link: [./tracks/implement_logging_infrastructure/](./tracks/implement_logging_infrastructure/)*
 - [x] **Track: Implementar as Queries (ListarTodos e ObterPorId) seguindo o padrão CQRS com MediatR**

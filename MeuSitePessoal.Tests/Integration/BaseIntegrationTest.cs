@@ -82,6 +82,10 @@ public class BaseIntegrationTest : IAsyncLifetime
 
         // Seed initial data for testing, including the admin user.
         await DbInitializer.SeedAsync(db, userManager, roleManager);
+        
+        // Clean up seeded articles so tests start with an empty article table.
+        db.Articles.RemoveRange(db.Articles);
+        await db.SaveChangesAsync();
     }
 
     public async Task DisposeAsync()

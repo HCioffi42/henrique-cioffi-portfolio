@@ -6,26 +6,26 @@ namespace MeuSitePessoal.Infrastructure.Data;
 
 public class BlogDbContext : IdentityDbContext
 {
-    // Defino o contexto que herda de IdentityDbContext para gerenciar a comunicação com o PostgreSQL e tabelas de Identity.
+    // Defines the context that inherits from IdentityDbContext to manage communication with PostgreSQL and Identity tables.
     public BlogDbContext(DbContextOptions<BlogDbContext> options) : base(options)
     {
     }
 
-    // Mapeio a entidade Artigo para uma tabela chamada Artigos no banco de dados.
-    public DbSet<Artigo> Artigos { get; set; }
+    // Maps the Article entity to a table called Articles in the database.
+    public DbSet<Article> Articles { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        // Configuro a entidade Artigo para garantir que as regras de negócio sejam refletidas no esquema do banco.
-        modelBuilder.Entity<Artigo>(builder =>
+        // I configure the Article entity to ensure that business rules are reflected in the database schema.
+        modelBuilder.Entity<Article>(builder =>
         {
-            builder.ToTable("Artigos");
+            builder.ToTable("Articles");
             builder.HasKey(a => a.Id);
-            builder.Property(a => a.Titulo).IsRequired().HasMaxLength(200);
-            builder.Property(a => a.Conteudo).IsRequired();
-            builder.Property(a => a.Resumo).IsRequired().HasMaxLength(500);
+            builder.Property(a => a.Title).IsRequired().HasMaxLength(200);
+            builder.Property(a => a.Content).IsRequired();
+            builder.Property(a => a.Summary).IsRequired().HasMaxLength(500);
             builder.Property(a => a.Tags).IsRequired();
-            builder.Property(a => a.DataCriacao).IsRequired();
+            builder.Property(a => a.CreatedAt).IsRequired();
         });
 
         base.OnModelCreating(modelBuilder);

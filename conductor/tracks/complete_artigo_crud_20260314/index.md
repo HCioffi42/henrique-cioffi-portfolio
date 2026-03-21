@@ -11,9 +11,9 @@
 
 ### 2. Application Layer: Update Artigo
 *   **Command**: `UpdateArtigoCommand.cs` in `Application/Artigos/Commands/UpdateArtigo`.
-    *   Properties: `Guid Id`, `string Titulo`, `string Conteudo`, `string Resumo`, `List<string> Tags`.
+    *   Properties: `Guid Id`, `string Title`, `string Content`, `string Summary`, `List<string> Tags`.
 *   **Validator**: `UpdateArtigoCommandValidator.cs`.
-    *   Rules: `Id` (Required), `Titulo` (Required, max 100), `Conteudo` (Required), `Resumo` (Required, max 500).
+    *   Rules: `Id` (Required), `Title` (Required, max 100), `Content` (Required), `Summary` (Required, max 500).
 *   **Handler**: `UpdateArtigoCommandHandler.cs`.
     *   Logic:
         1. Fetch existing article via `_repository.ObterPorIdAsync(command.Id)`.

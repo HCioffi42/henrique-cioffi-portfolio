@@ -10,16 +10,16 @@ The goal of this track is to implement a high-performance listing of article sum
 - **Response Type**: `List<ArtigoSummaryDto>`.
 - **Logic**:
   - Direct projection from `BlogDbContext.Artigos` to `ArtigoSummaryDto`.
-  - Excludes the `Conteudo` (content) column to minimize data transfer.
-  - Ordered by `DataCriacao` descending.
+  - Excludes the `Content` (content) column to minimize data transfer.
+  - Ordered by `CreatedAt` descending.
   - Uses `.AsNoTracking()` for read-only optimization.
 
 ### Data Structures (C#)
 - `ArtigoSummaryDto`:
   - `Guid Id`
-  - `string Titulo`
-  - `string Resumo`
-  - `DateTime DataCriacao`
+  - `string Title`
+  - `string Summary`
+  - `DateTime CreatedAt`
   - `List<string> Tags`
 
 ## Frontend Specification
