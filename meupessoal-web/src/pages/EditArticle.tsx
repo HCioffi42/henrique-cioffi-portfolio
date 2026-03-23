@@ -2,17 +2,19 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import api from '../services/api';
 import { imageService } from '../services/imageService';
+import { MarkdownToolbar } from '../components/MarkdownToolbar';
+import { MarkdownRenderer } from '../components/MarkdownRenderer';
 
 /**
  * Page component for editing an existing article.
- * Fetches current data by ID on mount and handles updates via the API.
+ * Fetches current data by ID on mount and provides a full Markdown editor with live preview.
  */
 export const EditArticle = () => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
     const contentRef = useRef<HTMLTextAreaElement>(null);
     
-    // Using English keys to match the refactored backend standards.
+    // Form State
     const [formData, setFormData] = useState({
         title: '',
         summary: '',
@@ -20,14 +22,16 @@ export const EditArticle = () => {
         tags: '',
     });
     
-    // Track NEWLY uploaded images to cleanup if the user cancels
-    const [newlyUploadedImages, setNewlyUploadedImages] = useState<string[]>([]);
-    const isSaved = useRef(false);
-    
+    // UI States
+    const [isPreviewMode, setIsPreviewMode] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+
+    // Track NEWLY uploaded images to cleanup if the user cancels
+    const [newlyUploadedImages, setNewlyUploadedImages] = useState<string[]>([]);
+    const isSaved = useRef(false);
 
     /**
      * Cleanup effect to delete NEWLY uploaded images if the changes are NOT saved.
@@ -35,7 +39,6 @@ export const EditArticle = () => {
     useEffect(() => {
         return () => {
             if (!isSaved.current && newlyUploadedImages.length > 0) {
-                // Background cleanup of orphaned images
                 newlyUploadedImages.forEach(url => {
                     imageService.deleteImage(url).catch(err => 
                         console.error(`Failed to cleanup image ${url}:`, err)
@@ -46,12 +49,11 @@ export const EditArticle = () => {
     }, [newlyUploadedImages]);
 
     /**
-     * Fetches the article data from the API when the component mounts.
+     * Loads the existing article data to populate the form fields.
      */
     useEffect(() => {
         const fetchArticle = async () => {
             try {
-                // Retrieves the full article data including content for the form.
                 const response = await api.get(`/articles/${id}`);
                 const { title, summary, content, tags } = response.data;
                 
@@ -59,7 +61,7 @@ export const EditArticle = () => {
                     title,
                     summary,
                     content,
-                    tags: tags.join(', '), // Converts the array back to a comma-separated string for editing.
+                    tags: tags.join(', '),
                 });
             } catch (err) {
                 console.error('Failed to fetch article:', err);
@@ -72,66 +74,62 @@ export const EditArticle = () => {
         if (id) fetchArticle();
     }, [id]);
 
+    /**
+     * Updates the form data state when an input value changes.
+     */
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
         setFormData((prev) => ({ ...prev, [name]: value }));
     };
 
     /**
-     * Handles image upload and inserts Markdown syntax into the content.
+     * Handles image selection, uploads it to the backend, and inserts the 
+     * markdown syntax at the exact cursor position instead of appending to the end.
      */
     const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
-        if (!file) return;
+        const textarea = contentRef.current;
+        if (!file || !textarea) return;
+
+        // Captures the cursor position BEFORE the upload starts
+        const start = textarea.selectionStart;
+        const end = textarea.selectionEnd;
 
         setIsUploading(true);
         setError(null);
 
         try {
             const url = await imageService.uploadImage(file);
+            // Stores the URL for potential cleanup later
             setNewlyUploadedImages(prev => [...prev, url]);
             
-            const markdownImage = `\n![${file.name}](${url})\n`;
+            // Encodes the URL to handle spaces and special characters.
+            // This ensures the Markdown parser recognizes the image syntax correctly.
+            const encodedUrl = encodeURI(url);
+            const markdownImage = `\n![${file.name}](${encodedUrl})\n`;
 
-            // Insert at cursor position if possible
-            const textarea = contentRef.current;
-            if (textarea) {
-                const start = textarea.selectionStart;
-                const end = textarea.selectionEnd;
-                const newContent = 
-                    formData.content.substring(0, start) + 
-                    markdownImage + 
-                    formData.content.substring(end);
-                
-                setFormData((prev) => ({ ...prev, content: newContent }));
-                
-                // Focus back and set cursor after the inserted text (in the next tick)
-                setTimeout(() => {
-                    textarea.focus();
-                    const newPos = start + markdownImage.length;
-                    textarea.setSelectionRange(newPos, newPos);
-                }, 0);
-            } else {
-                setFormData((prev) => ({ ...prev, content: prev.content + markdownImage }));
-            }
+            // Splicing logic to insert the image where the cursor was located.
+            setFormData(prev => {
+                const before = prev.content.substring(0, start);
+                const after = prev.content.substring(end);
+                return { 
+                    ...prev, 
+                    content: before + markdownImage + after 
+                };
+            });
+
+            // Restores focus and moves the cursor after the inserted image.
+            requestAnimationFrame(() => {
+                textarea.focus({ preventScroll: true });
+                const newPos = start + markdownImage.length;
+                textarea.setSelectionRange(newPos, newPos);
+            });
+            
         } catch (err: unknown) {
             console.error('Failed to upload image:', err);
-            
-            let message = 'Failed to upload image. Please try again.';
-            
-            // Check if it's an axios error and extract the server message if available
-            const axios = await import('axios');
-            if (axios.isAxiosError(err) && err.response?.data) {
-                const serverError = typeof err.response.data === 'string' 
-                    ? err.response.data 
-                    : (err.response.data as { message?: string }).message || JSON.stringify(err.response.data);
-                message = `Could not upload image. Error: ${serverError}`;
-            }
-
-            setError(message);
+            setError('Could not upload image. Please try again.');
         } finally {
             setIsUploading(false);
-            // Reset input
             e.target.value = '';
         }
     };
@@ -155,9 +153,8 @@ export const EditArticle = () => {
                 .map((tag) => tag.trim())
                 .filter((tag) => tag !== '');
 
-            // Calls the refactored PUT endpoint on the backend.
             await api.put(`/articles/${id}`, {
-                id, // The backend UpdateArticleCommand requires the ID in the body.
+                id,
                 title: formData.title,
                 summary: formData.summary,
                 content: formData.content,
@@ -165,7 +162,7 @@ export const EditArticle = () => {
             });
 
             isSaved.current = true;
-            navigate('/admin/dashboard'); // Redirects back to the management panel.
+            navigate('/admin/dashboard');
         } catch (err) {
             console.error('Failed to update article:', err);
             setError('An error occurred while saving changes.');
@@ -174,14 +171,14 @@ export const EditArticle = () => {
         }
     };
 
-    if (isLoading) return <div className="text-center py-20">Loading article data...</div>;
+    if (isLoading) return <div className="text-center py-20 text-gray-500 animate-pulse">Loading article data...</div>;
 
     return (
-        <div className="max-w-3xl mx-auto px-6 py-12">
-            <div className="mb-8">
-                <h1 className="text-3xl font-extrabold text-gray-900">Edit Post</h1>
-                <p className="mt-2 text-gray-600">Refine your content and keep it updated.</p>
-            </div>
+        <div className="max-w-4xl mx-auto px-6 py-12 animate-in fade-in duration-500">
+            <header className="mb-8">
+                <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Edit Post</h1>
+                <p className="mt-2 text-gray-600">Refine your content and keep it updated for your audience.</p>
+            </header>
 
             {error && (
                 <div className="bg-red-50 border-l-4 border-red-400 p-4 mb-6 rounded shadow-sm">
@@ -189,106 +186,105 @@ export const EditArticle = () => {
                 </div>
             )}
 
-            <form onSubmit={handleSubmit} className="space-y-6 bg-white p-8 rounded-xl shadow-sm border border-gray-100">
-                <div>
-                    <label htmlFor="title" className="block text-sm font-bold text-gray-700 mb-2">Title</label>
-                    <input
-                        type="text"
-                        id="title"
-                        name="title"
-                        value={formData.title}
-                        onChange={handleChange}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
-                    />
-                </div>
-
-                <div>
-                    <label htmlFor="summary" className="block text-sm font-bold text-gray-700 mb-2">Summary</label>
-                    <input
-                        type="text"
-                        id="summary"
-                        name="summary"
-                        value={formData.summary}
-                        onChange={handleChange}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
-                    />
-                </div>
-
-                <div>
-                    <div className="flex justify-between items-center mb-2">
-                        <label htmlFor="content" className="block text-sm font-bold text-gray-700">
-                            Content (Markdown supported)
-                        </label>
-                        <div className="relative">
+            <form onSubmit={handleSubmit} className="space-y-6">
+                <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-100 space-y-6">
+                    {/* Meta Information Section */}
+                    <div className="grid grid-cols-1 gap-6">
+                        <div>
+                            <label htmlFor="title" className="block text-sm font-bold text-gray-700 mb-2">Title</label>
                             <input
-                                type="file"
-                                id="image-upload"
-                                className="hidden"
-                                accept="image/*"
-                                onChange={handleImageUpload}
-                                disabled={isUploading}
+                                type="text"
+                                id="title"
+                                name="title"
+                                value={formData.title}
+                                onChange={handleChange}
+                                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
                             />
-                            <button
-                                type="button"
-                                onClick={() => document.getElementById('image-upload')?.click()}
-                                disabled={isUploading}
-                                className={`flex items-center gap-2 px-3 py-1.5 text-xs font-semibold rounded-md border transition-all ${
-                                    isUploading
-                                        ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
-                                        : 'bg-white text-indigo-600 border-indigo-200 hover:bg-indigo-50 hover:border-indigo-300'
-                                }`}
-                            >
-                                {isUploading ? (
-                                    <>
-                                        <span className="animate-spin h-3 w-3 border-2 border-indigo-600 border-t-transparent rounded-full"></span>
-                                        Uploading...
-                                    </>
-                                ) : (
-                                    <>
-                                        <span className="text-sm">📷</span>
-                                        Upload Image
-                                    </>
-                                )}
-                            </button>
+                        </div>
+
+                        <div>
+                            <label htmlFor="summary" className="block text-sm font-bold text-gray-700 mb-2">Summary</label>
+                            <input
+                                type="text"
+                                id="summary"
+                                name="summary"
+                                value={formData.summary}
+                                onChange={handleChange}
+                                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                            />
                         </div>
                     </div>
-                    <textarea
-                        id="content"
-                        name="content"
-                        ref={contentRef}
-                        rows={10}
-                        value={formData.content}
-                        onChange={handleChange}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none resize-none"
-                    />
+
+                    {/* Integrated Editor Area */}
+                    <div>
+                        <label className="block text-sm font-bold text-gray-700 mb-2">Content</label>
+                        
+                        <div className="flex flex-col border border-gray-200 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-indigo-500 transition-all bg-white">
+                            {/* The toolbar now manages the Write/Preview toggle internally. */}
+                            <MarkdownToolbar 
+                                textareaRef={contentRef}
+                                onContentChange={(newContent) => setFormData(prev => ({ ...prev, content: newContent }))}
+                                onImageUpload={handleImageUpload}
+                                isUploading={isUploading}
+                                isPreviewMode={isPreviewMode}
+                                setIsPreviewMode={setIsPreviewMode}
+                            />
+
+                            <div className="min-h-[400px] bg-white">
+                                {!isPreviewMode ? (
+                                    <textarea
+                                        id="content"
+                                        name="content"
+                                        ref={contentRef}
+                                        rows={15}
+                                        value={formData.content}
+                                        onChange={handleChange}
+                                        className="w-full h-full p-6 outline-none resize-none font-mono text-gray-800 leading-relaxed min-h-[400px]"
+                                        placeholder="Edit your story using Markdown..."
+                                    />
+                                ) : (
+                                    <div className="p-8 bg-gray-50/30">
+                                        {formData.content.trim() ? (
+                                            <MarkdownRenderer content={formData.content} />
+                                        ) : (
+                                            <p className="text-gray-400 italic text-center mt-20">Nothing to preview yet...</p>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Tags Input Section */}
+                    <div>
+                        <label htmlFor="tags" className="block text-sm font-bold text-gray-700 mb-2">Tags</label>
+                        <input
+                            type="text"
+                            id="tags"
+                            name="tags"
+                            value={formData.tags}
+                            onChange={handleChange}
+                            className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                            placeholder="dotnet, react, web-dev"
+                        />
+                    </div>
                 </div>
 
-                <div>
-                    <label htmlFor="tags" className="block text-sm font-bold text-gray-700 mb-2">Tags</label>
-                    <input
-                        type="text"
-                        id="tags"
-                        name="tags"
-                        value={formData.tags}
-                        onChange={handleChange}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
-                        placeholder="e.g., dotnet, react (separated by commas)"
-                    />
-                </div>
-
-                <div className="flex justify-end items-center gap-4 pt-4 border-t border-gray-100">
+                {/* Form Actions */}
+                <div className="flex justify-end items-center gap-4 pt-4">
                     <button
                         type="button"
                         onClick={() => navigate('/admin/dashboard')}
-                        className="px-6 py-2.5 text-sm font-semibold text-gray-600 bg-gray-50 rounded-lg"
-                    >
-                        Cancel
+                        className="px-6 py-2.5 text-sm font-bold text-gray-600 hover:text-gray-800 transition-all">
+                            Cancel
                     </button>
                     <button
                         type="submit"
                         disabled={isSubmitting}
-                        className={`px-8 py-2.5 text-sm font-semibold text-white rounded-lg shadow-md ${
-                            isSubmitting ? 'bg-indigo-400' : 'bg-indigo-600 hover:bg-indigo-700'
+                        className={`px-10 py-2.5 text-sm font-bold text-white rounded-lg transition-all shadow-md ${
+                            isSubmitting
+                                ? 'bg-indigo-400 cursor-not-allowed'
+                                : 'bg-indigo-600 hover:bg-indigo-700 hover:shadow-lg transform hover:-translate-y-0.5 active:translate-y-0'
                         }`}
                     >
                         {isSubmitting ? 'Saving...' : 'Update Post'}
