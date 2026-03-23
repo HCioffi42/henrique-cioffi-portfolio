@@ -1,6 +1,7 @@
 # Track 06: Media Handling & Image Upload
 
 ## Status: Completed ✅
+**Completed on: 2026-03-21**
 
 ## Overview
 Implemented a secure and efficient image upload system for Markdown articles. Administrators can now upload images directly from the article creation/edition pages, and the corresponding Markdown syntax is automatically inserted into the editor.

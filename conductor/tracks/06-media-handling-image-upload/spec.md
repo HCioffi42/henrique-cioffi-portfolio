@@ -1,4 +1,6 @@
-# Specification: Media Handling & Image Upload
+# Specification: Media Handling & Image Upload ✅
+
+## Status: Completed ✅
 
 ## Feature Overview
 The goal of this track is to implement image upload functionality to support Markdown articles. The system will allow administrators to upload images from the article creation/edition pages and automatically insert the Markdown syntax into the editor.

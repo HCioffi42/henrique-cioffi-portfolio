@@ -34,7 +34,7 @@
 - **5.3**: Admin Dashboard table with "Edit" and "Delete" actions.
 - **5.4**: Delete confirmation modal.
 
-### [ ] Track 06: Media Handling & Image Upload
+### [x] Track 06: Media Handling & Image Upload
 - **6.1**: `ImageController` for `IFormFile` handling.
 - **6.2**: Local storage logic or AWS S3 integration.
 - **6.3**: Upload button returning URL to the Markdown editor.
