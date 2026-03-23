@@ -7,7 +7,9 @@ import {
     Link as LinkIcon, 
     List, 
     Image as ImageIcon,
-    Loader2
+    Loader2,
+    Eye,
+    Edit3
 } from 'lucide-react';
 
 interface MarkdownToolbarProps {
@@ -15,6 +17,8 @@ interface MarkdownToolbarProps {
     onContentChange: (newContent: string) => void;
     onImageUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
     isUploading: boolean;
+    isPreviewMode: boolean;
+    setIsPreviewMode: (value: boolean) => void;
 }
 
 /**
@@ -25,7 +29,9 @@ export const MarkdownToolbar: React.FC<MarkdownToolbarProps> = ({
     textareaRef, 
     onContentChange, 
     onImageUpload,
-    isUploading 
+    isUploading,
+    isPreviewMode,
+    setIsPreviewMode
 }) => {
     
     /*
@@ -54,15 +60,7 @@ export const MarkdownToolbar: React.FC<MarkdownToolbarProps> = ({
         // Multi-line detection logic: if the selection contains line breaks, it processes each line independently.
         if (selection.includes('\n')) {
             const lines = selection.split('\n');
-            newSelection = lines
-                .map(line => {
-                    // Skips empty lines to preserve vertical spacing
-                    if (line.trim().length === 0) return line;
-                    
-                    // Applies prefix and suffix to each line (handles Bold, Italic, Link, etc.)
-                    return `${prefix}${line}${suffix}`;
-                })
-                .join('\n');
+            newSelection = lines.map(line => (line.trim().length === 0 ? line : `${prefix}${line}${suffix}`)).join('\n');
         } else {
             // Fallback for single line or empty cursor insertion
             newSelection = prefix + selection + suffix;
@@ -77,7 +75,7 @@ export const MarkdownToolbar: React.FC<MarkdownToolbarProps> = ({
 
         // Uses requestAnimationFrame to ensure the focus returns after the state update
         requestAnimationFrame(() => {
-            textarea.focus();
+            textarea.focus({ preventScroll: true });
             
             // If text was selected, keeps the entire newly formatted block highlighted
             if (selection.length > 0) {
@@ -95,77 +93,78 @@ export const MarkdownToolbar: React.FC<MarkdownToolbarProps> = ({
     * All tools now leverage the enhanced multi-line logic automatically.
     */
     const tools = [
-        { 
-            icon: <Bold size={18} />, 
-            label: 'Bold', 
-            onClick: () => insertMarkdown('**', '**') 
-        },
-        { 
-            icon: <Italic size={18} />, 
-            label: 'Italic', 
-            onClick: () => insertMarkdown('_', '_') 
-        },
-        { 
-            icon: <Heading2 size={18} />, 
-            label: 'Heading 2', 
-            onClick: () => insertMarkdown('## ') 
-        },
-        { 
-            icon: <Heading3 size={18} />, 
-            label: 'Heading 3', 
-            onClick: () => insertMarkdown('### ') 
-        },
-        { 
-            icon: <LinkIcon size={18} />, 
-            label: 'Link', 
-            onClick: () => insertMarkdown('[', '](url)') 
-        },
-        { 
-            icon: <List size={18} />, 
-            label: 'Bullet List', 
-            onClick: () => insertMarkdown('- ') 
-        },
+        { icon: <Bold size={18} />, label: 'Bold', onClick: () => insertMarkdown('**', '**') },
+        { icon: <Italic size={18} />, label: 'Italic', onClick: () => insertMarkdown('_', '_') },
+        { icon: <Heading2 size={18} />, label: 'Heading 2', onClick: () => insertMarkdown('## ') },
+        { icon: <Heading3 size={18} />, label: 'Heading 3', onClick: () => insertMarkdown('### ') },
+        { icon: <LinkIcon size={18} />, label: 'Link', onClick: () => insertMarkdown('[', '](url)') },
+        { icon: <List size={18} />, label: 'Bullet List', onClick: () => insertMarkdown('- ') },
     ];
 
     return (
-        <div className="flex items-center gap-1 p-1.5 bg-gray-50 border border-gray-200 rounded-t-lg border-b-0 sticky top-0 z-10">
-            {tools.map((tool, index) => (
+        <div className="flex items-center justify-between p-2 bg-gray-50 border-b border-gray-200 sticky top-0 z-10">
+            {/* Left Side - Toggle Write/Preview */}
+            <div className="flex bg-gray-200 p-1 rounded-lg">
                 <button
-                    key={index}
                     type="button"
-                    onClick={tool.onClick}
-                    className="p-2 text-gray-600 hover:text-indigo-600 hover:bg-white rounded transition-colors"
-                    title={tool.label}
-                >
-                    {tool.icon}
+                    onClick={() => setIsPreviewMode(false)}
+                    className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-bold transition-all ${
+                        !isPreviewMode ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-600 hover:text-gray-900'
+                    }`}>
+                    <Edit3 size={14} /> 
+					Write
                 </button>
-            ))}
-            
-            <div className="w-px h-6 bg-gray-200 mx-1" />
-            
-            <div className="relative">
-                <input
-                    type="file"
-                    id="toolbar-image-upload"
-                    className="hidden"
-                    accept="image/*"
-                    onChange={onImageUpload}
-                    disabled={isUploading}
-                />
                 <button
                     type="button"
-                    onClick={() => document.getElementById('toolbar-image-upload')?.click()}
-                    disabled={isUploading}
-                    className={`p-2 rounded transition-colors ${
-                        isUploading 
-                            ? 'text-gray-400 cursor-not-allowed' 
-                            : 'text-gray-600 hover:text-indigo-600 hover:bg-white'
-                    }`}
-                    title="Upload Image"
-                >
-                    {isUploading ? <Loader2 size={18} className="animate-spin" /> : <ImageIcon size={18} />}
+                    onClick={() => setIsPreviewMode(true)}
+                    className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-bold transition-all ${
+                        isPreviewMode ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-600 hover:text-gray-900'
+                    }`}>
+                    <Eye size={14} /> 
+					Preview
                 </button>
             </div>
+
+            {/* Right Side - Formatting Tools (Hidden in preview mode) */}
+            {!isPreviewMode && (
+                <div className="flex items-center gap-1">
+                    {tools.map((tool, index) => (
+                        <button
+                            key={index}
+                            type="button"
+                            onClick={tool.onClick}
+                            className="p-2 text-gray-600 hover:text-indigo-600 hover:bg-white rounded transition-colors"
+                            title={tool.label}
+                        >
+                            {tool.icon}
+                        </button>
+                    ))}
+                    
+                    <div className="w-px h-6 bg-gray-200 mx-1" />
+                    
+                    <div className="relative">
+                        <input
+                            type="file"
+                            id="toolbar-image-upload"
+                            className="hidden"
+                            accept="image/*"
+                            onChange={onImageUpload}
+                            disabled={isUploading}
+                        />
+                        <button
+                            type="button"
+                            onClick={() => document.getElementById('toolbar-image-upload')?.click()}
+                            disabled={isUploading}
+                            className={`p-2 rounded transition-colors ${
+                                isUploading ? 'text-gray-400' : 'text-gray-600 hover:text-indigo-600 hover:bg-white'
+                            }`}
+                            title="Upload Image"
+                        >
+                            {isUploading ? <Loader2 size={18} className="animate-spin" /> : <ImageIcon size={18} />}
+                        </button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

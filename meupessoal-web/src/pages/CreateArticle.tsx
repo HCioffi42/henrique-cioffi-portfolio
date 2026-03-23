@@ -4,7 +4,6 @@ import { createArticle } from '../services/articleService';
 import { imageService } from '../services/imageService';
 import { MarkdownToolbar } from '../components/MarkdownToolbar';
 import { MarkdownRenderer } from '../components/MarkdownRenderer';
-import { Eye, Edit3 } from 'lucide-react';
 
 /**
  * Page component for creating a new article.
@@ -54,38 +53,6 @@ export const CreateArticle = () => {
     };
 
     /**
-     * Helper function to insert Markdown syntax at the cursor position.
-     * Handles text selection and cursor persistence.
-     */
-    const insertMarkdown = (prefix: string, suffix: string = '') => {
-        const textarea = contentRef.current;
-        if (!textarea) return;
-
-        const start = textarea.selectionStart;
-        const end = textarea.selectionEnd;
-        const text = formData.content;
-        const selection = text.substring(start, end);
-
-        const before = text.substring(0, start);
-        const after = text.substring(end);
-
-        const newContent = before + prefix + selection + suffix + after;
-        
-        setFormData(prev => ({ ...prev, content: newContent }));
-
-        // Focus back and set selection in the next tick
-        setTimeout(() => {
-            textarea.focus();
-            if (selection.length > 0) {
-                textarea.setSelectionRange(start, start + prefix.length + selection.length + suffix.length);
-            } else {
-                const newPos = start + prefix.length;
-                textarea.setSelectionRange(newPos, newPos);
-            }
-        }, 0);
-    };
-
-    /**
      * Handles image upload and inserts Markdown syntax into the content.
      */
     const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -100,7 +67,10 @@ export const CreateArticle = () => {
             setUploadedImages(prev => [...prev, url]);
             
             const markdownImage = `\n![${file.name}](${url})\n`;
-            insertMarkdown(markdownImage);
+            
+            // Appends the image to the end of the content
+            setFormData(prev => ({ ...prev, content: prev.content + markdownImage }));
+            
         } catch (err: unknown) {
             console.error('Failed to upload image:', err);
             setError('Could not upload image. Please try again.');
@@ -148,40 +118,10 @@ export const CreateArticle = () => {
 
     return (
         <div className="max-w-4xl mx-auto px-6 py-12">
-            <div className="mb-8 flex justify-between items-end">
-                <div>
-                    <h1 className="text-3xl font-extrabold text-gray-900">Create New Post</h1>
-                    <p className="mt-2 text-gray-600">Share your thoughts and insights with the world.</p>
-                </div>
-                
-                {/* Write/Preview Toggle */}
-                <div className="flex bg-gray-100 p-1 rounded-lg border border-gray-200">
-                    <button
-                        type="button"
-                        onClick={() => setIsPreviewMode(false)}
-                        className={`flex items-center gap-2 px-4 py-1.5 text-sm font-bold rounded-md transition-all ${
-                            !isPreviewMode 
-                                ? 'bg-white text-indigo-600 shadow-sm' 
-                                : 'text-gray-500 hover:text-gray-700'
-                        }`}
-                    >
-                        <Edit3 size={16} />
-                        Write
-                    </button>
-                    <button
-                        type="button"
-                        onClick={() => setIsPreviewMode(true)}
-                        className={`flex items-center gap-2 px-4 py-1.5 text-sm font-bold rounded-md transition-all ${
-                            isPreviewMode 
-                                ? 'bg-white text-indigo-600 shadow-sm' 
-                                : 'text-gray-500 hover:text-gray-700'
-                        }`}
-                    >
-                        <Eye size={16} />
-                        Preview
-                    </button>
-                </div>
-            </div>
+            <header className="mb-8">
+                <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Create New Post</h1>
+                <p className="mt-2 text-gray-600">Share your thoughts and insights with the world.</p>
+            </header>
 
             {error && (
                 <div className="bg-red-50 border-l-4 border-red-400 p-4 mb-6 rounded shadow-sm animate-in fade-in slide-in-from-top-4">
@@ -191,88 +131,85 @@ export const CreateArticle = () => {
 
             <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-100 space-y-6">
-                    {/* Title & Summary */}
+                    {/* Meta Section */}
                     <div className="grid grid-cols-1 gap-6">
                         <div>
-                            <label htmlFor="title" className="block text-sm font-bold text-gray-700 mb-2">
-                                Title
-                            </label>
+                            <label htmlFor="title" className="block text-sm font-bold text-gray-700 mb-2">Title</label>
                             <input
                                 type="text"
                                 id="title"
                                 name="title"
                                 value={formData.title}
                                 onChange={handleChange}
-                                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all outline-none"
+                                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
                                 placeholder="Enter a compelling title"
                             />
                         </div>
 
                         <div>
-                            <label htmlFor="summary" className="block text-sm font-bold text-gray-700 mb-2">
-                                Summary
-                            </label>
+                            <label htmlFor="summary" className="block text-sm font-bold text-gray-700 mb-2">Summary</label>
                             <input
                                 type="text"
                                 id="summary"
                                 name="summary"
                                 value={formData.summary}
                                 onChange={handleChange}
-                                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all outline-none"
-                                placeholder="A short summary for the article list"
+                                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                                placeholder="A short summary for the readers"
                             />
                         </div>
                     </div>
 
-                    {/* Editor / Preview Area */}
+                    {/* Integrated Editor Section */}
                     <div>
-                        <label className="block text-sm font-bold text-gray-700 mb-2">
-                            Content
-                        </label>
+                        <label className="block text-sm font-bold text-gray-700 mb-2">Content</label>
                         
-                        {!isPreviewMode ? (
-                            <div className="flex flex-col border border-gray-200 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-indigo-500 focus-within:border-indigo-500 transition-all">
-                                <MarkdownToolbar 
-                                    textareaRef={contentRef}
-                                    onContentChange={(newContent) => setFormData(prev => ({ ...prev, content: newContent }))}
-                                    onImageUpload={handleImageUpload}
-                                    isUploading={isUploading}
-                                />
-                                <textarea
-                                    id="content"
-                                    name="content"
-                                    ref={contentRef}
-                                    rows={15}
-                                    value={formData.content}
-                                    onChange={handleChange}
-                                    className="w-full px-4 py-4 border-0 outline-none resize-none font-mono text-gray-800 leading-relaxed min-h-[400px]"
-                                    placeholder="Write your story using Markdown..."
-                                />
-                            </div>
-                        ) : (
-                            <div className="w-full min-h-[464px] px-8 py-8 border border-gray-200 rounded-lg bg-gray-50/50 overflow-y-auto prose-indigo">
-                                {formData.content.trim() ? (
-                                    <MarkdownRenderer content={formData.content} />
+                        <div className="flex flex-col border border-gray-200 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-indigo-500 transition-all bg-white">
+                            <MarkdownToolbar 
+                                textareaRef={contentRef}
+                                onContentChange={(newContent) => setFormData(prev => ({ ...prev, content: newContent }))}
+                                onImageUpload={handleImageUpload}
+                                isUploading={isUploading}
+                                isPreviewMode={isPreviewMode}
+                                setIsPreviewMode={setIsPreviewMode}
+                            />
+
+                            <div className="min-h-[400px] bg-white">
+                                {!isPreviewMode ? (
+                                    <textarea
+                                        id="content"
+                                        name="content"
+                                        ref={contentRef}
+                                        rows={15}
+                                        value={formData.content}
+                                        onChange={handleChange}
+                                        className="w-full h-full p-6 outline-none resize-none font-mono text-gray-800 leading-relaxed min-h-[400px]"
+                                        placeholder="Write your story using Markdown..."
+                                    />
                                 ) : (
-                                    <p className="text-gray-400 italic text-center mt-20">Nothing to preview yet...</p>
+                                    <div className="p-8 bg-gray-50/30">
+                                        {formData.content.trim() ? (
+                                            <MarkdownRenderer content={formData.content} />
+                                        ) : (
+                                            <p className="text-gray-400 italic text-center mt-20">Nothing to preview yet...</p>
+                                        )}
+                                    </div>
                                 )}
                             </div>
-                        )}
+                        </div>
                     </div>
 
-                    {/* Tags */}
+                    {/* Tags Section */}
                     <div>
-                        <label htmlFor="tags" className="block text-sm font-bold text-gray-700 mb-2">
-                            Tags
-                        </label>
+                        <label htmlFor="tags" className="block text-sm font-bold text-gray-700 mb-2">Tags</label>
                         <input
                             type="text"
                             id="tags"
                             name="tags"
                             value={formData.tags}
                             onChange={handleChange}
-                            className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all outline-none"
-                            placeholder="e.g., dotnet, react, web-dev (separated by commas)"
+                            className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                            placeholder="e.g., dotnet, react, web-dev"
                         />
                     </div>
                 </div>
