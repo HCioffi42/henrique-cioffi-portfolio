@@ -83,11 +83,17 @@ export const EditArticle = () => {
     };
 
     /**
-     * Handles image upload and inserts Markdown syntax into the content.
+     * Handles image selection, uploads it to the backend, and inserts the 
+     * markdown syntax at the exact cursor position instead of appending to the end.
      */
     const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
-        if (!file) return;
+        const textarea = contentRef.current;
+        if (!file || !textarea) return;
+
+        // Captures the cursor position BEFORE the upload starts
+        const start = textarea.selectionStart;
+        const end = textarea.selectionEnd;
 
         setIsUploading(true);
         setError(null);
@@ -97,9 +103,27 @@ export const EditArticle = () => {
             // Stores the URL for potential cleanup later
             setNewlyUploadedImages(prev => [...prev, url]);
             
-            // Appends the image markdown to the end of the content
-            const markdownImage = `\n![${file.name}](${url})\n`;
-            setFormData(prev => ({ ...prev, content: prev.content + markdownImage }));
+            // Encodes the URL to handle spaces and special characters.
+            // This ensures the Markdown parser recognizes the image syntax correctly.
+            const encodedUrl = encodeURI(url);
+            const markdownImage = `\n![${file.name}](${encodedUrl})\n`;
+
+            // Splicing logic to insert the image where the cursor was located.
+            setFormData(prev => {
+                const before = prev.content.substring(0, start);
+                const after = prev.content.substring(end);
+                return { 
+                    ...prev, 
+                    content: before + markdownImage + after 
+                };
+            });
+
+            // Restores focus and moves the cursor after the inserted image.
+            requestAnimationFrame(() => {
+                textarea.focus({ preventScroll: true });
+                const newPos = start + markdownImage.length;
+                textarea.setSelectionRange(newPos, newPos);
+            });
             
         } catch (err: unknown) {
             console.error('Failed to upload image:', err);

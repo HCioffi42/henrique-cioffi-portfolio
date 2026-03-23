@@ -57,7 +57,12 @@ export const CreateArticle = () => {
      */
     const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
-        if (!file) return;
+        const textarea = contentRef.current;
+        if (!file || !textarea) return;
+
+        // Captures the cursor position BEFORE the upload process starts.
+        const start = textarea.selectionStart;
+        const end = textarea.selectionEnd;
 
         setIsUploading(true);
         setError(null);
@@ -65,18 +70,34 @@ export const CreateArticle = () => {
         try {
             const url = await imageService.uploadImage(file);
             setUploadedImages(prev => [...prev, url]);
+
+            // Encodes the URL to handle spaces and special characters.
+            const encodedUrl = encodeURI(url);
+            const markdownImage = `\n![${file.name}](${encodedUrl})\n`;
             
-            const markdownImage = `\n![${file.name}](${url})\n`;
-            
-            // Appends the image to the end of the content
-            setFormData(prev => ({ ...prev, content: prev.content + markdownImage }));
+            // Splicing logic to insert the image where the cursor was located.
+            setFormData(prev => {
+                const before = prev.content.substring(0, start);
+                const after = prev.content.substring(end);
+                return { 
+                    ...prev, 
+                    content: before + markdownImage + after 
+                };
+            });
+
+            // Restores focus and moves the cursor after the inserted image.
+            requestAnimationFrame(() => {
+                textarea.focus({ preventScroll: true });
+                const newPos = start + markdownImage.length;
+                textarea.setSelectionRange(newPos, newPos);
+            });
             
         } catch (err: unknown) {
             console.error('Failed to upload image:', err);
             setError('Could not upload image. Please try again.');
         } finally {
             setIsUploading(false);
-            e.target.value = '';
+            e.target.value = ''; // Resets input to allow re-uploading the same file.
         }
     };
 
