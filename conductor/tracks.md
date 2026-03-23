@@ -5,6 +5,8 @@ This file tracks all the development tracks for this project.
 ## Open Tracks
 
 ## Completed Tracks
+- [x] **Track: Interactive Markdown Editor**
+  *Link: [./tracks/07-interactive-markdown-editor/index.md](./tracks/07-interactive-markdown-editor/index.md)*
 - [x] **Track: Media Handling & Image Upload**
   *Link: [./tracks/06-media-handling-image-upload/index.md](./tracks/06-media-handling-image-upload/index.md)*
 - [x] **Track: Authentication & Protected Routes**
