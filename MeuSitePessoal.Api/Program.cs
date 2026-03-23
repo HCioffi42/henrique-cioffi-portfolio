@@ -1,4 +1,4 @@
-﻿using System.Text;
+using System.Text;
 using FluentValidation;
 using MeuSitePessoal.Api.Middleware;
 using MeuSitePessoal.Application.Articles.Commands.CreateArticle;
@@ -42,6 +42,7 @@ builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
 // Register Services
 builder.Services.AddScoped<IArticleRepository, ArticleRepository>();
 builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddScoped<IStorageService, LocalStorageService>();
 
 // Configure JWT Authentication
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
@@ -147,6 +148,9 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseCors("WebAppPolicy");
+
+// Enables serving static files (such as images in wwwroot).
+app.UseStaticFiles();
 
 app.UseAuthentication();
 app.UseAuthorization();

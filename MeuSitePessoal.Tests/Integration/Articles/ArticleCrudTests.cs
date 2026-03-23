@@ -72,6 +72,20 @@ public class ArticleCrudTests : BaseIntegrationTest
     }
 
     [Fact]
+    public async Task Delete_WhenIdDoesNotExist_ShouldReturn404NotFound()
+    {
+        // Arrange: Authenticates and generates a non-existent ID.
+        await AuthenticateAsync();
+        var nonExistentId = Guid.NewGuid();
+
+        // Act: Attempts to delete a missing resource.
+        var response = await _client.DeleteAsync($"/api/Articles/{nonExistentId}");
+
+        // Assert: Verifies the Not Found response.
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
+    [Fact]
     public async Task Create_WhenAnonymous_ShouldReturn401Unauthorized()
     {
         // Arrange: No authentication call is made.

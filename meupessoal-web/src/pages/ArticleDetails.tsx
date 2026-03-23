@@ -3,11 +3,15 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext'; 
 import { DeleteModal } from '../components/DeleteModal';
 import { deleteArticle, getArticleById } from '../services/articleService';
+import { API_BASE_URL } from '../services/api';
 import type { Article } from '../models/Article';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
+
+// Derive the root backend URL (e.g., http://localhost:25683) from API_BASE_URL
+const BACKEND_URL = API_BASE_URL.replace(/\/api\/?$/, '');
 
 /**
  * Custom hook to handle article data fetching logic.
@@ -114,13 +118,32 @@ const CodeBlock = ({ inline, className, children, ...props }: any) => {
 
 /**
  * Component responsible for rendering the Markdown content.
- * The developer centralized markdown configuration here, injecting the custom CodeBlock.
+ * The developer centralized markdown configuration here, injecting the custom CodeBlock and image handling.
  */
 const MarkdownRenderer = ({ content }: { content: string }) => (
     <section className="markdown-content prose max-w-none text-gray-800 leading-relaxed text-lg">
         <ReactMarkdown
             remarkPlugins={[remarkGfm]}
-            components={{ code: CodeBlock, pre: ({ children }) => <>{children}</> }} >
+            components={{ 
+                code: CodeBlock, 
+                pre: ({ children }) => <>{children}</>,
+                img: ({ src, alt, ...props }) => {
+                    // If the src is relative (starts with /), prepend the backend URL
+                    const resolvedSrc = src?.startsWith('/') 
+                        ? `${BACKEND_URL}${src}` 
+                        : (src?.startsWith('http') 
+                            ? src 
+                            : `${BACKEND_URL}/${src}`);
+                    return (
+                        <img 
+                            src={resolvedSrc} 
+                            alt={alt} 
+                            className="rounded-xl shadow-lg my-8 mx-auto border border-gray-100 max-h-[600px] object-contain" 
+                            {...props} 
+                        />
+                    );
+                }
+            }} >
             {content}
         </ReactMarkdown>
     </section>

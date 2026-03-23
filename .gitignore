@@ -1,11 +1,11 @@
-## Camada de Compilação .NET
+## .NET Build and Output
 bin/
 obj/
 out/
 [Bb]in/
 [Oo]bj/
 
-## Arquivos de Configuração do Usuário e Cache
+## User-Specific Configuration and Cache
 .vs/
 .idea/
 *.user
@@ -13,23 +13,30 @@ out/
 *.sln.doccache
 *.suo
 
-## Arquivos do Sistema Operacional
+## OS-Generated Files
 Thumbs.db
 ehthumbs.db
 Desktop.ini
 
-## Node.js (Para quando criarmos o frontend)
+## Node.js / Frontend Dependencies
 node_modules/
 npm-debug.log*
 
-## Arquivos de Log
+## Log Files
 *.log
 *.logs
-MeuSitePessoal.Api/logs/
+**/logs/
 
-## Publicação e Pacotes
+## Publishing and Packages
 *.nupkg
 *.vsix
 
-## Arquivos de configuração
+## Environment and Secret Files
 .env*
+# JetBrains Rider HTTP Client private environment variables
+http-client.private.env.json
+
+## Static Assets and Uploads
+# Ignoring the uploads folder to prevent test media from bloating the repository.
+# If you host your frontend build in wwwroot, consider ignoring only the uploads subfolder.
+**/wwwroot/uploads/

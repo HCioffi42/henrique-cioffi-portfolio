@@ -1,5 +1,95 @@
-﻿### GET request to example server
-GET https://examples.http-client.intellij.net/get
-    ?generated-in=JetBrains Rider
+﻿# Variables for the API configuration
+@host = {{host}}
+@contentType = application/json
+# Tip: Grab a real ID from the database or the "Get Summaries" response and paste it here
+@articleId = 00000000-0000-0000-0000-000000000000
+
+# ==========================================
+# AUTHENTICATION SECTION
+# ==========================================
+
+### Authenticate and Save Token
+# Logs in the user and captures the JWT token for subsequent protected requests.
+POST {{host}}/api/auth/login
+Content-Type: {{contentType}}
+
+{
+  "email": "{{email}}",
+  "password": "{{password}}"
+}
+
+> {%
+    // Captured token is saved globally. No manual copy-paste required.
+    client.global.set("auth_token", response.body.token);
+%}
+###
+
+# ==========================================
+# PUBLIC ENDPOINTS (NO TOKEN REQUIRED)
+# ==========================================
+
+### Get Article Summaries (Paginated)
+# Fetches a list of article summaries for the Home page.
+GET {{host}}/api/articles/summaries?pageNumber=1&pageSize=6
+Accept: application/json
+
+### Get Article Summaries with Tag Filter
+# Fetches summaries filtered by specific tags.
+GET {{host}}/api/articles/summaries?pageNumber=1&pageSize=6&tags=dotnet&tags=csharp
+Accept: application/json
+
+### Get Article Details by ID
+# Fetches the full content of a specific article.
+GET {{host}}/api/articles/{{articleId}}
+Accept: application/json
+
+# ==========================================
+# PROTECTED ENDPOINTS (ADMIN ONLY)
+# ==========================================
+
+### Create a New Article
+# Creates a new article entry in the database.
+POST {{host}}/api/articles
+Authorization: Bearer {{auth_token}}
+Content-Type: {{contentType}}
+
+{
+  "title": "New Article via Rider",
+  "summary": "This article was created directly from the IDE.",
+  "content": "Full markdown content goes here.",
+  "tags": ["testing", "rider", "dotnet"]
+}
+
+### Update an Existing Article
+# Updates all fields of an existing article by its unique identifier.
+PUT {{host}}/api/articles/{{articleId}}
+Authorization: Bearer {{auth_token}}
+Content-Type: {{contentType}}
+
+{
+  "title": "Updated Title via Rider",
+  "summary": "Testing the update flow with English nomenclature.",
+  "content": "Updated markdown content.",
+  "tags": ["refactor", "updated"]
+}
+
+### Delete an Article
+# Permanently removes an article from the database.
+DELETE {{host}}/api/articles/{{articleId}}
+Authorization: Bearer {{auth_token}}
+
+### Upload an Image
+# Uploads an image file to the storage system and returns its URL.
+# Note: You can pick a local image file to test this in Rider.
+POST {{host}}/api/images/upload
+Authorization: Bearer {{auth_token}}
+Content-Type: multipart/form-data; boundary=WebAppBoundary
+
+--WebAppBoundary
+Content-Disposition: form-data; name="file"; filename="test.png"
+Content-Type: image/png
+
+< ./wwwroot/uploads/test.png
+--WebAppBoundary--
 
 ###
