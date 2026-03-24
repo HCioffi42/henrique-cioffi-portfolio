@@ -1,7 +1,7 @@
 # Project Roadmap: MeuSitePessoal
 
 **Current Milestone**: Phase 2 - Content Management & Admin UX
-**Global Progress**: [█████░░░░░] 55%
+**Global Progress**: [███████░░░] 72%
 
 ---
 
@@ -44,7 +44,7 @@
 - **7.2**: Text selection manipulation logic (wrap selection with tags).
 - **7.3**: Live Preview toggle.
 
-### [ ] Track 08: Tag & Category Management
+### [x] Track 08: Tag & Category Management
 - **8.1**: Advanced MediatR filtering logic for tags.
 - **8.2**: Dynamic routing `/tags/:tag` for filtered discovery.
 
