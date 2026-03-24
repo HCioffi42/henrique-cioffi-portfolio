@@ -1,5 +1,6 @@
 using System.Net.Http.Json;
 using MeuSitePessoal.Application.Articles.Commands.CreateArticle;
+using MeuSitePessoal.Domain;
 
 namespace MeuSitePessoal.Tests.Integration.Articles;
 
@@ -8,7 +9,7 @@ namespace MeuSitePessoal.Tests.Integration.Articles;
 /// </summary>
 public class ArticleSummaryPaginationTests : BaseIntegrationTest
 {
-    public record ArticleSummaryResponse(Guid Id, string Title, string Summary, DateTime CreatedAt, List<string> Tags);
+    public record ArticleSummaryResponse(Guid Id, string Title, string Summary, DateTime CreatedAt, List<string> Tags, ArticleCategory Category);
     public record PagedSummaryResponse(List<ArticleSummaryResponse> Items, int TotalCount, int PageNumber, int PageSize, int TotalPages);
 
     [Fact]
@@ -20,7 +21,7 @@ public class ArticleSummaryPaginationTests : BaseIntegrationTest
         // Seeds the database with multiple articles.
         for (int i = 1; i <= 5; i++)
         {
-            var command = new CreateArticleCommand($"Summary Article {i}", "Full content", $"Summary {i}", new List<string> { "tag" });
+            var command = new CreateArticleCommand($"Summary Article {i}", "Full content", $"Summary {i}", ArticleCategory.Technology, new List<string> { "tag" });
             await _client.PostAsJsonAsync("/api/articles", command);
         }
 

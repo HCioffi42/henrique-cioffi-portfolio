@@ -22,7 +22,8 @@ public class CreateArticleHandler : IRequestHandler<CreateArticleCommand, Guid>
             request.Title, 
             request.Content, 
             request.Summary, 
-            request.Tags
+            request.Tags,
+            request.Category
         );
         
         // Persists the article entity into the PostgreSQL database via the infrastructure layer.

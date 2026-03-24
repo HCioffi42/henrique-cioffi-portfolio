@@ -27,8 +27,8 @@ public class GetAllArticlesHandlerTests
         var totalCount = 2;
         var artigos = new List<Article>
         {
-            new Article("Title 1", "Content 1", "Summary 1", new List<string>()),
-            new Article("Title 2", "Content 2", "Summary 2", new List<string>())
+            new Article("Title 1", "Content 1", "Summary 1", new List<string>(), ArticleCategory.Technology),
+            new Article("Title 2", "Content 2", "Summary 2", new List<string>(), ArticleCategory.Technology)
         };
         
         // Mocking the new paginated method return

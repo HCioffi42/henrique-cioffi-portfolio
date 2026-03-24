@@ -1,10 +1,13 @@
-﻿// Define a estrutura de um artigo vindo da API para garantir tipagem forte no frontend.
+﻿import { ArticleCategory } from './ArticleCategory';
+
+// Define a estrutura de um artigo vindo da API para garantir tipagem forte no frontend.
 export interface Article {
     id: string;
     title: string;
     content: string;
     summary: string;
     tags: string[];
+    category: ArticleCategory;
     createdAt: string;
 }
 

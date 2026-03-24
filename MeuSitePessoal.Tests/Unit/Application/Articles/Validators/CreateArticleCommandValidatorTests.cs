@@ -1,5 +1,6 @@
 using FluentValidation.TestHelper;
 using MeuSitePessoal.Application.Articles.Commands.CreateArticle;
+using MeuSitePessoal.Domain;
 using Xunit;
 
 namespace MeuSitePessoal.Tests.Unit.Application.Articles.Validators;
@@ -21,6 +22,7 @@ public class CreateArticleCommandValidatorTests
             "Valid Title",
             "Valid Content",
             "Valid Summary",
+            ArticleCategory.Technology,
             new List<string> { "tag1" }
         );
 
@@ -38,7 +40,7 @@ public class CreateArticleCommandValidatorTests
     public void Should_Have_Error_When_Title_Is_Empty(string? title)
     {
         // Arrange
-        var command = new CreateArticleCommand(title!, "Content", "Summary");
+        var command = new CreateArticleCommand(title!, "Content", "Summary", ArticleCategory.Technology);
 
         // Act
         var result = _validator.TestValidate(command);
@@ -53,7 +55,7 @@ public class CreateArticleCommandValidatorTests
     {
         // Arrange
         var longTitle = new string('a', 101);
-        var command = new CreateArticleCommand(longTitle, "Content", "Summary");
+        var command = new CreateArticleCommand(longTitle, "Content", "Summary", ArticleCategory.Technology);
 
         // Act
         var result = _validator.TestValidate(command);
@@ -69,7 +71,7 @@ public class CreateArticleCommandValidatorTests
     public void Should_Have_Error_When_Content_Is_Empty(string? content)
     {
         // Arrange
-        var command = new CreateArticleCommand("Title", content!, "Summary");
+        var command = new CreateArticleCommand("Title", content!, "Summary", ArticleCategory.Technology);
 
         // Act
         var result = _validator.TestValidate(command);
@@ -86,7 +88,7 @@ public class CreateArticleCommandValidatorTests
     public void Should_Have_Error_When_Summary_Is_Empty(string? rummary)
     {
         // Arrange
-        var command = new CreateArticleCommand("Title", "Content", rummary!);
+        var command = new CreateArticleCommand("Title", "Content", rummary!, ArticleCategory.Technology);
 
         // Act
         var result = _validator.TestValidate(command);
@@ -101,7 +103,7 @@ public class CreateArticleCommandValidatorTests
     {
         // Arrange
         var longSummary = new string('s', 501);
-        var command = new CreateArticleCommand("Title", "Content", longSummary);
+        var command = new CreateArticleCommand("Title", "Content", longSummary, ArticleCategory.Technology);
 
         // Act
         var result = _validator.TestValidate(command);
@@ -115,7 +117,7 @@ public class CreateArticleCommandValidatorTests
     public void Should_Not_Have_Error_When_Tags_Is_Empty_But_Not_Null()
     {
         // Arrange
-        var command = new CreateArticleCommand("Title", "Content", "Summary", new List<string>());
+        var command = new CreateArticleCommand("Title", "Content", "Summary", ArticleCategory.Technology, new List<string>());
 
         // Act
         var result = _validator.TestValidate(command);
@@ -123,5 +125,19 @@ public class CreateArticleCommandValidatorTests
         // Assert
         // Tags are initialized in the record constructor if null, but we test the logic here.
         result.ShouldNotHaveValidationErrorFor(x => x.Tags);
+    }
+
+    [Fact]
+    public void Should_Have_Error_When_Category_Is_Invalid()
+    {
+        // Arrange
+        var command = new CreateArticleCommand("Title", "Content", "Summary", (ArticleCategory)999);
+
+        // Act
+        var result = _validator.TestValidate(command);
+
+        // Assert
+        result.ShouldHaveValidationErrorFor(x => x.Category)
+            .WithErrorMessage("A valid category is required.");
     }
 }

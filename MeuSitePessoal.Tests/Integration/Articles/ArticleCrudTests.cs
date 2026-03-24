@@ -3,6 +3,7 @@ using System.Net.Http.Json;
 using Microsoft.AspNetCore.Mvc;
 using MeuSitePessoal.Application.Articles.Commands.CreateArticle;
 using MeuSitePessoal.Application.Articles.Commands.UpdateArticle;
+using MeuSitePessoal.Domain;
 using Xunit;
 
 namespace MeuSitePessoal.Tests.Integration.Articles;
@@ -23,6 +24,7 @@ public class ArticleCrudTests : BaseIntegrationTest
             "Updated Title",
             "Updated content for this article.",
             "Updated summary.",
+            ArticleCategory.Technology,
             new List<string> { "updated", "test" }
         );
 
@@ -46,7 +48,7 @@ public class ArticleCrudTests : BaseIntegrationTest
         // Arrange: Authenticates and generates a non-existent ID.
         await AuthenticateAsync();
         var nonExistentId = Guid.NewGuid();
-        var updateCommand = new UpdateArticleCommand(nonExistentId, "Title", "Content", "Summary", new List<string>());
+        var updateCommand = new UpdateArticleCommand(nonExistentId, "Title", "Content", "Summary", ArticleCategory.Technology, new List<string>());
 
         // Act: Attempts to update a missing resource.
         var response = await _client.PutAsJsonAsync($"/api/Articles/{nonExistentId}", updateCommand);
@@ -89,7 +91,7 @@ public class ArticleCrudTests : BaseIntegrationTest
     public async Task Create_WhenAnonymous_ShouldReturn401Unauthorized()
     {
         // Arrange: No authentication call is made.
-        var command = new CreateArticleCommand("Title", "Content", "Summary", new List<string>());
+        var command = new CreateArticleCommand("Title", "Content", "Summary", ArticleCategory.Technology, new List<string>());
 
         // Act: Attempts to create without credentials.
         var response = await _client.PostAsJsonAsync("/api/Articles", command);
@@ -107,6 +109,7 @@ public class ArticleCrudTests : BaseIntegrationTest
             "Seeded Title",
             "Original content for seeding.",
             "Original summary for seeding.",
+            ArticleCategory.Technology,
             new List<string> { "seed" }
         );
 

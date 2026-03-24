@@ -1,5 +1,6 @@
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import type { ArticleSummary } from '../models/ArticleSummary';
+import { ArticleCategoryLabels } from '../models/ArticleCategory';
 
 interface ArticleCardProps {
     article: ArticleSummary;
@@ -20,13 +21,39 @@ export const ArticleCard = ({ article }: ArticleCardProps) => {
         day: 'numeric'
     }).format(new Date(article.createdAt));
 
+    /**
+     * Handles tag clicks by appending the new tag to current filters and navigating back to the home list with all parameters.
+     */
+    const handleTagClick = (tag: string) => {
+        const newParams = new URLSearchParams(searchParams);
+        const currentTags = newParams.getAll('tags');
+        const lowerTag = tag.toLowerCase();
+
+        // Only append if the tag is not already active
+        if (!currentTags.includes(lowerTag)) {
+            newParams.append('tags', lowerTag);
+            newParams.set('page', '1'); // Reset pagination when adding a filter
+        }
+
+        navigate(`/?${newParams.toString()}`);
+    };
+
     return (
-        <article className="bg-white border border-gray-100 rounded-xl p-6 shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col h-full">
+        <article className="bg-white border border-gray-100 rounded-xl p-6 shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col h-full group">
             <header className="mb-4">
                 <div className="flex items-center justify-between text-xs text-gray-400 mb-2">
                     <time dateTime={article.createdAt}>{formattedDate}</time>
+                    <button 
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            navigate(`/?category=${article.category}`);
+                        }}
+                        className="px-2 py-0.5 bg-amber-50 text-amber-700 rounded-md font-bold uppercase tracking-tighter hover:bg-amber-100 transition-colors"
+                    >
+                        {ArticleCategoryLabels[article.category]}
+                    </button>
                 </div>
-                <h2 className="text-xl font-bold text-gray-900 leading-tight hover:text-indigo-600 transition-colors cursor-pointer"
+                <h2 className="text-xl font-bold text-gray-900 leading-tight group-hover:text-indigo-600 transition-colors cursor-pointer"
                     onClick={() => navigate(`/article/${article.id}`)}>
                     {article.title}
                 </h2>
@@ -43,19 +70,11 @@ export const ArticleCard = ({ article }: ArticleCardProps) => {
                             key={tag}
                             onClick={(e) => {
                                 e.stopPropagation();
-                                const newParams = new URLSearchParams(searchParams);
-                                newParams.set('page', '1');
-
-                                const currentTags = newParams.getAll('tags');
-                                if (!currentTags.includes(tag)) {
-                                    newParams.append('tags', tag);
-                                }
-
-                                navigate(`/?${newParams.toString()}`);
+                                handleTagClick(tag);
                             }}
                             className="px-2.5 py-0.5 bg-indigo-50 text-indigo-600 rounded-full text-[10px] font-semibold capitalize
                                         tracking-wider hover:bg-indigo-100 hover:text-indigo-800 transition-colors cursor-pointer">
-                            {tag}
+                            #{tag}
                         </button>
                     ))}
                 </div>

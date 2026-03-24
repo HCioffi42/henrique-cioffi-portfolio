@@ -1,0 +1,17 @@
+{
+  "id": "08-tag-category-management",
+  "name": "Tag & Category Management",
+  "description": "Implementation of standardized article categories and dynamic tag-based routing.",
+  "status": "completed",
+  "related_tracks": [
+    "03-tag-based-filtering",
+    "05-article-crud-edit-delete"
+  ],
+  "technologies": [
+    "ASP.NET Core",
+    "EF Core",
+    "MediatR",
+    "React",
+    "TypeScript"
+  ]
+}

@@ -2,6 +2,7 @@
 import type { Article, PagedArticles } from '../models/Article';
 import type { ArticleSummary } from '../models/ArticleSummary';
 import type { PagedResult } from '../models/PagedResult';
+import { ArticleCategory } from '../models/ArticleCategory';
 
 /**
  * Retrieves a paginated list of all articles (full entities).
@@ -19,12 +20,14 @@ export const getArticles = async (page: number = 1, size: number = 10): Promise<
  * @param pageNumber The page number to fetch.
  * @param pageSize The number of items to display per page.
  * @param tags An optional array of tags to filter the results.
+ * @param category An optional category to filter the results.
  * @returns A promise that resolves to a PagedResult containing ArticleSummary objects.
  */
 export const getArticleSummaries = async (
     pageNumber: number = 1,
     pageSize: number = 6,
-    tags?: string[] 
+    tags?: string[],
+    category?: ArticleCategory
 ): Promise<PagedResult<ArticleSummary>> => {
     const params = new URLSearchParams();
     params.append('pageNumber', pageNumber.toString());
@@ -32,6 +35,10 @@ export const getArticleSummaries = async (
 
     if (tags && tags.length > 0) {
         tags.forEach(tag => params.append('tags', tag));
+    }
+
+    if (category !== undefined) {
+        params.append('category', category.toString());
     }
 
     const response = await api.get<PagedResult<ArticleSummary>>(`/Articles/summaries?${params.toString()}`);
@@ -50,14 +57,15 @@ export const getArticleById = async (id: string): Promise<Article> => {
 
 /**
  * Sends a POST request to create a new article.
- * @param article An object containing the article's title, summary, content, and tags.
+ * @param article An object containing the article's title, summary, content, tags, and category.
  * @returns A promise that resolves to the ID of the created article.
  */
 export const createArticle = async (article: {
     title: string;
     summary: string;
     content: string;
-    tags: string[]
+    tags: string[];
+    category: ArticleCategory;
 }): Promise<string> => {
     const response = await api.post<string>('/Articles', article);
     return response.data;
