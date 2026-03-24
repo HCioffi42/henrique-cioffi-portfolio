@@ -1,7 +1,7 @@
 # Project Roadmap: MeuSitePessoal
 
 **Current Milestone**: Phase 3: Infrastructure, Polish & Deployment
-**Global Progress**: [█████████░] 91%
+**Global Progress**: [█████████░] 96%
 
 ---
 
@@ -60,9 +60,14 @@
 - **10.1**: `react-helmet-async` for dynamic Meta Tags.
 - **10.2**: Open Graph (OG) tags for social media.
 
-### [ ] Track 11: CI/CD & Production
-- **11.1**: GitHub Actions for Build & Test.
-- **11.2**: Deployment to VPS (Docker or Systemd).
+### [/] Track 11: CI/CD & Production
+- [x] **11.1**: GitHub Actions for Build & Test
+    * Validation of .NET Backend (88 integration/unit tests passed).
+    * Validation of React Frontend (Lint and Build checks).
+    * PostgreSQL service container integration for isolated testing.
+- [ ] **11.2**: Deployment to VPS (Docker or Systemd)
+    * Automated delivery to production environment.
+    * Configuration of Docker containers and reverse proxy.
 
 ---
 

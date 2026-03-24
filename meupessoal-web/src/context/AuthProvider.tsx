@@ -41,15 +41,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   if (!isInitialized) return null; 
 
   return (
-    <AuthContext.Provider 
-      value={{ 
-        user, 
-        token, 
-        isAuthenticated: !!token, 
-        isInitialized, 
-        login, 
-        logout 
-      }}>
+    <AuthContext.Provider value={{ user, token, isAuthenticated: !!token, isInitialized, login, logout }}>
       {children}
     </AuthContext.Provider>
   );
