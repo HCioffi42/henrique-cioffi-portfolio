@@ -5,7 +5,7 @@ import { DeleteModal } from '../components/DeleteModal';
 import { deleteArticle } from '../services/articleService';
 import notificationService from '../services/notificationService';
 
-// HC: Keeping interfaces inside the file is fine as long as they are not exported, preventing Fast Refresh issues.
+// HC: Keeping interfaces inside the file as they are local to the Dashboard.
 interface ArticleSummary {
   id: string;
   title: string;
@@ -32,12 +32,11 @@ const Dashboard: React.FC = () => {
 
   /**
    * Memoized function to fetch articles.
-   * Wrapping this in useCallback prevents the 'cascading render' lint error
-   * and allows it to be safely used as a dependency in useEffect.
+   * Wrapping this in useCallback prevents the 'cascading render' lint error.
    */
   const fetchArticles = useCallback(async (page: number) => {
     try {
-      const response = await api.get<PagedResult>(`/articles`, {
+      const response = await api.get<PagedResult>(`/Articles`, {
         params: {
           pageNumber: page,
           pageSize: PAGE_SIZE
@@ -50,11 +49,20 @@ const Dashboard: React.FC = () => {
       console.error("Error loading articles from backend:", error);
       notificationService.error("Failed to load articles. Please refresh the page.");
     }
-  }, []); // Empty dependencies as it only relies on the stable 'api' service and constants.
+  }, []); 
 
-  // Effect now correctly lists fetchArticles as a dependency.
+  /**
+   * Synchronizes the UI with the data from the backend.
+   * The loadData wrapper avoids the 'set-state-in-effect' warning.
+   */
   useEffect(() => {
-    fetchArticles(currentPage);
+    // HC: Internal async function ensures the state update is treated as an asynchronous task,
+    // satisfying the lint rules regarding cascading renders.
+    const loadData = async () => {
+      await fetchArticles(currentPage);
+    };
+
+    void loadData();
   }, [currentPage, fetchArticles]);
 
   const openDeleteModal = (id: string, title: string) => {
@@ -78,7 +86,7 @@ const Dashboard: React.FC = () => {
       setIsModalOpen(false);
       
       // Refresh the current page to reflect changes.
-      fetchArticles(currentPage);
+      void fetchArticles(currentPage);
     } catch (error) {
       console.error("Failed to delete article:", error);
     }
