@@ -4,9 +4,9 @@ import { useAuth } from '../context/AuthContext';
 import { DeleteModal } from '../components/DeleteModal';
 import { MarkdownRenderer } from '../components/MarkdownRenderer';
 import { deleteArticle, getArticleById } from '../services/articleService';
-import { BACKEND_URL } from '../services/api';
 import type { Article } from '../models/Article';
 import { ArticleCategoryLabels } from '../models/ArticleCategory';
+import { SEO } from '../components/SEO';
 
 /**
  * Custom hook to handle article data fetching logic.
@@ -81,8 +81,24 @@ export const ArticleDetails = () => {
     if (loading) return <div className="p-8 text-center text-gray-500">Loading article...</div>;
     if (error || !article) return <div className="p-8 text-center text-red-500">{error || "Not found"}</div>;
 
+    // SEO specific derived data
+    const description = article.content.substring(0, 160).replace(/[#*`]/g, '').trim() + '...';
+    const keywords = article.tags.join(', ');
+
     return (
         <div className="max-w-3xl mx-auto p-8 animate-in fade-in duration-500">
+            <SEO 
+                title={article.title}
+                description={description}
+                keywords={keywords}
+                type="article"
+                articleData={{
+                    publishedTime: article.createdAt,
+                    tags: article.tags,
+                    section: ArticleCategoryLabels[article.category as keyof typeof ArticleCategoryLabels]
+                }}
+            />
+
             <button
                 onClick={() => navigate(-1)}
                 className="mb-8 text-indigo-600 hover:text-indigo-800 font-medium

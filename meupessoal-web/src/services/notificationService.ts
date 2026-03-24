@@ -1,4 +1,4 @@
-import toast, { ToastOptions } from 'react-hot-toast';
+import toast, { type ToastOptions } from 'react-hot-toast';
 
 /**
  * A wrapper service for global notifications using react-hot-toast.

@@ -1,15 +1,17 @@
 /**
- * Shared enumeration for article categories.
+ * Shared categories for articles.
  * Must match the Backend ArticleCategory enum values.
  */
-export enum ArticleCategory {
-    Technology = 1,
-    Tutorial = 2,
-    Life = 3,
-    News = 4,
-    Opinion = 5,
-    Projects = 6
-}
+export const ArticleCategory = {
+    Technology: 1,
+    Tutorial: 2,
+    Life: 3,
+    News: 4,
+    Opinion: 5,
+    Projects: 6
+} as const;
+
+export type ArticleCategory = (typeof ArticleCategory)[keyof typeof ArticleCategory];
 
 /**
  * Human-readable labels for each category.
@@ -27,7 +29,6 @@ export const ArticleCategoryLabels: Record<ArticleCategory, string> = {
  * Helper to get a list of options for a select dropdown.
  */
 export const ArticleCategoryOptions = Object.entries(ArticleCategoryLabels)
-    .filter(([key]) => !isNaN(Number(key)))
     .map(([key, label]) => ({
         value: Number(key),
         label

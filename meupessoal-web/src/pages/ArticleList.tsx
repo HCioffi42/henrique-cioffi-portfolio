@@ -5,6 +5,7 @@ import type { ArticleSummary } from '../models/ArticleSummary';
 import { ArticleCard } from '../components/ArticleCard';
 import Pagination from '../components/Pagination';
 import { ArticleCategory, ArticleCategoryLabels } from '../models/ArticleCategory';
+import { SEO } from '../components/SEO';
 
 /**
  * The main article listing page (Home).
@@ -54,15 +55,20 @@ export const ArticleList = () => {
         window.scrollTo(0, 0);
     }, [currentPage, currentTags.join(','), category]);
 
-    // Update document title based on filters
-    useEffect(() => {
-        let title = 'Insights & Articles - MySite';
+    // Derived SEO metadata based on active filters
+    const { seoTitle, seoDescription } = useMemo(() => {
+        let title = 'Insights & Articles';
+        let description = 'Exploring the intersection of technology, design, and software engineering. Portfolio and blog by Henrique Cioffi.';
+        
         if (currentTags.length > 0) {
-            title = `Articles tagged #${currentTags.join(', #')} - MySite`;
+            title = `Articles tagged #${currentTags.join(', #')}`;
+            description = `Discovering content related to ${currentTags.join(' and ')}. Articles and insights on software development and design.`;
         } else if (category !== undefined) {
-            title = `Category: ${ArticleCategoryLabels[category]} - MySite`;
+            title = `Category: ${ArticleCategoryLabels[category]}`;
+            description = `All articles filed under the ${ArticleCategoryLabels[category]} category. Focused insights on technology and engineering.`;
         }
-        document.title = title;
+        
+        return { seoTitle: title, seoDescription: description };
     }, [currentTags, category]);
 
     /**
@@ -115,6 +121,7 @@ export const ArticleList = () => {
 
     return (
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <SEO title={seoTitle} description={seoDescription} />
             <header className="mb-12 text-center">
                 <h1 className="text-4xl font-extrabold text-gray-900 tracking-tight sm:text-5xl mb-4">
                     {currentTags.length > 0 

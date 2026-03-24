@@ -1,0 +1,11 @@
+{
+  "siteName": "MySite",
+  "defaultTitle": "MySite - Technology, Design, and Engineering",
+  "defaultDescription": "Exploring the intersection of technology, design, and software engineering. Portfolio and blog by Henrique Cioffi.",
+  "author": "Henrique Cioffi",
+  "baseUrl": "http://localhost:5173",
+  "ogImage": "/assets/og-image.png",
+  "twitterHandle": "@hcioffi",
+  "keywords": "dotnet, csharp, clean architecture, react, software engineering, backend, developer, Londrina",
+  "themeColor": "#4f46e5"
+}

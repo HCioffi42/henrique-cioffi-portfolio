@@ -1,7 +1,7 @@
 # Project Roadmap: MeuSitePessoal
 
-**Current Milestone**: Phase 2 - Content Management & Admin UX
-**Global Progress**: [███████░░░] 72%
+**Current Milestone**: Phase 3: Infrastructure, Polish & Deployment
+**Global Progress**: [█████████░] 91%
 
 ---
 
@@ -52,11 +52,11 @@
 
 ## Phase 3: Infrastructure, Polish & Deployment
 
-### [ ] Track 09: Global Systems (Logging & Toasts)
+### [x] Track 09: Global Systems (Logging & Toasts)
 - **9.1**: Integration with `Infrastructure.Logging`.
 - **9.1**: Global Notification System (e.g., `react-hot-toast`).
 
-### [ ] Track 10: SEO & Metadata
+### [x] Track 10: SEO & Metadata
 - **10.1**: `react-helmet-async` for dynamic Meta Tags.
 - **10.2**: Open Graph (OG) tags for social media.
 
