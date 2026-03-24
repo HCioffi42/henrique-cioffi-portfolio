@@ -59,6 +59,7 @@ public class GlobalExceptionHandler : IExceptionHandler
         {
             ArgumentException => (StatusCodes.Status400BadRequest, "Invalid Request Data"),
             KeyNotFoundException => (StatusCodes.Status404NotFound, "Resource Not Found"),
+            UnauthorizedAccessException => (StatusCodes.Status401Unauthorized, "Unauthorized Access"),
             _ => (StatusCodes.Status500InternalServerError, "Internal Server Error")
         };
 

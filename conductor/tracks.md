@@ -5,6 +5,8 @@ This file tracks all the development tracks for this project.
 ## Open Tracks
 
 ## Completed Tracks
+- [x] **Track: Global Systems (Logging & Toasts)**
+  *Link: [./tracks/09-global-systems/index.md](./tracks/09-global-systems/index.md)*
 - [x] **Track: Tag & Category Management**
   *Link: [./tracks/08-tag-category-management/index.md](./tracks/08-tag-category-management/index.md)*
 - [x] **Track: Interactive Markdown Editor**
