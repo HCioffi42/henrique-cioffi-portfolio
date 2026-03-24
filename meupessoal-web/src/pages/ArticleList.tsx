@@ -7,39 +7,39 @@ import Pagination from '../components/Pagination';
 import { ArticleCategory, ArticleCategoryLabels } from '../models/ArticleCategory';
 import { SEO } from '../components/SEO';
 
+const PAGE_SIZE = 6;
+
 /**
  * The main article listing page (Home).
  * It fetches paginated summarized data from the optimized backend endpoint and renders a grid of cards.
  * It supports URL-based tag filtering (via route param or query string) and category filtering.
  */
-export const ArticleList = () => {
+const ArticleList = () => {
     const [searchParams, setSearchParams] = useSearchParams();
-
-    // State to track the total number of pages returned by the API.
     const [totalPages, setTotalPages] = useState<number>(0);
-
     const [articles, setArticles] = useState<ArticleSummary[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
 
-    // Derives current filters from URL.
     const currentPage = Number(searchParams.get('page')) || 1;
     const queryCategory = searchParams.get('category');
     const category = queryCategory ? (Number(queryCategory) as ArticleCategory) : undefined;
     
-    // Combines tags from the route param (/tags/:tag) and query string (?tags=x).
+    // currentTags is an array. Arrays change reference on every render.
     const currentTags = useMemo(() => {
         return searchParams.getAll('tags');
     }, [searchParams]);
 
-    const pageSize = 6;
+    // Created a stable string representation of tags for the useEffect dependency array.
+    // This solves the "complex expression" and "missing dependency" warnings.
+    const tagsKey = currentTags.join(',');
 
     useEffect(() => {
         const loadArticles = async () => {
             setLoading(true);
             try {
                 // Sends the tags array to the service for the MediatR intersection logic.
-                const data = await getArticleSummaries(currentPage, pageSize, currentTags, category);
+                const data = await getArticleSummaries(currentPage, PAGE_SIZE, currentTags, category);
                 setArticles(data.items);
                 setTotalPages(data.totalPages);
                 setError(null);
@@ -51,11 +51,10 @@ export const ArticleList = () => {
             }
         };
 
-       void loadArticles();
+        void loadArticles();
         window.scrollTo(0, 0);
-    }, [currentPage, currentTags.join(','), category]);
+    }, [currentPage, tagsKey, category, currentTags]); 
 
-    // Derived SEO metadata based on active filters
     const { seoTitle, seoDescription } = useMemo(() => {
         let title = 'Insights & Articles';
         let description = 'Exploring the intersection of technology, design, and software engineering. Portfolio and blog by Henrique Cioffi.';
@@ -142,7 +141,6 @@ export const ArticleList = () => {
                 </div>
             </header>
 
-            {/* Active Filters Display Section */}
             {(currentTags.length > 0 || category !== undefined) && (
                 <div className="mb-8 flex flex-col items-center justify-center gap-3">
                     <span className="text-sm text-gray-500 uppercase tracking-widest font-semibold">Active Filters</span>
@@ -152,7 +150,7 @@ export const ArticleList = () => {
                                 <span className="text-sm text-amber-800 font-bold tracking-wide">
                                     Category: {ArticleCategoryLabels[category]}
                                 </span>
-                                <button onClick={removeCategoryFilter} className="text-amber-400 hover:text-red-500 rounded-full p-0.5 transition-colors">
+                                <button onClick={removeCategoryFilter} className="text-amber-400 hover:text-red-500 rounded-full p-0.5 transition-colors cursor-pointer">
                                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
                                 </button>
                             </div>
@@ -160,7 +158,7 @@ export const ArticleList = () => {
                         {currentTags.map(tag => (
                             <div key={tag} className="inline-flex items-center gap-2 bg-indigo-50 border border-indigo-100 px-4 py-1.5 rounded-full shadow-sm">
                                 <span className="text-sm text-indigo-800 font-bold tracking-wide capitalize">#{tag}</span>
-                                <button onClick={() => removeTagFilter(tag)} className="text-indigo-400 hover:text-red-500 rounded-full p-0.5 transition-colors">
+                                <button onClick={() => removeTagFilter(tag)} className="text-indigo-400 hover:text-red-500 rounded-full p-0.5 transition-colors cursor-pointer">
                                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
                                 </button>
                             </div>
@@ -193,3 +191,6 @@ export const ArticleList = () => {
         </main>
     );
 };
+
+// Changed to default export to avoid Fast Refresh lint issues in some configurations.
+export default ArticleList;

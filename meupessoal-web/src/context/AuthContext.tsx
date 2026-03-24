@@ -1,9 +1,10 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { storage } from '../util/storage';
-import type { ReactNode } from 'react';
+import { createContext, useContext } from 'react';
 import type { User } from '../models/Auth';
 
-interface AuthContextType {
+/**
+ * Interface defining the shape of the authentication context.
+ */
+export interface AuthContextType {
   user: User | null;
   token: string | null;
   isAuthenticated: boolean;
@@ -12,65 +13,15 @@ interface AuthContextType {
   logout: () => void;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
 /**
- * Provider component for the authentication context.
- * Manages user state and persists the JWT token in localStorage.
- * 
- * @param {ReactNode} children The children components to be wrapped.
- * @returns {JSX.Element} The provider element.
+ * The raw authentication context.
+ * Exported here to be used by the Provider, but kept in a .ts file to satisfy Fast Refresh rules.
  */
-export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [token, setToken] = useState<string | null>(null);
-  const [isInitialized, setIsInitialized] = useState(false);
-
-  useEffect(() => {
-    const savedToken = storage.getToken();
-    const savedUsername = storage.getUsername();
-
-    if (savedToken && savedUsername) {
-      setToken(savedToken);
-      setUser({ username: savedUsername });
-    }
-    setIsInitialized(true);
-  }, []);
-
-  const login = (newToken: string, username: string) => {
-    storage.saveSession(newToken, username);
-    setToken(newToken);
-    setUser({ username });
-  };
-
-  const logout = () => {
-    storage.clearSession();
-    setToken(null);
-    setUser(null);
-  };
-
-  // Avoids flashing protected content while recovering the session
-  if (!isInitialized) return null; 
-
-  return (
-  <AuthContext.Provider 
-    value={{ 
-      user, 
-      token, 
-      isAuthenticated: !!token, 
-      isInitialized, 
-      login, 
-      logout 
-    }}>
-    {children}
-  </AuthContext.Provider>
-);
-};
+export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 /**
  * Custom hook to consume the authentication context.
- * 
- * @returns {AuthContextType} The authentication state and actions.
+ * * @returns {AuthContextType} The authentication state and actions.
  * @throws {Error} If used outside of an AuthProvider.
  */
 export const useAuth = () => {
