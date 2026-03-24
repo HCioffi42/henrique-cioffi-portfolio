@@ -5,6 +5,7 @@ import { imageService } from '../services/imageService';
 import { MarkdownToolbar } from '../components/MarkdownToolbar';
 import { MarkdownRenderer } from '../components/MarkdownRenderer';
 import { ArticleCategory, ArticleCategoryOptions } from '../models/ArticleCategory';
+import notificationService from '../services/notificationService';
 
 /**
  * Page component for editing an existing article.
@@ -29,7 +30,6 @@ export const EditArticle = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
 
     // Track NEWLY uploaded images to cleanup if the user cancels
     const [newlyUploadedImages, setNewlyUploadedImages] = useState<string[]>([]);
@@ -68,7 +68,7 @@ export const EditArticle = () => {
                 });
             } catch (err) {
                 console.error('Failed to fetch article:', err);
-                setError('Could not load the article data. Please return to the dashboard.');
+                notificationService.error('Could not load the article data.');
             } finally {
                 setIsLoading(false);
             }
@@ -100,15 +100,21 @@ export const EditArticle = () => {
         const end = textarea.selectionEnd;
 
         setIsUploading(true);
-        setError(null);
+
+        const uploadPromise = imageService.uploadImage(file);
+
+        notificationService.promise(uploadPromise, {
+            loading: 'Uploading image...',
+            success: 'Image uploaded successfully!',
+            error: 'Could not upload image.'
+        });
 
         try {
-            const url = await imageService.uploadImage(file);
+            const url = await uploadPromise;
             // Stores the URL for potential cleanup later
             setNewlyUploadedImages(prev => [...prev, url]);
             
             // Encodes the URL to handle spaces and special characters.
-            // This ensures the Markdown parser recognizes the image syntax correctly.
             const encodedUrl = encodeURI(url);
             const markdownImage = `\n![${file.name}](${encodedUrl})\n`;
 
@@ -131,7 +137,6 @@ export const EditArticle = () => {
             
         } catch (err: unknown) {
             console.error('Failed to upload image:', err);
-            setError('Could not upload image. Please try again.');
         } finally {
             setIsUploading(false);
             e.target.value = '';
@@ -143,10 +148,9 @@ export const EditArticle = () => {
      */
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setError(null);
 
         if (!formData.title.trim() || !formData.summary.trim() || !formData.content.trim()) {
-            setError('Title, Summary, and Content are required fields.');
+            notificationService.error('Title, Summary, and Content are required fields.');
             return;
         }
 
@@ -157,7 +161,7 @@ export const EditArticle = () => {
                 .map((tag) => tag.trim())
                 .filter((tag) => tag !== '');
 
-            await api.put(`/articles/${id}`, {
+            const updatePromise = api.put(`/articles/${id}`, {
                 id,
                 title: formData.title,
                 summary: formData.summary,
@@ -166,11 +170,18 @@ export const EditArticle = () => {
                 category: formData.category
             });
 
+            notificationService.promise(updatePromise, {
+                loading: 'Saving changes...',
+                success: 'Article updated successfully!',
+                error: 'An error occurred while saving changes.'
+            });
+
+            await updatePromise;
+
             isSaved.current = true;
             navigate('/admin/dashboard');
         } catch (err) {
             console.error('Failed to update article:', err);
-            setError('An error occurred while saving changes.');
         } finally {
             setIsSubmitting(false);
         }
@@ -184,12 +195,6 @@ export const EditArticle = () => {
                 <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Edit Post</h1>
                 <p className="mt-2 text-gray-600">Refine your content and keep it updated for your audience.</p>
             </header>
-
-            {error && (
-                <div className="bg-red-50 border-l-4 border-red-400 p-4 mb-6 rounded shadow-sm">
-                    <p className="text-sm text-red-700 font-medium">{error}</p>
-                </div>
-            )}
 
             <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-100 space-y-6">

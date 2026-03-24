@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import authService from '../services/authService';
+import notificationService from '../services/notificationService';
 
 /**
  * Renders the login page and manages the authentication form state.
@@ -12,7 +13,6 @@ import authService from '../services/authService';
 const Login: React.FC = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   
   const { login } = useAuth();
@@ -26,7 +26,6 @@ const Login: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    setError(null);
 
     try {
       const response = await authService.login(username, password);
@@ -34,6 +33,8 @@ const Login: React.FC = () => {
       // Updates the global authentication state.
       login(response.token, response.username);
       
+      notificationService.success(`Welcome back, ${response.username}!`);
+
       // Redirects the user to the main dashboard or home page.
       navigate('/');
     } catch (err) {
@@ -42,9 +43,9 @@ const Login: React.FC = () => {
         const message = err.response?.status === 401 
           ? 'Invalid username or password.' 
           : 'Unable to connect to the server. Please try again later.';
-        setError(message);
+        notificationService.error(message);
       } else {
-        setError('An unexpected error occurred.');
+        notificationService.error('An unexpected error occurred.');
       }
     } finally {
       setIsLoading(false);
@@ -86,12 +87,6 @@ const Login: React.FC = () => {
               />
             </div>
           </div>
-
-          {error && (
-            <div className="text-sm text-red-600 text-center font-medium">
-              {error}
-            </div>
-          )}
 
           <div>
             <button

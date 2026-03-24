@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { Toaster } from 'react-hot-toast';
 import { ArticleList } from './pages/ArticleList';
 import { ArticleDetails } from './pages/ArticleDetails';
 import { CreateArticle } from './pages/CreateArticle';
@@ -16,6 +17,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 export default function App() {
     return (
         <AuthProvider>
+            <Toaster position="top-right" />
             <BrowserRouter>
                 <Layout>
                     <Routes>

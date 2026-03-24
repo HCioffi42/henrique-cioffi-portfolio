@@ -5,6 +5,7 @@ import { imageService } from '../services/imageService';
 import { MarkdownToolbar } from '../components/MarkdownToolbar';
 import { MarkdownRenderer } from '../components/MarkdownRenderer';
 import { ArticleCategory, ArticleCategoryOptions } from '../models/ArticleCategory';
+import notificationService from '../services/notificationService';
 
 /**
  * Page component for creating a new article.
@@ -25,7 +26,6 @@ export const CreateArticle = () => {
     const [isPreviewMode, setIsPreviewMode] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
 
     // Track uploaded images to cleanup if the user cancels
     const [uploadedImages, setUploadedImages] = useState<string[]>([]);
@@ -69,10 +69,17 @@ export const CreateArticle = () => {
         const end = textarea.selectionEnd;
 
         setIsUploading(true);
-        setError(null);
+
+        const uploadPromise = imageService.uploadImage(file);
+
+        notificationService.promise(uploadPromise, {
+            loading: 'Uploading image...',
+            success: 'Image uploaded successfully!',
+            error: 'Could not upload image. Please try again.'
+        });
 
         try {
-            const url = await imageService.uploadImage(file);
+            const url = await uploadPromise;
             setUploadedImages(prev => [...prev, url]);
 
             // Encodes the URL to handle spaces and special characters.
@@ -98,7 +105,6 @@ export const CreateArticle = () => {
             
         } catch (err: unknown) {
             console.error('Failed to upload image:', err);
-            setError('Could not upload image. Please try again.');
         } finally {
             setIsUploading(false);
             e.target.value = ''; // Resets input to allow re-uploading the same file.
@@ -110,10 +116,9 @@ export const CreateArticle = () => {
      */
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setError(null);
 
         if (!formData.title.trim() || !formData.summary.trim() || !formData.content.trim()) {
-            setError('Title, Summary, and Content are required fields.');
+            notificationService.error('Title, Summary, and Content are required fields.');
             return;
         }
 
@@ -124,7 +129,7 @@ export const CreateArticle = () => {
                 .map((tag) => tag.trim())
                 .filter((tag) => tag !== '');
 
-            await createArticle({
+            const createPromise = createArticle({
                 title: formData.title,
                 summary: formData.summary,
                 content: formData.content,
@@ -132,11 +137,18 @@ export const CreateArticle = () => {
                 category: formData.category
             });
 
+            notificationService.promise(createPromise, {
+                loading: 'Publishing your post...',
+                success: 'Post published successfully!',
+                error: 'An error occurred while saving the article.'
+            });
+
+            await createPromise;
+
             isPublished.current = true;
             navigate('/admin/dashboard');
         } catch (err: unknown) {
             console.error('Failed to create article:', err);
-            setError('An error occurred while saving the article.');
         } finally {
             setIsSubmitting(false);
         }
@@ -148,12 +160,6 @@ export const CreateArticle = () => {
                 <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Create New Post</h1>
                 <p className="mt-2 text-gray-600">Share your thoughts and insights with the world.</p>
             </header>
-
-            {error && (
-                <div className="bg-red-50 border-l-4 border-red-400 p-4 mb-6 rounded shadow-sm animate-in fade-in slide-in-from-top-4">
-                    <p className="text-sm text-red-700 font-medium">{error}</p>
-                </div>
-            )}
 
             <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-100 space-y-6">
