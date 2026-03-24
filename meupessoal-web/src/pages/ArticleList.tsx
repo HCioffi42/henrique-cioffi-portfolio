@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo } from 'react';
-import { useSearchParams, useParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import { getArticleSummaries } from '../services/articleService';
 import type { ArticleSummary } from '../models/ArticleSummary';
 import { ArticleCard } from '../components/ArticleCard';
@@ -12,7 +12,6 @@ import { ArticleCategory, ArticleCategoryLabels } from '../models/ArticleCategor
  * It supports URL-based tag filtering (via route param or query string) and category filtering.
  */
 export const ArticleList = () => {
-    const { tag: routeTag } = useParams<{ tag?: string }>();
     const [searchParams, setSearchParams] = useSearchParams();
 
     // State to track the total number of pages returned by the API.
@@ -29,11 +28,8 @@ export const ArticleList = () => {
     
     // Combines tags from the route param (/tags/:tag) and query string (?tags=x).
     const currentTags = useMemo(() => {
-        const tagsFromQuery = searchParams.getAll('tags');
-        const allTags = routeTag ? [routeTag, ...tagsFromQuery] : tagsFromQuery;
-        // Deduplicate
-        return Array.from(new Set(allTags));
-    }, [routeTag, searchParams]);
+        return searchParams.getAll('tags');
+    }, [searchParams]);
 
     const pageSize = 6;
 
@@ -41,19 +37,20 @@ export const ArticleList = () => {
         const loadArticles = async () => {
             setLoading(true);
             try {
+                // Sends the tags array to the service for the MediatR intersection logic.
                 const data = await getArticleSummaries(currentPage, pageSize, currentTags, category);
                 setArticles(data.items);
                 setTotalPages(data.totalPages);
                 setError(null);
             } catch (err) {
                 console.error("Failed to load article summaries:", err);
-                setError("Unable to load articles at this time. Please try again later.");
+                setError("Unable to load articles at this time.");
             } finally {
                 setLoading(false);
             }
         };
 
-        void loadArticles();
+       void loadArticles();
         window.scrollTo(0, 0);
     }, [currentPage, currentTags.join(','), category]);
 
@@ -83,22 +80,12 @@ export const ArticleList = () => {
      */
     const removeTagFilter = (tagToRemove: string) => {
         const newParams = new URLSearchParams(searchParams);
+        const remaining = currentTags.filter(t => t !== tagToRemove);
+
+        newParams.delete('tags');
+        remaining.forEach(t => newParams.append('tags', t));
         newParams.set('page', '1');
 
-        if (tagToRemove === routeTag) {
-            // If we are on /tags/:tag and removing that tag, we must navigate away from the dynamic route.
-            const remainingTags = searchParams.getAll('tags');
-            newParams.delete('tags');
-            remainingTags.forEach(t => newParams.append('tags', t));
-            // Note: Since we are changing the path, it's better to use a navigate call if we had access to it, 
-            // but for simplicity, we'll assume the user might click another tag or go home.
-            window.location.href = `/?${newParams.toString()}`;
-            return;
-        }
-
-        const remainingQueryTags = searchParams.getAll('tags').filter(t => t !== tagToRemove);
-        newParams.delete('tags');
-        remainingQueryTags.forEach(tag => newParams.append('tags', tag));
         setSearchParams(newParams);
     };
 
@@ -131,7 +118,7 @@ export const ArticleList = () => {
             <header className="mb-12 text-center">
                 <h1 className="text-4xl font-extrabold text-gray-900 tracking-tight sm:text-5xl mb-4">
                     {currentTags.length > 0 
-                        ? `Articles tagged #${currentTags[0]}${currentTags.length > 1 ? '...' : ''}`
+                        ? `Filtering by ${currentTags.length} tags`
                         : category !== undefined 
                             ? `Browsing: ${ArticleCategoryLabels[category]}`
                             : 'Insights & Articles'}
@@ -148,37 +135,26 @@ export const ArticleList = () => {
                 </div>
             </header>
 
+            {/* Active Filters Display Section */}
             {(currentTags.length > 0 || category !== undefined) && (
                 <div className="mb-8 flex flex-col items-center justify-center gap-3">
                     <span className="text-sm text-gray-500 uppercase tracking-widest font-semibold">Active Filters</span>
                     <div className="flex flex-wrap gap-2 justify-center">
                         {category !== undefined && (
-                            <div className="inline-flex items-center gap-2 bg-amber-50 border border-amber-100 px-4 py-1.5 rounded-full shadow-sm">
+                             <div className="inline-flex items-center gap-2 bg-amber-50 border border-amber-100 px-4 py-1.5 rounded-full shadow-sm">
                                 <span className="text-sm text-amber-800 font-bold tracking-wide">
                                     Category: {ArticleCategoryLabels[category]}
                                 </span>
-                                <button
-                                    onClick={removeCategoryFilter}
-                                    className="text-amber-400 hover:text-red-500 hover:bg-red-50 rounded-full p-0.5 transition-colors focus:outline-none"
-                                    aria-label="Remove category filter">
-                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                    </svg>
+                                <button onClick={removeCategoryFilter} className="text-amber-400 hover:text-red-500 rounded-full p-0.5 transition-colors">
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
                                 </button>
                             </div>
                         )}
                         {currentTags.map(tag => (
                             <div key={tag} className="inline-flex items-center gap-2 bg-indigo-50 border border-indigo-100 px-4 py-1.5 rounded-full shadow-sm">
-                                <span className="text-sm text-indigo-800 font-bold tracking-wide capitalize">
-                                    #{tag}
-                                </span>
-                                <button
-                                    onClick={() => removeTagFilter(tag)}
-                                    className="text-indigo-400 hover:text-red-500 hover:bg-red-50 rounded-full p-0.5 transition-colors focus:outline-none"
-                                    aria-label={`Remove ${tag} filter`}>
-                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                    </svg>
+                                <span className="text-sm text-indigo-800 font-bold tracking-wide capitalize">#{tag}</span>
+                                <button onClick={() => removeTagFilter(tag)} className="text-indigo-400 hover:text-red-500 rounded-full p-0.5 transition-colors">
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
                                 </button>
                             </div>
                         ))}
@@ -188,7 +164,7 @@ export const ArticleList = () => {
 
             {articles.length === 0 ? (
                 <div className="text-center py-20 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200">
-                    <p className="text-gray-500 text-lg">No articles match the selected filters. Try removing some filters.</p>
+                    <p className="text-gray-500 text-lg">No articles match these combined filters.</p>
                 </div>
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">

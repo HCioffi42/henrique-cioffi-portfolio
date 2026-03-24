@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import type { ArticleSummary } from '../models/ArticleSummary';
 import { ArticleCategoryLabels } from '../models/ArticleCategory';
 
@@ -12,6 +12,7 @@ interface ArticleCardProps {
  */
 export const ArticleCard = ({ article }: ArticleCardProps) => {
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
 
     // Formats the ISO date string into a localized, human-readable format.
     const formattedDate = new Intl.DateTimeFormat('en-US', {
@@ -19,6 +20,23 @@ export const ArticleCard = ({ article }: ArticleCardProps) => {
         month: 'short',
         day: 'numeric'
     }).format(new Date(article.createdAt));
+
+    /**
+     * Handles tag clicks by appending the new tag to current filters and navigating back to the home list with all parameters.
+     */
+    const handleTagClick = (tag: string) => {
+        const newParams = new URLSearchParams(searchParams);
+        const currentTags = newParams.getAll('tags');
+        const lowerTag = tag.toLowerCase();
+
+        // Only append if the tag is not already active
+        if (!currentTags.includes(lowerTag)) {
+            newParams.append('tags', lowerTag);
+            newParams.set('page', '1'); // Reset pagination when adding a filter
+        }
+
+        navigate(`/?${newParams.toString()}`);
+    };
 
     return (
         <article className="bg-white border border-gray-100 rounded-xl p-6 shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col h-full group">
@@ -52,7 +70,7 @@ export const ArticleCard = ({ article }: ArticleCardProps) => {
                             key={tag}
                             onClick={(e) => {
                                 e.stopPropagation();
-                                navigate(`/tags/${tag.toLowerCase()}`);
+                                handleTagClick(tag);
                             }}
                             className="px-2.5 py-0.5 bg-indigo-50 text-indigo-600 rounded-full text-[10px] font-semibold capitalize
                                         tracking-wider hover:bg-indigo-100 hover:text-indigo-800 transition-colors cursor-pointer">
