@@ -1,14 +1,14 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { HelmetProvider } from 'react-helmet-async';
-import { ArticleList } from './pages/ArticleList';
+import ArticleList from './pages/ArticleList';
 import { ArticleDetails } from './pages/ArticleDetails';
 import { CreateArticle } from './pages/CreateArticle';
 import { EditArticle } from './pages/EditArticle';
 import Dashboard from './pages/Dashboard';
 import Login from './pages/Login';
 import { Layout } from './components/Layout';
-import { AuthProvider } from './context/AuthContext';
+import { AuthProvider } from './context/AuthProvider';
 import ProtectedRoute from './components/ProtectedRoute';
 
 /**
