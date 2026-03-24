@@ -10,6 +10,20 @@ jobs:
   # Job 1: Backend (.NET) Validation
   backend-validation:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:latest
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password_ci_test
+          POSTGRES_DB: MeuSiteDb
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -26,7 +40,9 @@ jobs:
         run: dotnet build --configuration Release --no-restore
 
       - name: Run Tests
-        run: dotnet test --configuration Release --no-build --verbosity normal
+        run: dotnet test --configuration Release --no-build
+        env:
+          ConnectionStrings__DefaultConnection: "Host=localhost;Port=5432;Database=MeuSiteDb;Username=postgres;Password=password_ci_test;Include Error Detail=true"
 
   # Job 2: Frontend (React) Validation
   frontend-validation:
