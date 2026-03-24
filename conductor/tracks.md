@@ -2,9 +2,9 @@
 
 This file tracks all the development tracks for this project.
 
-## Open Tracks
-
 ## Completed Tracks
+- [x] **Track: SEO & Metadata**
+  *Link: [./tracks/10-seo-metadata/index.md](./tracks/10-seo-metadata/index.md)*
 - [x] **Track: Global Systems (Logging & Toasts)**
   *Link: [./tracks/09-global-systems/index.md](./tracks/09-global-systems/index.md)*
 - [x] **Track: Tag & Category Management**
