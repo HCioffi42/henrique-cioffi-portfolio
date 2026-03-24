@@ -1,4 +1,5 @@
 using MediatR;
+using MeuSitePessoal.Domain;
 
 namespace MeuSitePessoal.Application.Articles.Commands.UpdateArticle;
 
@@ -11,6 +12,7 @@ public record UpdateArticleCommand(
     string Title,
     string Content,
     string Summary,
+    ArticleCategory Category,
     List<string>? Tags = null) : IRequest<bool>
 {
     // Ensures that even if Tags is omitted in the constructor, 

@@ -25,6 +25,7 @@ public class BlogDbContext : IdentityDbContext
             builder.Property(a => a.Content).IsRequired();
             builder.Property(a => a.Summary).IsRequired().HasMaxLength(500);
             builder.Property(a => a.Tags).IsRequired();
+            builder.Property(a => a.Category).IsRequired();
             builder.Property(a => a.CreatedAt).IsRequired();
         });
 

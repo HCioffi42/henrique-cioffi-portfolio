@@ -1,3 +1,5 @@
+using MeuSitePessoal.Domain;
+
 namespace MeuSitePessoal.Application.Articles.Queries.GetArticles;
 
 /// <summary>
@@ -10,4 +12,5 @@ public class ArticleSummaryDto
     public string Summary { get; set; } = string.Empty;
     public DateTime CreatedAt { get; set; }
     public List<string> Tags { get; set; } = new();
+    public ArticleCategory Category { get; set; }
 }

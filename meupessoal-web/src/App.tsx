@@ -21,6 +21,7 @@ export default function App() {
                     <Routes>
                         {/* 1. Public Routes */}
                         <Route path="/" element={<ArticleList />} />
+                        <Route path="/tags/:tag" element={<ArticleList />} />
                         
                         {/* Matches the "Read" button from Dashboard. URL: /article/90fba8f2... */}
                         <Route path="/article/:id" element={<ArticleDetails />} />

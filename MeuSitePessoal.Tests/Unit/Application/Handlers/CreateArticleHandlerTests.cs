@@ -26,6 +26,7 @@ public class CreateArticleHandlerTests
             "Título do Article",
             "Conteúdo completo do article.",
             "Summary do article.",
+            ArticleCategory.Technology,
             new List<string> { "tag1", "tag2" }
         );
 
@@ -38,6 +39,7 @@ public class CreateArticleHandlerTests
             a.Title == command.Title && 
             a.Content == command.Content &&
             a.Summary == command.Summary &&
+            a.Category == command.Category &&
             a.Tags == command.Tags
         )), Times.Once);
     }

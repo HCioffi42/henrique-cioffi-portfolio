@@ -7,6 +7,7 @@ using MeuSitePessoal.Application.Articles.Commands.DeleteArtigo;
 using MeuSitePessoal.Application.Articles.Queries.GetArticleById;
 using MeuSitePessoal.Application.Articles.Queries.GetAllArticles;
 using Microsoft.AspNetCore.Authorization;
+using MeuSitePessoal.Domain;
 
 namespace MeuSitePessoal.Api.Controllers;
 
@@ -43,13 +44,13 @@ public class ArticlesController : ControllerBase
     }
 
     /// <summary>
-    /// Retrieves a paginated list of article summaries, optionally filtered by multiple tags.
+    /// Retrieves a paginated list of article summaries, optionally filtered by multiple tags and category.
     /// </summary>
     [HttpGet("summaries")]
     [AllowAnonymous]
-    public async Task<IActionResult> GetSummaries([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10, [FromQuery] List<string>? tags = null)
+    public async Task<IActionResult> GetSummaries([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10, [FromQuery] List<string>? tags = null, [FromQuery] ArticleCategory? category = null)
     {
-        var result = await _mediator.Send(new Application.Articles.Queries.GetArticles.GetArticlesQuery(pageNumber, pageSize, tags));
+        var result = await _mediator.Send(new Application.Articles.Queries.GetArticles.GetArticlesQuery(pageNumber, pageSize, tags, category));
         return Ok(result);
     }
 

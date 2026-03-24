@@ -4,6 +4,7 @@ import { createArticle } from '../services/articleService';
 import { imageService } from '../services/imageService';
 import { MarkdownToolbar } from '../components/MarkdownToolbar';
 import { MarkdownRenderer } from '../components/MarkdownRenderer';
+import { ArticleCategory, ArticleCategoryOptions } from '../models/ArticleCategory';
 
 /**
  * Page component for creating a new article.
@@ -17,6 +18,7 @@ export const CreateArticle = () => {
         summary: '',
         content: '',
         tags: '',
+        category: ArticleCategory.Technology
     });
     
     // UI States
@@ -47,9 +49,11 @@ export const CreateArticle = () => {
     /**
      * Updates the form data state when an input value changes.
      */
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
-        setFormData((prev) => ({ ...prev, [name]: value }));
+        // Convert to number if it's the category field
+        const finalValue = name === 'category' ? Number(value) : value;
+        setFormData((prev) => ({ ...prev, [name]: finalValue }));
     };
 
     /**
@@ -125,6 +129,7 @@ export const CreateArticle = () => {
                 summary: formData.summary,
                 content: formData.content,
                 tags: tagsArray,
+                category: formData.category
             });
 
             isPublished.current = true;
@@ -153,8 +158,8 @@ export const CreateArticle = () => {
             <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-100 space-y-6">
                     {/* Meta Section */}
-                    <div className="grid grid-cols-1 gap-6">
-                        <div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="md:col-span-2">
                             <label htmlFor="title" className="block text-sm font-bold text-gray-700 mb-2">Title</label>
                             <input
                                 type="text"
@@ -178,6 +183,23 @@ export const CreateArticle = () => {
                                 className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
                                 placeholder="A short summary for the readers"
                             />
+                        </div>
+
+                        <div>
+                            <label htmlFor="category" className="block text-sm font-bold text-gray-700 mb-2">Category</label>
+                            <select
+                                id="category"
+                                name="category"
+                                value={formData.category}
+                                onChange={handleChange}
+                                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition-all bg-white"
+                            >
+                                {ArticleCategoryOptions.map(option => (
+                                    <option key={option.value} value={option.value}>
+                                        {option.label}
+                                    </option>
+                                ))}
+                            </select>
                         </div>
                     </div>
 
