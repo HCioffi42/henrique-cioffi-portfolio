@@ -39,7 +39,7 @@
 - **6.2**: Local storage logic or AWS S3 integration.
 - **6.3**: Upload button returning URL to the Markdown editor.
 
-### [ ] Track 07: Interactive Markdown Editor
+### [x] Track 07: Interactive Markdown Editor
 - **7.1**: Toolbar for Bold, Italic, Titles, and Lists.
 - **7.2**: Text selection manipulation logic (wrap selection with tags).
 - **7.3**: Live Preview toggle.

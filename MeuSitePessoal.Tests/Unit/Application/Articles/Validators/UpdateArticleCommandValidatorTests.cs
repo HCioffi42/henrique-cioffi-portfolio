@@ -1,5 +1,6 @@
 using FluentValidation.TestHelper;
 using MeuSitePessoal.Application.Articles.Commands.UpdateArticle;
+using MeuSitePessoal.Domain;
 using Xunit;
 
 namespace MeuSitePessoal.Tests.Unit.Application.Articles.Validators;
@@ -22,6 +23,7 @@ public class UpdateArticleCommandValidatorTests
             "Valid Title",
             "Valid Content",
             "Valid Summary",
+            ArticleCategory.Technology,
             new List<string> { "tag1" }
         );
 
@@ -36,7 +38,7 @@ public class UpdateArticleCommandValidatorTests
     public void Should_Have_Error_When_Id_Is_Empty()
     {
         // Arrange
-        var command = new UpdateArticleCommand(Guid.Empty, "Title", "Content", "Summary");
+        var command = new UpdateArticleCommand(Guid.Empty, "Title", "Content", "Summary", ArticleCategory.Technology);
 
         // Act
         var result = _validator.TestValidate(command);
@@ -53,7 +55,7 @@ public class UpdateArticleCommandValidatorTests
     public void Should_Have_Error_When_Titulo_Is_Empty(string? titulo)
     {
         // Arrange
-        var command = new UpdateArticleCommand(Guid.NewGuid(), titulo!, "Content", "Summary");
+        var command = new UpdateArticleCommand(Guid.NewGuid(), titulo!, "Content", "Summary", ArticleCategory.Technology);
 
         // Act
         var result = _validator.TestValidate(command);
@@ -68,7 +70,7 @@ public class UpdateArticleCommandValidatorTests
     {
         // Arrange
         var longTitle = new string('a', 101);
-        var command = new UpdateArticleCommand(Guid.NewGuid(), longTitle, "Content", "Summary");
+        var command = new UpdateArticleCommand(Guid.NewGuid(), longTitle, "Content", "Summary", ArticleCategory.Technology);
 
         // Act
         var result = _validator.TestValidate(command);
@@ -84,7 +86,7 @@ public class UpdateArticleCommandValidatorTests
     public void Should_Have_Error_When_Conteudo_Is_Empty(string? conteudo)
     {
         // Arrange
-        var command = new UpdateArticleCommand(Guid.NewGuid(), "Title", conteudo!, "Summary");
+        var command = new UpdateArticleCommand(Guid.NewGuid(), "Title", conteudo!, "Summary", ArticleCategory.Technology);
 
         // Act
         var result = _validator.TestValidate(command);
@@ -101,7 +103,7 @@ public class UpdateArticleCommandValidatorTests
     public void Should_Have_Error_When_Resumo_Is_Empty(string? resumo)
     {
         // Arrange
-        var command = new UpdateArticleCommand(Guid.NewGuid(), "Title", "Content", resumo!);
+        var command = new UpdateArticleCommand(Guid.NewGuid(), "Title", "Content", resumo!, ArticleCategory.Technology);
 
         // Act
         var result = _validator.TestValidate(command);
@@ -116,7 +118,7 @@ public class UpdateArticleCommandValidatorTests
     {
         // Arrange
         var longSummary = new string('s', 501);
-        var command = new UpdateArticleCommand(Guid.NewGuid(), "Title", "Content", longSummary);
+        var command = new UpdateArticleCommand(Guid.NewGuid(), "Title", "Content", longSummary, ArticleCategory.Technology);
 
         // Act
         var result = _validator.TestValidate(command);
@@ -124,5 +126,19 @@ public class UpdateArticleCommandValidatorTests
         // Assert
         result.ShouldHaveValidationErrorFor(x => x.Summary)
             .WithErrorMessage("Summary must not exceed 500 characters.");
+    }
+
+    [Fact]
+    public void Should_Have_Error_When_Category_Is_Invalid()
+    {
+        // Arrange
+        var command = new UpdateArticleCommand(Guid.NewGuid(), "Title", "Content", "Summary", (ArticleCategory)999);
+
+        // Act
+        var result = _validator.TestValidate(command);
+
+        // Assert
+        result.ShouldHaveValidationErrorFor(x => x.Category)
+            .WithErrorMessage("A valid category is required.");
     }
 }

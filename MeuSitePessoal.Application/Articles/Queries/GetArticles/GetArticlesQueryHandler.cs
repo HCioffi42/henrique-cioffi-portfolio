@@ -33,6 +33,12 @@ public class GetArticlesQueryHandler : IRequestHandler<GetArticlesQuery, PagedRe
             query = request.Tags.Aggregate(query, (current, tag) => 
                 current.Where(a => a.Tags.Contains(tag)));
         }
+
+        // Apply Category filter if provided (exact match).
+        if (request.Category.HasValue)
+        {
+            query = query.Where(a => a.Category == request.Category.Value);
+        }
     
         var totalCount = await query.CountAsync(cancellationToken);
 
@@ -46,7 +52,8 @@ public class GetArticlesQueryHandler : IRequestHandler<GetArticlesQuery, PagedRe
                 Title = a.Title,
                 Summary = a.Summary,
                 CreatedAt = a.CreatedAt,
-                Tags = a.Tags
+                Tags = a.Tags,
+                Category = a.Category
             })
             .ToListAsync(cancellationToken);
 

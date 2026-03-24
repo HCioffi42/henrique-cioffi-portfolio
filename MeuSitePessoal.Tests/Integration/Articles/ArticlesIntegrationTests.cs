@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Json;
 using MeuSitePessoal.Application.Articles.Commands.CreateArticle;
 using MeuSitePessoal.Application.Articles.Commands.UpdateArticle;
+using MeuSitePessoal.Domain;
 
 namespace MeuSitePessoal.Tests.Integration.Articles;
 
@@ -10,7 +11,7 @@ namespace MeuSitePessoal.Tests.Integration.Articles;
 /// </summary>
 public class ArticlesIntegrationTests : BaseIntegrationTest
 {
-    public record ArticleResponse(Guid Id, string Title, string Content, string Summary, List<string> Tags);
+    public record ArticleResponse(Guid Id, string Title, string Content, string Summary, List<string> Tags, ArticleCategory Category);
     public record PagedArtigoResponse(List<ArticleResponse> Items, int CurrentPage, int TotalPages, int TotalCount);
 
     [Fact]
@@ -22,6 +23,7 @@ public class ArticlesIntegrationTests : BaseIntegrationTest
             "Integration Test Title",
             "This is a full content for integration testing.",
             "Quick summary for testing.",
+            ArticleCategory.Technology,
             new List<string> { "integration", "test", "dotnet" }
         );
 
@@ -40,6 +42,7 @@ public class ArticlesIntegrationTests : BaseIntegrationTest
         var persistedArtigo = await getResponse.Content.ReadFromJsonAsync<ArticleResponse>();
         Assert.NotNull(persistedArtigo);
         Assert.Equal("Integration Test Title", persistedArtigo.Title);
+        Assert.Equal(ArticleCategory.Technology, persistedArtigo.Category);
     }
 
     [Fact]
@@ -49,7 +52,7 @@ public class ArticlesIntegrationTests : BaseIntegrationTest
         await AuthenticateAsync();
         for (int i = 1; i <= 3; i++)
         {
-            var command = new CreateArticleCommand($"Article {i}", $"Cont {i}", $"Res {i}", new List<string>());
+            var command = new CreateArticleCommand($"Article {i}", $"Cont {i}", $"Res {i}", ArticleCategory.Technology, new List<string>());
             await _client.PostAsJsonAsync("/api/articles", command);
         }
 
@@ -72,7 +75,7 @@ public class ArticlesIntegrationTests : BaseIntegrationTest
     {
         // Arrange: Seeds an article.
         await AuthenticateAsync();
-        var command = new CreateArticleCommand("Busca por ID", "Content", "Summary", new List<string>());
+        var command = new CreateArticleCommand("Busca por ID", "Content", "Summary", ArticleCategory.Technology, new List<string>());
         var createResponse = await _client.PostAsJsonAsync("/api/articles", command);
         var id = await createResponse.Content.ReadFromJsonAsync<Guid>();
 
@@ -92,11 +95,11 @@ public class ArticlesIntegrationTests : BaseIntegrationTest
     {
         // Arrange: Seeds an article and prepares update data.
         await AuthenticateAsync();
-        var createCommand = new CreateArticleCommand("Original", "Content", "Summary", new List<string>());
+        var createCommand = new CreateArticleCommand("Original", "Content", "Summary", ArticleCategory.Technology, new List<string>());
         var createResponse = await _client.PostAsJsonAsync("/api/articles", createCommand);
         var id = await createResponse.Content.ReadFromJsonAsync<Guid>();
 
-        var updateCommand = new UpdateArticleCommand(id, "Title Atualizado", "Novo Content", "Novo Summary", new List<string> { "atualizado" });
+        var updateCommand = new UpdateArticleCommand(id, "Title Atualizado", "Novo Content", "Novo Summary", ArticleCategory.Tutorial, new List<string> { "atualizado" });
 
         // Act: Updates the article.
         var response = await _client.PutAsJsonAsync($"/api/articles/{id}", updateCommand);
@@ -107,6 +110,7 @@ public class ArticlesIntegrationTests : BaseIntegrationTest
         var getResponse = await _client.GetAsync($"/api/articles/{id}");
         var artigoAtualizado = await getResponse.Content.ReadFromJsonAsync<ArticleResponse>();
         Assert.Equal("Title Atualizado", artigoAtualizado?.Title);
+        Assert.Equal(ArticleCategory.Tutorial, artigoAtualizado?.Category);
     }
 
     [Fact]
@@ -114,7 +118,7 @@ public class ArticlesIntegrationTests : BaseIntegrationTest
     {
         // Arrange: Seeds an article for deletion.
         await AuthenticateAsync();
-        var command = new CreateArticleCommand("Para Delete", "Content", "Summary", new List<string>());
+        var command = new CreateArticleCommand("Para Delete", "Content", "Summary", ArticleCategory.Technology, new List<string>());
         var createResponse = await _client.PostAsJsonAsync("/api/articles", command);
         var id = await createResponse.Content.ReadFromJsonAsync<Guid>();
 

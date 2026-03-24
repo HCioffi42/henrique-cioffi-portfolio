@@ -34,7 +34,7 @@ public class GetArticlesQueryHandlerTests
         {
             for (int i = 1; i <= 10; i++)
             {
-                context.Articles.Add(new Article($"Title {i}", "Content", "Summary", new List<string>()));
+                context.Articles.Add(new Article($"Title {i}", "Content", "Summary", new List<string>(), ArticleCategory.Technology));
             }
             await context.SaveChangesAsync();
         }
@@ -60,9 +60,9 @@ public class GetArticlesQueryHandlerTests
         // Arrange: Seeds articles with specific tag combinations.
         using (var context = new BlogDbContext(_options))
         {
-            context.Articles.Add(new Article("Match", "Content", "Summary", new List<string> { "dotnet", "csharp" }));
-            context.Articles.Add(new Article("Partial", "Content", "Summary", new List<string> { "dotnet" }));
-            context.Articles.Add(new Article("None", "Content", "Summary", new List<string> { "react" }));
+            context.Articles.Add(new Article("Match", "Content", "Summary", new List<string> { "dotnet", "csharp" }, ArticleCategory.Technology));
+            context.Articles.Add(new Article("Partial", "Content", "Summary", new List<string> { "dotnet" }, ArticleCategory.Technology));
+            context.Articles.Add(new Article("None", "Content", "Summary", new List<string> { "react" }, ArticleCategory.Technology));
             await context.SaveChangesAsync();
         }
 
@@ -78,6 +78,32 @@ public class GetArticlesQueryHandlerTests
             Assert.Single(result.Items);
             Assert.Equal("Match", result.Items.First().Title);
             Assert.Equal(1, result.TotalCount);
+        }
+    }
+
+    [Fact]
+    public async Task Handle_WithCategoryFilter_ShouldReturnOnlyArticlesInCategory()
+    {
+        // Arrange
+        using (var context = new BlogDbContext(_options))
+        {
+            context.Articles.Add(new Article("Tech Article", "Content", "Summary", new List<string>(), ArticleCategory.Technology));
+            context.Articles.Add(new Article("News Article", "Content", "Summary", new List<string>(), ArticleCategory.News));
+            await context.SaveChangesAsync();
+        }
+
+        using (var context = new BlogDbContext(_options))
+        {
+            var handler = new GetArticlesQueryHandler(context);
+            var query = new GetArticlesQuery(PageNumber: 1, PageSize: 10, Category: ArticleCategory.News);
+
+            // Act
+            var result = await handler.Handle(query, CancellationToken.None);
+
+            // Assert
+            Assert.Single(result.Items);
+            Assert.Equal("News Article", result.Items.First().Title);
+            Assert.Equal(ArticleCategory.News, result.Items.First().Category);
         }
     }
 }

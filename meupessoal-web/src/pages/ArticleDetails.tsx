@@ -6,6 +6,7 @@ import { MarkdownRenderer } from '../components/MarkdownRenderer';
 import { deleteArticle, getArticleById } from '../services/articleService';
 import { BACKEND_URL } from '../services/api';
 import type { Article } from '../models/Article';
+import { ArticleCategoryLabels } from '../models/ArticleCategory';
 
 /**
  * Custom hook to handle article data fetching logic.
@@ -39,14 +40,20 @@ const useArticle = (id: string | undefined) => {
 /**
  * Component that renders the article header containing the title and publication date.
  */
-const ArticleHeader = ({ title, createdAt }: { title: string; createdAt: string }) => (
+const ArticleHeader = ({ title, createdAt, category }: { title: string; createdAt: string; category: number }) => (
     <header className="mb-10">
-        <h1 className="text-4xl font-extrabold text-gray-900 mb-4 tracking-tight">
+        <div className="flex items-center gap-3 mb-4">
+            <span className="px-3 py-1 bg-amber-50 text-amber-700 text-xs font-bold uppercase tracking-wider rounded-md">
+                {ArticleCategoryLabels[category as keyof typeof ArticleCategoryLabels]}
+            </span>
+            <span className="text-gray-300">|</span>
+            <p className="text-sm text-gray-500 font-medium">
+                Published on {new Date(createdAt).toLocaleDateString()}
+            </p>
+        </div>
+        <h1 className="text-4xl font-extrabold text-gray-900 mb-4 tracking-tight leading-tight">
             {title}
         </h1>
-        <p className="text-sm text-gray-500">
-            Published on {new Date(createdAt).toLocaleDateString()}
-        </p>
     </header>
 );
 
@@ -99,16 +106,19 @@ export const ArticleDetails = () => {
                     </div>
                 )}
 
-            <ArticleHeader title={article.title} createdAt={article.createdAt} />
+            <ArticleHeader 
+                title={article.title} 
+                createdAt={article.createdAt} 
+                category={article.category} 
+            />
 
             <MarkdownRenderer content={article.content} />
 
             <footer className="mt-12 pt-8 border-t border-gray-100 flex flex-wrap gap-2">
                 {article.tags.map(tag => (
-                    // I updated the query parameter key from 'tag' to 'tags' to match the new multi-tag routing logic.
                     <button
                         key={tag}
-                        onClick={() => navigate(`/?page=1&tags=${encodeURIComponent(tag)}`)}
+                        onClick={() => navigate(`/tags/${tag.toLowerCase()}`)}
                         className="bg-indigo-50 text-indigo-600 px-3 py-1 
                                     rounded-full text-xs font-semibold capitalize tracking-wider 
                                     hover:bg-indigo-100 hover:text-indigo-800 transition-colors cursor-pointer 

@@ -4,6 +4,7 @@ import api from '../services/api';
 import { imageService } from '../services/imageService';
 import { MarkdownToolbar } from '../components/MarkdownToolbar';
 import { MarkdownRenderer } from '../components/MarkdownRenderer';
+import { ArticleCategory, ArticleCategoryOptions } from '../models/ArticleCategory';
 
 /**
  * Page component for editing an existing article.
@@ -20,6 +21,7 @@ export const EditArticle = () => {
         summary: '',
         content: '',
         tags: '',
+        category: ArticleCategory.Technology
     });
     
     // UI States
@@ -55,13 +57,14 @@ export const EditArticle = () => {
         const fetchArticle = async () => {
             try {
                 const response = await api.get(`/articles/${id}`);
-                const { title, summary, content, tags } = response.data;
+                const { title, summary, content, tags, category } = response.data;
                 
                 setFormData({
                     title,
                     summary,
                     content,
                     tags: tags.join(', '),
+                    category
                 });
             } catch (err) {
                 console.error('Failed to fetch article:', err);
@@ -77,9 +80,10 @@ export const EditArticle = () => {
     /**
      * Updates the form data state when an input value changes.
      */
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
-        setFormData((prev) => ({ ...prev, [name]: value }));
+        const finalValue = name === 'category' ? Number(value) : value;
+        setFormData((prev) => ({ ...prev, [name]: finalValue }));
     };
 
     /**
@@ -159,6 +163,7 @@ export const EditArticle = () => {
                 summary: formData.summary,
                 content: formData.content,
                 tags: tagsArray,
+                category: formData.category
             });
 
             isSaved.current = true;
@@ -189,8 +194,8 @@ export const EditArticle = () => {
             <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-100 space-y-6">
                     {/* Meta Information Section */}
-                    <div className="grid grid-cols-1 gap-6">
-                        <div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="md:col-span-2">
                             <label htmlFor="title" className="block text-sm font-bold text-gray-700 mb-2">Title</label>
                             <input
                                 type="text"
@@ -212,6 +217,23 @@ export const EditArticle = () => {
                                 onChange={handleChange}
                                 className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
                             />
+                        </div>
+
+                        <div>
+                            <label htmlFor="category" className="block text-sm font-bold text-gray-700 mb-2">Category</label>
+                            <select
+                                id="category"
+                                name="category"
+                                value={formData.category}
+                                onChange={handleChange}
+                                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition-all bg-white"
+                            >
+                                {ArticleCategoryOptions.map(option => (
+                                    <option key={option.value} value={option.value}>
+                                        {option.label}
+                                    </option>
+                                ))}
+                            </select>
                         </div>
                     </div>
 

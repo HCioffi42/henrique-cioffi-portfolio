@@ -16,5 +16,8 @@ public class CreateArticleCommandValidator : AbstractValidator<CreateArticleComm
         RuleFor(v => v.Summary)
             .NotEmpty().WithMessage("Summary is required.")
             .MaximumLength(500).WithMessage("Summary must not exceed 500 characters.");
+
+        RuleFor(v => v.Category)
+            .IsInEnum().WithMessage("A valid category is required.");
     }
 }
