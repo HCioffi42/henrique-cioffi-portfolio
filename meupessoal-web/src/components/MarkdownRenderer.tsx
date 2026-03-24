@@ -5,24 +5,31 @@ import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { BACKEND_URL } from '../services/api';
 
+interface CodeBlockProps {
+    node?: unknown;
+    inline?: boolean;
+    className?: string;
+    children?: React.ReactNode;
+}
+
 /**
  * Component responsible for rendering code blocks.
  * Bypasses Tailwind's prose background interference and uses a dark IDE theme.
  */
-const CodeBlock = ({ inline, className, children, ...props }: any) => {
+const CodeBlock = ({ inline, className, children, ...props }: CodeBlockProps) => {
     const match = /language-(\w+)/.exec(className || '');
     const language = match ? match[1] : '';
     // State that tracks whether the code was recently copied to provide visual feedback.
     const [isCopied, setIsCopied] = useState(false);
+    const rawCode = String(children || '').replace(/\n$/, '');
 
     /**
      * Function that extracts the raw text from the code block and
      * uses the modern Clipboard API to copy it to the user's clipboard.
      */
     const handleCopy = async () => {
-        const codeText = String(children).replace(/\n$/, '');
         try {
-            await navigator.clipboard.writeText(codeText);
+            await navigator.clipboard.writeText(rawCode);
             setIsCopied(true);
             setTimeout(() => setIsCopied(false), 2000);
         } catch (err) {

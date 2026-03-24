@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState } from 'react';
 import { storage } from '../util/storage';
 import type { ReactNode } from 'react';
 import type { User } from '../models/Auth';
@@ -22,20 +22,17 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
  * @returns {JSX.Element} The provider element.
  */
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [token, setToken] = useState<string | null>(null);
-  const [isInitialized, setIsInitialized] = useState(false);
-
-  useEffect(() => {
-    const savedToken = storage.getToken();
+  // Using lazy initialization to read from storage synchronously during the first render.
+  // This avoids cascading renders and satisfies the 'no-set-state-in-effect' lint rule.
+  const [token, setToken] = useState<string | null>(() => storage.getToken());
+  
+  const [user, setUser] = useState<User | null>(() => {
     const savedUsername = storage.getUsername();
+    return savedUsername ? { username: savedUsername } : null;
+  });
 
-    if (savedToken && savedUsername) {
-      setToken(savedToken);
-      setUser({ username: savedUsername });
-    }
-    setIsInitialized(true);
-  }, []);
+  // Since storage reading is synchronous, the context is initialized immediately.
+  const [isInitialized] = useState(true);
 
   const login = (newToken: string, username: string) => {
     storage.saveSession(newToken, username);
@@ -49,22 +46,22 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setUser(null);
   };
 
-  // Avoids flashing protected content while recovering the session
+  // Guard clause kept for architectural consistency, though isInitialized is now true by default.
   if (!isInitialized) return null; 
 
   return (
-  <AuthContext.Provider 
-    value={{ 
-      user, 
-      token, 
-      isAuthenticated: !!token, 
-      isInitialized, 
-      login, 
-      logout 
-    }}>
-    {children}
-  </AuthContext.Provider>
-);
+    <AuthContext.Provider 
+      value={{ 
+        user, 
+        token, 
+        isAuthenticated: !!token, 
+        isInitialized, 
+        login, 
+        logout 
+      }}>
+      {children}
+    </AuthContext.Provider>
+  );
 };
 
 /**
