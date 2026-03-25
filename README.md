@@ -5,7 +5,8 @@ This repository contains a full-stack personal blog system built with a Clean Ar
 ## 1. Tech Stack
 - **Backend**: .NET 8, ASP.NET Core Identity, Entity Framework Core, MediatR, JWT Authentication.
 - **Frontend**: React (Vite), TypeScript, Tailwind CSS, Axios, Context API.
-- **Database**: PostgreSQL (Production/Dev), SQLite (Testing).
+- **Database**: PostgreSQL (Production/Dev/CI).
+- **Infrastructure & CI**: GitHub Actions, Docker (Postgres Service Containers).
 
 ---
 
@@ -13,8 +14,13 @@ This repository contains a full-stack personal blog system built with a Clean Ar
 
 ### 2.1 Backend Setup
 1. Navigate to the `MeuSitePessoal.Api` directory.
-2. Ensure the connection string in `appsettings.json` points to your PostgreSQL instance.
-3. Apply migrations to initialize the Identity schema:
+2. **Initialize Local Secrets**: The connection string is no longer stored in `appsettings.json` for security reasons. Configure it in your local Secret Manager:
+   ```bash
+   dotnet user-secrets init
+   dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Host=localhost;Port=5432;Database=MeuSiteDb;Username=postgres;Password=YOUR_PASSWORD;Include Error Detail=true"
+   ```
+   > **Rider Tip**: You can also right-click the API project and select **Manage > User Secrets** to edit the JSON file directly.
+3. Apply migrations to initialize the database:
    ```bash
    dotnet ef database update
    ```
@@ -29,51 +35,61 @@ This repository contains a full-stack personal blog system built with a Clean Ar
    ```bash
    npm install
    ```
-3. Create a environment file (see **Configuration** section below).
-4. Start the development server:
+3. Start the development server:
    ```bash
    npm run dev
    ```
 
 ---
 
-## 3. Configuration
+## 3. Continuous Integration (Track 11.1)
 
-The frontend requires environment variables to communicate with the API. Create a `.env.development` and a `.env.production` file in the root of the frontend project.
+This project features a robust CI pipeline via **GitHub Actions** that triggers on every push or PR to the `dev` branch.
 
-```env
-# Base URL for the C# Backend API
-VITE_API_URL=http://localhost:25683/api
-```
-
-**Note**: The `.env` files are ignored by Git. A `.env.example` file is provided as a template for new environments.
+- **Backend Validation**: 
+    - Executes **88 automated tests** (Unit and Integration).
+    - Spins up a temporary **PostgreSQL Docker container** to run integration tests against a real database instance, ensuring environment parity.
+- **Frontend Validation**: 
+    - Runs strict **ESLint** checks to enforce code quality and React best practices.
+    - Validates the production build to prevent deployment failures.
 
 ---
 
-## 4. Testing
+## 4. Configuration & Environment
 
-The solution includes a comprehensive test suite with both Unit and Integration tests.
+### 4.1 Backend Secrets
+Sensitive data such as JWT Keys and Database Passwords are managed via:
+- **Development**: .NET Secret Manager (`secrets.json`).
+- **CI**: GitHub Actions Secrets & Environment Variables.
 
-### 4.1 Running Tests
-To run the full suite via CLI:
-```bash
-dotnet test
+### 4.2 Frontend Variables
+Create a `.env.development` file in the frontend root:
+```env
+VITE_API_URL=http://localhost:25683/api
 ```
 
-### 4.2 Important Note on Integration Tests
-Integration tests involve database operations and migrations. To prevent race conditions and conflicts in the shared test database (`meusitepessoal_testdb`), **parallel execution is disabled** at the assembly level.
+---
+
+## 5. Testing Architecture
+
+### 5.1 Integration Tests
+To prevent race conditions and conflicts in the shared test database (`meusitepessoal_testdb`), **parallel execution is disabled** at the assembly level.
 
 The following configuration in the test project ensures sequential execution:
 ```csharp
 [assembly: CollectionBehavior(DisableTestParallelization = true)]
 ```
 
+### 5.2 Running Tests Locally
+```bash
+dotnet test
+```
+
 ---
 
-## 5. Security Features (Track 04)
-- **Identity Integration**: Uses ASP.NET Core Identity for secure user and password management.
-- **JWT Authentication**: Stateless authentication via JSON Web Tokens.
-- **Route Guarding**: Frontend routes are protected via a `ProtectedRoute` component that validates the session state before rendering.
-- **Axios Interceptors**: 
-    - Automatically injects the Bearer token into requests.
-    - Handles `401 Unauthorized` responses by clearing the local session and redirecting to the login page.
+## 6. Security Features
+- **Secret Manager**: Zero sensitive data stored in source control.
+- **Identity Integration**: Secure user and password management via ASP.NET Core Identity.
+- **JWT Authentication**: Stateless authentication with automatic session expiration.
+- **Route Guarding**: Protected administrative routes on the frontend.
+- **Axios Interceptors**: Global handling of authentication tokens and `401 Unauthorized` responses.
