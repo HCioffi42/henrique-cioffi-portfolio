@@ -18,6 +18,11 @@ using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// HC: Visual log to confirm environment type during startup
+Console.WriteLine(Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER") == "true"
+    ? "Running on Docker!"
+    : "Running locally!");
+
 // Add custom logging
 builder.Services.AddCustomLogging(builder.Configuration);
 builder.Host.UseSerilog();
@@ -122,9 +127,9 @@ builder.Services.AddProblemDetails();
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("WebAppPolicy", policy =>
+    options.AddPolicy("AllowAll", policy =>
     {
-        policy.WithOrigins("http://localhost:5173") // Vite/React
+        policy.AllowAnyOrigin()
             .AllowAnyHeader()
             .AllowAnyMethod();
     });
@@ -135,22 +140,23 @@ var app = builder.Build();
 // Enables the global exception handling middleware at the beginning of the pipeline.
 app.UseExceptionHandler();
 
+app.UseCors("AllowAll");
+app.UseStaticFiles();
+
 // Enable Serilog request logging
 app.UseSerilogRequestLogging();
 
 // Habilita o Swagger apenas no ambiente de desenvolvimento para facilitar os testes da API.
-if (app.Environment.IsDevelopment())
+if (app.Environment.IsDevelopment() || app.Environment.IsEnvironment("Docker"))
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
-
-app.UseCors("WebAppPolicy");
-
-// Enables serving static files (such as images in wwwroot).
-app.UseStaticFiles();
+if (!app.Environment.IsDevelopment() && !app.Environment.IsEnvironment("Docker"))
+{
+    app.UseHttpsRedirection();
+}
 
 app.UseAuthentication();
 app.UseAuthorization();
