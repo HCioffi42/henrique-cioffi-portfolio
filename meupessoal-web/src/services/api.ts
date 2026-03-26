@@ -1,10 +1,13 @@
 import axios from 'axios';
 import { storage } from '../util/storage';
 
-// Using Vite's built-in mode detection to set the base URL
+// HC: Logic to determine the API base URL based on the environment mode.
 const isDev = import.meta.env.MODE === 'development';
 
-export const API_BASE_URL = import.meta.env.VITE_API_URL || (isDev ? 'http://localhost:25683/api' : 'http://127.0.0.1:5000/api');
+export const API_BASE_URL = import.meta.env.VITE_API_URL || 
+    (isDev 
+        ? 'http://localhost:25683/api' 
+        : '/api');
 
 // Derived logic remains the same to handle root URL transformations.
 export const BACKEND_URL = API_BASE_URL.replace(/\/api\/?$/, '');

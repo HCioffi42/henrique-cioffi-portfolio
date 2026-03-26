@@ -165,17 +165,38 @@ app.UseAuthorization();
 app.MapControllers();
 
 // Executes the data seed asynchronously during startup, skipping it if running in the testing environment.
+// HC: Robust database migration with retry logic to wait for Postgres startup
 if (!app.Environment.IsEnvironment("Testing"))
 {
     using var scope = app.Services.CreateScope();
     var services = scope.ServiceProvider;
     var context = services.GetRequiredService<BlogDbContext>();
+    
+    int retryCount = 10; 
+    while (retryCount > 0)
+    {
+        try
+        {
+            Console.WriteLine("--> Tentando aplicar migrações... (Tentativa " + (11 - retryCount) + ")");
+            await context.Database.MigrateAsync();
+            Console.WriteLine("--> Migrações aplicadas com sucesso!");
+            break;
+        }
+        catch (Exception)
+        {
+            retryCount--;
+            Console.WriteLine($"--> Banco de dados ainda não está pronto. Aguardando 3s...");
+            if (retryCount == 0) throw;
+            await Task.Delay(3000);
+        }
+    }
+    
     var userManager = services.GetRequiredService<UserManager<IdentityUser>>();
     var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
-        
-    await context.Database.MigrateAsync(); 
-        
+    
+    Console.WriteLine("--> Iniciando Seed de dados...");
     await DbInitializer.SeedAsync(context, userManager, roleManager);
+    Console.WriteLine("--> Ciclo de inicialização FINALIZADO, Chefia!");
 }
 
 app.Run();
