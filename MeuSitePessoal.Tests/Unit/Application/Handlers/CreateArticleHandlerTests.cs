@@ -40,7 +40,7 @@ public class CreateArticleHandlerTests
             a.Content == command.Content &&
             a.Summary == command.Summary &&
             a.Category == command.Category &&
-            a.Tags == command.Tags
+            a.Tags.SequenceEqual(command.Tags)
         )), Times.Once);
     }
 }

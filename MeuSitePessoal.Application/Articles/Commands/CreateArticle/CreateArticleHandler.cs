@@ -22,7 +22,7 @@ public class CreateArticleHandler : IRequestHandler<CreateArticleCommand, Guid>
             request.Title, 
             request.Content, 
             request.Summary, 
-            request.Tags,
+            request.Tags.Select(t => t.ToLower()).ToList(), // Normalizes tags to lowercase for consistent storage and querying.
             request.Category
         );
         

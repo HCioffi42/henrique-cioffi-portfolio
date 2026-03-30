@@ -48,7 +48,11 @@ public class ArticlesController : ControllerBase
     /// </summary>
     [HttpGet("summaries")]
     [AllowAnonymous]
-    public async Task<IActionResult> GetSummaries([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10, [FromQuery] List<string>? tags = null, [FromQuery] ArticleCategory? category = null)
+    public async Task<IActionResult> GetSummaries(
+        [FromQuery] int pageNumber = 1, 
+        [FromQuery] int pageSize = 10, 
+        [FromQuery] List<string>? tags = null,
+        [FromQuery] ArticleCategory? category = null)
     {
         var result = await _mediator.Send(new Application.Articles.Queries.GetArticles.GetArticlesQuery(pageNumber, pageSize, tags, category));
         return Ok(result);

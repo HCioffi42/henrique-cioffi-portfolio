@@ -1,9 +1,15 @@
 import axios from 'axios';
 import { storage } from '../util/storage';
 
-export const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:25683/api';
+// HC: Logic to determine the API base URL based on the environment mode.
+const isDev = import.meta.env.MODE === 'development';
 
-// Derive the root backend URL (e.g., http://localhost:25683) from API_BASE_URL
+export const API_BASE_URL = import.meta.env.VITE_API_URL || 
+    (isDev 
+        ? 'http://localhost:25683/api' 
+        : '/api');
+
+// Derived logic remains the same to handle root URL transformations.
 export const BACKEND_URL = API_BASE_URL.replace(/\/api\/?$/, '');
 
 /**

@@ -1,15 +1,56 @@
 services:
+  # Database Service: Persistent PostgreSQL instance
   database:
-    image: postgres:alpine
+    image: postgres:16-alpine
     container_name: meu_site_db
+    restart: always
     environment:
       - POSTGRES_USER=admin
       - POSTGRES_PASSWORD=sua_senha_segura
       - POSTGRES_DB=meu_site_db
+      - PGDATA=/var/lib/postgresql/data/pgdata
     ports:
       - "5432:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - ./postgres-data:/var/lib/postgresql/data
+    networks:
+      - blog-network
 
-volumes:
-  postgres_data:
+  # Backend Service: .NET 8 Web API
+  backend:
+    build: .
+    image: meusitepessoal-backend
+    container_name: meu_site_api
+    restart: always
+    depends_on:
+      - database
+    environment:
+      # HC: Notice the Host is set to 'database' to match the service name above.
+      - ASPNETCORE_URLS=http://+:80
+      - ASPNETCORE_ENVIRONMENT=Docker
+      - ConnectionStrings__DefaultConnection=Host=database;Port=5432;Database=meu_site_db;Username=admin;Password=sua_senha_segura
+    ports:
+      - "5000:80"
+    volumes:
+      - ./MeuSitePessoal.Api/wwwroot/uploads:/app/wwwroot/uploads
+    networks:
+      - blog-network
+
+  # Frontend Service: React Application (Vite + Nginx)
+  frontend:
+    build:
+      context: ./meupessoal-web
+      dockerfile: Dockerfile
+    container_name: meu_site_web
+    restart: always
+    depends_on:
+      - backend
+    ports:
+      - "80:80"
+    networks:
+      - blog-network
+
+# Network definition to allow services to communicate by name
+networks:
+  blog-network:
+    driver: bridge

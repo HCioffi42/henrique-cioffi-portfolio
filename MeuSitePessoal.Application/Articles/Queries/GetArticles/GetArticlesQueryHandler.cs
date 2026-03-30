@@ -28,10 +28,13 @@ public class GetArticlesQueryHandler : IRequestHandler<GetArticlesQuery, PagedRe
         var query = _context.Articles.AsNoTracking();
 
         // Chains multiple Where clauses using LINQ Aggregate to ensure all requested tags are present (AND logic).
-        if (request.Tags?.Any() == true)
+        if (request.Tags != null && request.Tags.Any())
         {
-            query = request.Tags.Aggregate(query, (current, tag) => 
-                current.Where(a => a.Tags.Contains(tag)));
+            foreach (var tag in request.Tags)
+            {
+                var targetTag = tag.ToLower();;
+                query = query.Where(a => a.Tags.Any(t => t == targetTag));
+            }
         }
 
         // Apply Category filter if provided (exact match).

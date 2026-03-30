@@ -1,6 +1,7 @@
 ﻿using MeuSitePessoal.Domain;
 using MeuSitePessoal.Infrastructure.Data;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 
 namespace MeuSitePessoal.Infrastructure.Configuration;
 
@@ -12,30 +13,37 @@ public static class DbInitializer
     public static async Task SeedAsync(BlogDbContext context, UserManager<IdentityUser> userManager, RoleManager<IdentityRole> roleManager)
     {
         // 1. Seed Roles
-        if (!context.Roles.Any())
+        if (!await context.Roles.AnyAsync())
         {
+            Console.WriteLine("--> Seed: Criando Roles...");
             await roleManager.CreateAsync(new IdentityRole("Admin"));
         }
 
         // 2. Seed Admin User
-        if (!context.Users.Any())
+        if (!await context.Users.AnyAsync())
         {
-            var adminUser = new IdentityUser
-            {
-                UserName = "admin",
-                Email = "admin@meusitepessoal.com",
-                EmailConfirmed = true
-            };
-
+            Console.WriteLine("--> Seed: Criando Usuário Admin...");
+            var adminUser = new IdentityUser { UserName = "admin", Email = "admin@meusitepessoal.com", EmailConfirmed = true };
             var result = await userManager.CreateAsync(adminUser, "Admin123!");
             if (result.Succeeded)
             {
                 await userManager.AddToRoleAsync(adminUser, "Admin");
+                Console.WriteLine("--> Seed: Usuário Admin criado com sucesso!");
+            }
+            else 
+            {
+                Console.WriteLine("--> SEED ERROR: Falha ao criar usuário: " + string.Join(", ", result.Errors.Select(e => e.Description)));
             }
         }
 
         // 3. Seed Articles
-        if (context.Articles.Any()) return;
+        if (await context.Articles.AnyAsync()) 
+        {
+            Console.WriteLine("--> Seed: Artigos já existem. Pulando...");
+            return;
+        }
+
+        Console.WriteLine("--> Seed: Criando Artigos Iniciais...");
 
         var initialArticles = new List<Article>
         {
@@ -70,5 +78,6 @@ public static class DbInitializer
 
         await context.Articles.AddRangeAsync(initialArticles);
         await context.SaveChangesAsync();
+        Console.WriteLine("--> Seed: Artigos salvos no banco!");
     }
 }

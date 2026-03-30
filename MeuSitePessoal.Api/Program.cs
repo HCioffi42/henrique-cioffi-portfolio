@@ -18,6 +18,11 @@ using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// HC: Visual log to confirm environment type during startup
+Console.WriteLine(Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER") == "true"
+    ? "Running on Docker!"
+    : "Running locally!");
+
 // Add custom logging
 builder.Services.AddCustomLogging(builder.Configuration);
 builder.Host.UseSerilog();
@@ -122,9 +127,9 @@ builder.Services.AddProblemDetails();
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("WebAppPolicy", policy =>
+    options.AddPolicy("AllowAll", policy =>
     {
-        policy.WithOrigins("http://localhost:5173") // Vite/React
+        policy.AllowAnyOrigin()
             .AllowAnyHeader()
             .AllowAnyMethod();
     });
@@ -135,22 +140,23 @@ var app = builder.Build();
 // Enables the global exception handling middleware at the beginning of the pipeline.
 app.UseExceptionHandler();
 
+app.UseCors("AllowAll");
+app.UseStaticFiles();
+
 // Enable Serilog request logging
 app.UseSerilogRequestLogging();
 
 // Habilita o Swagger apenas no ambiente de desenvolvimento para facilitar os testes da API.
-if (app.Environment.IsDevelopment())
+if (app.Environment.IsDevelopment() || app.Environment.IsEnvironment("Docker"))
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
-
-app.UseCors("WebAppPolicy");
-
-// Enables serving static files (such as images in wwwroot).
-app.UseStaticFiles();
+if (!app.Environment.IsDevelopment() && !app.Environment.IsEnvironment("Docker"))
+{
+    app.UseHttpsRedirection();
+}
 
 app.UseAuthentication();
 app.UseAuthorization();
@@ -159,17 +165,38 @@ app.UseAuthorization();
 app.MapControllers();
 
 // Executes the data seed asynchronously during startup, skipping it if running in the testing environment.
+// HC: Robust database migration with retry logic to wait for Postgres startup
 if (!app.Environment.IsEnvironment("Testing"))
 {
     using var scope = app.Services.CreateScope();
     var services = scope.ServiceProvider;
     var context = services.GetRequiredService<BlogDbContext>();
+    
+    int retryCount = 10; 
+    while (retryCount > 0)
+    {
+        try
+        {
+            Console.WriteLine("--> Tentando aplicar migrações... (Tentativa " + (11 - retryCount) + ")");
+            await context.Database.MigrateAsync();
+            Console.WriteLine("--> Migrações aplicadas com sucesso!");
+            break;
+        }
+        catch (Exception)
+        {
+            retryCount--;
+            Console.WriteLine($"--> Banco de dados ainda não está pronto. Aguardando 3s...");
+            if (retryCount == 0) throw;
+            await Task.Delay(3000);
+        }
+    }
+    
     var userManager = services.GetRequiredService<UserManager<IdentityUser>>();
     var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
-        
-    await context.Database.MigrateAsync(); 
-        
+    
+    Console.WriteLine("--> Iniciando Seed de dados...");
     await DbInitializer.SeedAsync(context, userManager, roleManager);
+    Console.WriteLine("--> Ciclo de inicialização FINALIZADO, Chefia!");
 }
 
 app.Run();

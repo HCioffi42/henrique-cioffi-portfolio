@@ -134,7 +134,7 @@ export const ArticleDetails = () => {
                 {article.tags.map(tag => (
                     <button
                         key={tag}
-                        onClick={() => navigate(`/tags/${tag.toLowerCase()}`)}
+                        onClick={() => navigate(`/?tags=${tag.toLowerCase()}`)}
                         className="bg-indigo-50 text-indigo-600 px-3 py-1 
                                     rounded-full text-xs font-semibold capitalize tracking-wider 
                                     hover:bg-indigo-100 hover:text-indigo-800 transition-colors cursor-pointer 

@@ -40,3 +40,7 @@ http-client.private.env.json
 # Ignoring the uploads folder to prevent test media from bloating the repository.
 # If you host your frontend build in wwwroot, consider ignoring only the uploads subfolder.
 **/wwwroot/uploads/
+
+# HC: Ignore local database data and temporary docker volumes
+postgres-data/
+data/
