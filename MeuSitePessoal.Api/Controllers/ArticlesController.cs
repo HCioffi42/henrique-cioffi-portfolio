@@ -51,7 +51,7 @@ public class ArticlesController : ControllerBase
     public async Task<IActionResult> GetSummaries(
         [FromQuery] int pageNumber = 1, 
         [FromQuery] int pageSize = 10, 
-        [FromQuery(Name = "tags[]")] List<string>? tags = null,
+        [FromQuery] List<string>? tags = null,
         [FromQuery] ArticleCategory? category = null)
     {
         var result = await _mediator.Send(new Application.Articles.Queries.GetArticles.GetArticlesQuery(pageNumber, pageSize, tags, category));

@@ -30,10 +30,10 @@ public class GetArticlesQueryHandler : IRequestHandler<GetArticlesQuery, PagedRe
         // Chains multiple Where clauses using LINQ Aggregate to ensure all requested tags are present (AND logic).
         if (request.Tags != null && request.Tags.Any())
         {
-            var lowerTags = request.Tags.Select(t => t.ToLower()).ToList();
-            foreach (var targetTag in lowerTags)
+            foreach (var tag in request.Tags)
             {
-                query = query.Where(a => a.Tags.Any(t => t.ToLower() == targetTag));
+                var targetTag = tag.ToLower();;
+                query = query.Where(a => a.Tags.Any(t => t == targetTag));
             }
         }
 
