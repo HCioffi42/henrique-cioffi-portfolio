@@ -38,7 +38,8 @@ jobs:
       - name: Build and Push Backend
         uses: docker/build-push-action@v5
         with:
-          context: ./meupessoal-api
+          context: . 
+          file: ./Dockerfile
           push: true
           tags: |
             henriquecioffi/meu-site-api:${{ steps.vars.outputs.tag }}
