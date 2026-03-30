@@ -63,6 +63,11 @@ export const Layout = ({ children }: LayoutProps) => {
             <footer className="bg-white border-t border-gray-200 py-8">
                 <div className="max-w-5xl mx-auto px-6 text-center text-gray-400 text-sm">
                     &copy; {new Date().getFullYear()} Henrique Cioffi - Built with .NET & React
+                    {import.meta.env.VITE_APP_VERSION && (
+                        <span className="ml-2 border-l border-gray-400 pl-2">
+                            {import.meta.env.VITE_APP_VERSION}
+                        </span>
+                    )}
                 </div>
             </footer>
         </div>

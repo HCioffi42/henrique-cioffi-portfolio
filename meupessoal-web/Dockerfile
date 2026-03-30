@@ -9,6 +9,11 @@ RUN npm install
 
 # Copies the source code and builds the production-ready bundle.
 COPY . .
+
+# HC: Receives the application version from the CI/CD pipeline and exposes it as an environment variable so the Vite build process can embed it into the static files.
+ARG APP_VERSION
+ENV VITE_APP_VERSION=$APP_VERSION
+
 RUN npm run build
 
 # Stage 2: Runtime
