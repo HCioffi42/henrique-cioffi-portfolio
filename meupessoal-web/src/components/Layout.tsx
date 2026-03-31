@@ -29,7 +29,7 @@ export const Layout = ({ children }: LayoutProps) => {
             <header className="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-10">
                 <nav className="max-w-5xl mx-auto px-6 py-4 flex justify-between items-center">
                     <Link to="/" className="text-xl font-bold text-indigo-600 hover:text-indigo-500 transition-colors">
-                        MyPersonalSite
+                        Cioffi's Projects
                     </Link>
                     
                     <div className="flex items-center gap-6">
