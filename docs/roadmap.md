@@ -1,7 +1,7 @@
 # Project Roadmap: MeuSitePessoal
 
-**Current Milestone**: Phase 3: Infrastructure, Polish & Deployment
-**Global Progress**: [█████████░] 96%
+**Current Milestone**: Phase 4: Scalability & Engagement
+**Global Progress**: [██████████░░] 85%
 
 ---
 
@@ -26,7 +26,7 @@
 
 ---
 
-## Phase 2: Content Management & Admin UX - IN PROGRESS
+## Phase 2: Content Management & Admin UX - COMPLETED
 
 ### [x] Track 05: Article CRUD (Edit & Delete)
 - **5.1**: Implement `PUT /api/artigos/{id}` and `DELETE /api/artigos/{id}`.
@@ -50,24 +50,58 @@
 
 ---
 
-## Phase 3: Infrastructure, Polish & Deployment
+## Phase 3: Infrastructure, Polish & Deployment - COMPLETED
 
 ### [x] Track 09: Global Systems (Logging & Toasts)
 - **9.1**: Integration with `Infrastructure.Logging`.
-- **9.1**: Global Notification System (e.g., `react-hot-toast`).
+- **9.2**: Global Notification System (e.g., `react-hot-toast`).
 
 ### [x] Track 10: SEO & Metadata
 - **10.1**: `react-helmet-async` for dynamic Meta Tags.
 - **10.2**: Open Graph (OG) tags for social media.
 
-### [/] Track 11: CI/CD & Production
+### [x] Track 11: CI/CD & Production
 - [x] **11.1**: GitHub Actions for Build & Test
-    * Validation of .NET Backend (88 integration/unit tests passed).
+    * Validation of .NET Backend (96 integration/unit tests passed).
     * Validation of React Frontend (Lint and Build checks).
     * PostgreSQL service container integration for isolated testing.
-- [ ] **11.2**: Deployment to VPS (Docker or Systemd)
-    * Automated delivery to production environment.
-    * Configuration of Docker containers and reverse proxy.
+- [x] **11.2**: Deployment to VPS (Docker)
+    * Automated delivery to production environment via GitHub Actions and SSH.
+    * Configuration of Docker containers (API, Web and Database) with Nginx as a reverse proxy.
+    * Implementation of dynamic versioning (v2026.03.30.03) in the UI footer.
+
+### [x] Track 12: Custom Domain & Brand Identity
+- [x] **12.1**: Registry of the Domain `hcioffi.dev`.
+- [x] **12.2**: DNS Configuration on Cloudflare.
+- [x] **12.3**: Nginx configurations to recognize the Domain and HTTPS.
+
+---
+
+## Phase 4: Scalability & Engagement - IN PROGRESS
+
+### [ ] Track 13: Advanced Search & Discovery
+- **13.1**: Implement Full-Text Search in PostgreSQL using `tsvector`.
+- **13.2**: Frontend search bar with debounce logic to optimize API calls.
+- **13.3**: "Related Articles" recommendation system based on shared tags.
+
+### [ ] Track 14: Observability & Resilience
+- **14.1**: ASP.NET Core Health Checks implementation (Endpoint: `/health`).
+- **14.2**: Caching layer for article summaries using In-Memory or Redis.
+- **14.3**: Structured logging enrichment with Serilog for production tracing.
+
+### [ ] Track 15: Portfolio Polish & Social
+- **15.1**: Dark Mode support using Tailwind CSS strategy.
+- **15.2**: Newsletter subscription form with automated email integration.
+- **15.3**: Contact form with server-side validation and notifications.
+
+---
+
+## Phase 5: SDET Excellence (Quality Engineering)
+
+### [ ] Track 16: Automated Quality Suite
+- **16.1**: End-to-End (E2E) testing suite with **Playwright** for critical flows.
+- **16.2**: Automated accessibility (A11y) audits in the CI pipeline.
+- **16.3**: Performance benchmarking using **k6** for API endpoints.
 
 ---
 
@@ -76,5 +110,5 @@
 | Complexity | Task Type | Strategy |
 | :--- | :--- | :--- |
 | **Low** | DTOs, CRUD UI, Basic Components, SEO Tags | **Full Outsourcing**: Let the agent generate everything. |
-| **Medium** | Auth Logic, Media Controllers, CI/CD YAML | **Supervised**: Generate first, but perform a manual security audit. |
-| **High** | Editor Logic, Logging Integration, Test Refactoring | **Manual/Collaborative**: Write core logic manually; use agent for boilerplate. |
+| **Medium** | Auth Logic, Media Controllers, CI/CD YAML, HealthChecks | **Supervised**: Generate first, but perform a manual security audit. |
+| **High** | Editor Logic, Logging Integration, E2E Test Scenarios | **Manual/Collaborative**: Write core logic manually; use agent for boilerplate. |
