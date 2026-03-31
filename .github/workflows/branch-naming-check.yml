@@ -1,0 +1,29 @@
+name: "Quality Gate: Branch Naming Policy"
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize]
+
+jobs:
+  check-branch-name:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate Branch Name
+        run: |
+          AUTHOR="${{ github.actor }}"
+          BRANCH_NAME="${{ github.head_ref }}"
+          
+          echo "Evaluating PR from: $AUTHOR on branch: $BRANCH_NAME"
+          
+          if [[ "$AUTHOR" == "HCioffi42" ]]; then
+            echo "Success: Bypass granted for repository owner."
+            exit 0
+          fi
+          
+          if [[ ! "$BRANCH_NAME" =~ ^contribution/ ]]; then
+            echo "ERROR: Your branch name '$BRANCH_NAME' does not follow the required pattern 'contribution/*'."
+            echo "External contributors must use 'contribution/YourName-TaskName'."
+            exit 1
+          fi
+          
+          echo "Success: Branch name follows the naming policy."
