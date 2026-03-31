@@ -30,13 +30,13 @@ This file tracks all the development tracks for this project.
 - [x] **Track: Complete Artigo CRUD (Update and Delete)**
   *Link: [./tracks/05-article-crud-edit-delete/]*
 - [x] **Track: Implement Custom Logging Infrastructure with Serilog**
-*Link: [./tracks/implement_logging_infrastructure/](./tracks/implement_logging_infrastructure/)*
+  *Link: [./tracks/implement_logging_infrastructure/](./tracks/implement_logging_infrastructure/)*
 - [x] **Track: Implementar as Queries (ListarTodos e ObterPorId) seguindo o padrão CQRS com MediatR**
-*Link: [./tracks/implement_queries_cqrs_20260313/](./tracks/implement_queries_cqrs_20260313/)*
+  *Link: [./tracks/implement_queries_cqrs_20260313/](./tracks/implement_queries_cqrs_20260313/)*
 - [x] **Track: Implementar testes de integração em ArtigosIntegrationTests.cs com Testcontainers**
-*Link: [./tracks/implement_integration_tests_20260313/](./tracks/implement_integration_tests_20260313/)*
+  *Link: [./tracks/implement_integration_tests_20260313/](./tracks/implement_integration_tests_20260313/)*
 - [x] **Track: Implementar o Command e Handler para criação de novos artigos do blog seguindo o padrão CQRS**
-*Link: [./tracks/create_artigo_cqrs_20260313/](./tracks/create_artigo_cqrs_20260313/)*
+  *Link: [./tracks/create_artigo_cqrs_20260313/](./tracks/create_artigo_cqrs_20260313/)*
 - [x] **Track: Implementar FluentValidation para o CreateArtigoCommand e integrar ao pipeline do MediatR**
   *Link: [./tracks/implement_fluent_validation_20260314/](./tracks/implement_fluent_validation_20260314/)*
 - [x] **Track: Implement Create Article Frontend**
