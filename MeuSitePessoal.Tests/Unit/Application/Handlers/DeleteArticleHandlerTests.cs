@@ -1,5 +1,6 @@
 using MeuSitePessoal.Application.Articles.Commands.DeleteArtigo;
 using MeuSitePessoal.Domain.Interfaces;
+using Microsoft.Extensions.Caching.Memory;
 using Moq;
 using Xunit;
 
@@ -11,12 +12,14 @@ namespace MeuSitePessoal.Tests.Unit.Application.Handlers;
 public class DeleteArticleHandlerTests
 {
     private readonly Mock<IArticleRepository> _repositoryMock;
+    private readonly Mock<IMemoryCache> _cacheMock;
     private readonly DeleteArticleCommandHandler _handler;
 
     public DeleteArticleHandlerTests()
     {
         _repositoryMock = new Mock<IArticleRepository>();
-        _handler = new DeleteArticleCommandHandler(_repositoryMock.Object);
+        _cacheMock = new Mock<IMemoryCache>();
+        _handler = new DeleteArticleCommandHandler(_repositoryMock.Object, _cacheMock.Object);
     }
 
     [Fact]
