@@ -12,6 +12,7 @@ This project uses the Conductor extension for structured development.
   - List specific files to be created or modified.
   - Detail logic flows (e.g., "The Handler uses a direct projection to skip the Content column").
   - Identify potential risks (e.g., circular dependencies).
+- **Metadata Generation**: A `metadata.json` file must also be generated in the track folder containing `track_id`, `name`, `status`, and `related_files` to ensure project traceability along side with the `index.md` for that track.
 - **Approval**: The detailed plan and spec must be presented in the chat for user validation before proceeding to the Implementation phase.
 
 ## 2. Implementation

@@ -6,6 +6,8 @@ using MeuSitePessoal.Application.Articles.Commands.UpdateArticle;
 using MeuSitePessoal.Application.Articles.Commands.DeleteArtigo;
 using MeuSitePessoal.Application.Articles.Queries.GetArticleById;
 using MeuSitePessoal.Application.Articles.Queries.GetAllArticles;
+using MeuSitePessoal.Application.Articles.Queries.GetArticlesSearch;
+using MeuSitePessoal.Application.Articles.Queries.GetRelatedArticles;
 using Microsoft.AspNetCore.Authorization;
 using MeuSitePessoal.Domain;
 
@@ -27,6 +29,28 @@ public class ArticlesController : ControllerBase
     public ArticlesController(IMediator mediator)
     {
         _mediator = mediator;
+    }
+
+    /// <summary>
+    /// Searches for articles using a search term.
+    /// </summary>
+    [HttpGet("search")]
+    [AllowAnonymous]
+    public async Task<IActionResult> Search([FromQuery] string? searchTerm = null, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
+    {
+        var result = await _mediator.Send(new GetArticlesSearchQuery(searchTerm, pageNumber, pageSize));
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// Retrieves a list of related articles for a specific article based on shared tags.
+    /// </summary>
+    [HttpGet("{id}/related")]
+    [AllowAnonymous]
+    public async Task<IActionResult> GetRelated(Guid id, [FromQuery] int limit = 4)
+    {
+        var result = await _mediator.Send(new GetRelatedArticlesQuery(id, limit));
+        return Ok(result);
     }
 
     /// <summary>
