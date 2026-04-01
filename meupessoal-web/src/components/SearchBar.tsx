@@ -8,12 +8,19 @@ interface SearchBarProps {
 export const SearchBar = ({ onSearch, initialValue = '' }: SearchBarProps) => {
   const [isExpanded, setIsExpanded] = useState(!!initialValue);
   const [inputValue, setInputValue] = useState(initialValue);
+  // HC: Tracks the previous prop value to sync state without useEffect
+  const [prevInitialValue, setPrevInitialValue] = useState(initialValue);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
+  /**
+   * HC: Adjusts state while rendering. 
+   * This is the recommended pattern to sync state with props without cascading renders.
+   */
+  if (initialValue !== prevInitialValue) {
+    setPrevInitialValue(initialValue);
     setInputValue(initialValue);
-    setIsExpanded(!!initialValue);
-  }, [initialValue]);
+    if (initialValue) setIsExpanded(true);
+  }
 
   const triggerSearch = () => {
     onSearch(inputValue);
