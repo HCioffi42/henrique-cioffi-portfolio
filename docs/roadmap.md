@@ -1,7 +1,7 @@
 # Project Roadmap: MeuSitePessoal
 
 **Current Milestone**: Phase 4: Scalability & Engagement
-**Global Progress**: [██████████░░] 85%
+**Global Progress**: [█████████████████░░░] 88%
 
 ---
 
@@ -79,9 +79,9 @@
 
 ## Phase 4: Scalability & Engagement - IN PROGRESS
 
-### [/] Track 13: Advanced Search & Discovery
+### [✓] Track 13: Advanced Search & Discovery
 - [x] **13.1**: Implement Full-Text Search in PostgreSQL using `tsvector`.
-- [ ] **13.2**: Frontend search bar with debounce logic to optimize API calls.
+- [x] **13.2**: Frontend search bar with debounce logic to optimize API calls.
 - [x] **13.3**: "Related Articles" recommendation system based on shared tags.
 
 ### [✓] Track 14: Observability & Resilience
