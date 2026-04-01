@@ -8,6 +8,7 @@ using MeuSitePessoal.Application.Articles.Queries.GetRelatedArticles;
 using MeuSitePessoal.Domain;
 using MeuSitePessoal.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using Xunit;
 
 namespace MeuSitePessoal.Tests.Unit.Application.Articles.Queries;
@@ -18,12 +19,16 @@ namespace MeuSitePessoal.Tests.Unit.Application.Articles.Queries;
 public class GetRelatedArticlesQueryHandlerTests
 {
     private readonly DbContextOptions<BlogDbContext> _options;
+    private readonly IMemoryCache _cache;
 
     public GetRelatedArticlesQueryHandlerTests()
     {
         _options = new DbContextOptionsBuilder<BlogDbContext>()
             .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
             .Options;
+            
+        // HC: Provides a real cache provider for the related articles logic validation.
+        _cache = new MemoryCache(new MemoryCacheOptions());
     }
 
     [Fact]
@@ -42,7 +47,7 @@ public class GetRelatedArticlesQueryHandlerTests
 
         using (var context = new BlogDbContext(_options))
         {
-            var handler = new GetRelatedArticlesQueryHandler(context);
+            var handler = new GetRelatedArticlesQueryHandler(context, _cache);
             var query = new GetRelatedArticlesQuery(ArticleId: baseId);
 
             // Act
@@ -70,7 +75,7 @@ public class GetRelatedArticlesQueryHandlerTests
 
         using (var context = new BlogDbContext(_options))
         {
-            var handler = new GetRelatedArticlesQueryHandler(context);
+            var handler = new GetRelatedArticlesQueryHandler(context, _cache);
             var query = new GetRelatedArticlesQuery(ArticleId: baseId);
 
             // Act
@@ -97,7 +102,7 @@ public class GetRelatedArticlesQueryHandlerTests
 
         using (var context = new BlogDbContext(_options))
         {
-            var handler = new GetRelatedArticlesQueryHandler(context);
+            var handler = new GetRelatedArticlesQueryHandler(context, _cache);
             var query = new GetRelatedArticlesQuery(ArticleId: baseId);
 
             // Act
@@ -123,7 +128,7 @@ public class GetRelatedArticlesQueryHandlerTests
 
         using (var context = new BlogDbContext(_options))
         {
-            var handler = new GetRelatedArticlesQueryHandler(context);
+            var handler = new GetRelatedArticlesQueryHandler(context, _cache);
             var query = new GetRelatedArticlesQuery(ArticleId: baseId);
 
             // Act
@@ -152,7 +157,7 @@ public class GetRelatedArticlesQueryHandlerTests
 
         using (var context = new BlogDbContext(_options))
         {
-            var handler = new GetRelatedArticlesQueryHandler(context);
+            var handler = new GetRelatedArticlesQueryHandler(context, _cache);
             var query = new GetRelatedArticlesQuery(ArticleId: baseId, Limit: 2);
 
             // Act
@@ -178,7 +183,7 @@ public class GetRelatedArticlesQueryHandlerTests
 
         using (var context = new BlogDbContext(_options))
         {
-            var handler = new GetRelatedArticlesQueryHandler(context);
+            var handler = new GetRelatedArticlesQueryHandler(context, _cache);
             var query = new GetRelatedArticlesQuery(ArticleId: baseId);
 
             // Act

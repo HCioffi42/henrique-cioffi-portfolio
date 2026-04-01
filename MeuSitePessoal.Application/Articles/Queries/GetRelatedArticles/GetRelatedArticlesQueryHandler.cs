@@ -2,6 +2,7 @@ using MediatR;
 using MeuSitePessoal.Application.Articles.Queries.GetArticles;
 using MeuSitePessoal.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace MeuSitePessoal.Application.Articles.Queries.GetRelatedArticles;
 
@@ -11,10 +12,12 @@ namespace MeuSitePessoal.Application.Articles.Queries.GetRelatedArticles;
 public class GetRelatedArticlesQueryHandler : IRequestHandler<GetRelatedArticlesQuery, List<ArticleSummaryDto>>
 {
     private readonly BlogDbContext _context;
+    private readonly IMemoryCache _cache;
 
-    public GetRelatedArticlesQueryHandler(BlogDbContext context)
+    public GetRelatedArticlesQueryHandler(BlogDbContext context, IMemoryCache cache)
     {
         _context = context;
+        _cache = cache;
     }
 
     /// <summary>
@@ -22,6 +25,14 @@ public class GetRelatedArticlesQueryHandler : IRequestHandler<GetRelatedArticles
     /// </summary>
     public async Task<List<ArticleSummaryDto>> Handle(GetRelatedArticlesQuery request, CancellationToken cancellationToken)
     {
+        var cacheVersion = _cache.GetOrCreate<Guid>("Articles_CacheVersion", _ => Guid.NewGuid());
+        var cacheKey = $"Related_{request.ArticleId}_l{request.Limit}_v{cacheVersion}";
+
+        if (_cache.TryGetValue(cacheKey, out List<ArticleSummaryDto>? cachedList))
+        {
+            return cachedList!;
+        }
+        
         // 1. Get the base article's tags.
         var baseArticle = await _context.Articles
             .AsNoTracking()
@@ -29,9 +40,7 @@ public class GetRelatedArticlesQueryHandler : IRequestHandler<GetRelatedArticles
             .FirstOrDefaultAsync(a => a.Id == request.ArticleId, cancellationToken);
 
         if (baseArticle == null || !baseArticle.Tags.Any())
-        {
             return new List<ArticleSummaryDto>();
-        }
 
         var baseTags = baseArticle.Tags.Select(t => t.ToLower()).ToList();
 
@@ -62,6 +71,8 @@ public class GetRelatedArticlesQueryHandler : IRequestHandler<GetRelatedArticles
                 Category = x.Article.Category
             })
             .ToList();
+
+        _cache.Set(cacheKey, related, TimeSpan.FromMinutes(10));
 
         return related;
     }

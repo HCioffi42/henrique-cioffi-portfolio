@@ -8,6 +8,7 @@ using MeuSitePessoal.Application.Articles.Queries.GetArticlesSearch;
 using MeuSitePessoal.Domain;
 using MeuSitePessoal.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using Xunit;
 
 namespace MeuSitePessoal.Tests.Unit.Application.Articles.Queries;
@@ -18,12 +19,16 @@ namespace MeuSitePessoal.Tests.Unit.Application.Articles.Queries;
 public class GetArticlesSearchQueryHandlerTests
 {
     private readonly DbContextOptions<BlogDbContext> _options;
+    private readonly IMemoryCache _cache;
 
     public GetArticlesSearchQueryHandlerTests()
     {
         _options = new DbContextOptionsBuilder<BlogDbContext>()
             .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
             .Options;
+            
+        // HC: Initializes a real MemoryCache instance to be used across unit tests.
+        _cache = new MemoryCache(new MemoryCacheOptions());
     }
 
     [Fact]
@@ -39,7 +44,7 @@ public class GetArticlesSearchQueryHandlerTests
 
         using (var context = new BlogDbContext(_options))
         {
-            var handler = new GetArticlesSearchQueryHandler(context);
+            var handler = new GetArticlesSearchQueryHandler(context, _cache);
             var query = new GetArticlesSearchQuery(SearchTerm: "Keyword");
 
             // Act
@@ -64,7 +69,7 @@ public class GetArticlesSearchQueryHandlerTests
 
         using (var context = new BlogDbContext(_options))
         {
-            var handler = new GetArticlesSearchQueryHandler(context);
+            var handler = new GetArticlesSearchQueryHandler(context, _cache);
             var query = new GetArticlesSearchQuery(SearchTerm: "unique");
 
             // Act
@@ -88,7 +93,7 @@ public class GetArticlesSearchQueryHandlerTests
 
         using (var context = new BlogDbContext(_options))
         {
-            var handler = new GetArticlesSearchQueryHandler(context);
+            var handler = new GetArticlesSearchQueryHandler(context, _cache);
             var query = new GetArticlesSearchQuery(SearchTerm: "uppercase");
 
             // Act
@@ -113,7 +118,7 @@ public class GetArticlesSearchQueryHandlerTests
 
         using (var context = new BlogDbContext(_options))
         {
-            var handler = new GetArticlesSearchQueryHandler(context);
+            var handler = new GetArticlesSearchQueryHandler(context, _cache);
             var query = new GetArticlesSearchQuery(SearchTerm: "");
 
             // Act
@@ -136,7 +141,7 @@ public class GetArticlesSearchQueryHandlerTests
 
         using (var context = new BlogDbContext(_options))
         {
-            var handler = new GetArticlesSearchQueryHandler(context);
+            var handler = new GetArticlesSearchQueryHandler(context, _cache);
             var query = new GetArticlesSearchQuery(SearchTerm: "XYZ");
 
             // Act
@@ -163,7 +168,7 @@ public class GetArticlesSearchQueryHandlerTests
 
         using (var context = new BlogDbContext(_options))
         {
-            var handler = new GetArticlesSearchQueryHandler(context);
+            var handler = new GetArticlesSearchQueryHandler(context, _cache);
             var query = new GetArticlesSearchQuery(SearchTerm: "Match", PageNumber: 2, PageSize: 2);
 
             // Act

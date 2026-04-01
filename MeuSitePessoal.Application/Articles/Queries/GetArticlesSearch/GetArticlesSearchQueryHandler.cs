@@ -3,6 +3,7 @@ using MeuSitePessoal.Application.Articles.Queries.GetArticles;
 using MeuSitePessoal.Application.Common.Models;
 using MeuSitePessoal.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace MeuSitePessoal.Application.Articles.Queries.GetArticlesSearch;
 
@@ -12,13 +13,15 @@ namespace MeuSitePessoal.Application.Articles.Queries.GetArticlesSearch;
 public class GetArticlesSearchQueryHandler : IRequestHandler<GetArticlesSearchQuery, PagedResult<ArticleSummaryDto>>
 {
     private readonly BlogDbContext _context;
+    private readonly IMemoryCache _cache;
 
     /// <summary>
     /// Initializes a new instance of the handler with the injected database context.
     /// </summary>
-    public GetArticlesSearchQueryHandler(BlogDbContext context)
+    public GetArticlesSearchQueryHandler(BlogDbContext context, IMemoryCache cache)
     {
         _context = context;
+        _cache = cache;
     }
 
     /// <summary>
@@ -26,6 +29,15 @@ public class GetArticlesSearchQueryHandler : IRequestHandler<GetArticlesSearchQu
     /// </summary>
     public async Task<PagedResult<ArticleSummaryDto>> Handle(GetArticlesSearchQuery request, CancellationToken cancellationToken)
     {
+        // HC: Gets the global cache version to maintain consistency across all article-related queries.
+        var cacheVersion = _cache.GetOrCreate<Guid>("Articles_CacheVersion", _ => Guid.NewGuid());
+        var cacheKey = GenerateCacheKey(request, cacheVersion);
+
+        if (_cache.TryGetValue(cacheKey, out PagedResult<ArticleSummaryDto>? cachedResult))
+        {
+            return cachedResult!;
+        }
+        
         var query = _context.Articles.AsNoTracking();
 
         if (!string.IsNullOrWhiteSpace(request.SearchTerm))
@@ -67,6 +79,18 @@ public class GetArticlesSearchQueryHandler : IRequestHandler<GetArticlesSearchQu
             })
             .ToListAsync(cancellationToken);
 
-        return new PagedResult<ArticleSummaryDto>(items, totalCount, request.PageNumber, request.PageSize);
+        var result = new PagedResult<ArticleSummaryDto>(items, totalCount, request.PageNumber, request.PageSize);
+
+        // HC: Caches the search result for 10 minutes (sliding expiration).
+        _cache.Set(cacheKey, result, TimeSpan.FromMinutes(10));
+
+        return result;
+    }
+    
+    private string GenerateCacheKey(GetArticlesSearchQuery query, Guid version)
+    {
+        // HC: Normalizes the search term to ensure cache consistency.
+        var term = query.SearchTerm?.Trim().ToLower() ?? "empty";
+        return $"Search_{term}_p{query.PageNumber}_s{query.PageSize}_v{version}";
     }
 }
