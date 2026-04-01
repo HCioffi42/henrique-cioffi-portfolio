@@ -10,13 +10,11 @@ export const SearchBar = ({ onSearch, initialValue = '' }: SearchBarProps) => {
   const [inputValue, setInputValue] = useState(initialValue);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // HC: Sincroniza o input com a URL (importante para quando você clica no 'X' no ArticleList)
   useEffect(() => {
     setInputValue(initialValue);
-    if (initialValue) setIsExpanded(true);
+    setIsExpanded(!!initialValue);
   }, [initialValue]);
 
-  // HC: Função para disparar a busca manualmente
   const triggerSearch = () => {
     onSearch(inputValue);
   };
@@ -42,7 +40,7 @@ export const SearchBar = ({ onSearch, initialValue = '' }: SearchBarProps) => {
         ${isExpanded ? 'w-64 px-4 shadow-inner' : 'w-10 px-0 justify-center cursor-pointer'}
       `}>
         <button 
-          onClick={triggerSearch} // HC: Agora o clique dispara a busca
+          onClick={triggerSearch}
           className="text-gray-500 hover:text-indigo-600 transition-colors"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -55,7 +53,7 @@ export const SearchBar = ({ onSearch, initialValue = '' }: SearchBarProps) => {
           type="text"
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
-          onKeyDown={handleKeyDown} // HC: Enter dispara a busca
+          onKeyDown={handleKeyDown}
           onFocus={() => setIsExpanded(true)}
           placeholder="Search articles..."
           className={`

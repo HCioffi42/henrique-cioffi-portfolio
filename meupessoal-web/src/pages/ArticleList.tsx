@@ -56,7 +56,7 @@ const ArticleList = () => {
 
         void loadArticles();
         window.scrollTo(0, 0);
-    }, [currentPage, tagsKey, category, searchTerm]); 
+    }, [currentPage, category, searchTerm, currentTags]);
 
     const { seoTitle, seoDescription } = useMemo(() => {
         let title = 'Insights & Articles';
