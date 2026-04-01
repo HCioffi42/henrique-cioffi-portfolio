@@ -1,0 +1,25 @@
+{
+  "id": "14-observability",
+  "name": "Observability & Resilience",
+  "description": "Implement Health Checks, In-Memory Caching, and OpenTelemetry Tracing for the backend.",
+  "status": "completed",
+  "startDate": "2026-04-01",
+  "endDate": "2026-04-01",
+  "tasks": [
+    {
+      "id": "14.1",
+      "name": "Health Checks",
+      "status": "completed"
+    },
+    {
+      "id": "14.2",
+      "name": "In-Memory Caching",
+      "status": "completed"
+    },
+    {
+      "id": "14.3",
+      "name": "Tracing with OpenTelemetry",
+      "status": "completed"
+    }
+  ]
+}

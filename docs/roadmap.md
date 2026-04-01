@@ -84,10 +84,10 @@
 - **13.2**: Frontend search bar with debounce logic to optimize API calls.
 - **13.3**: "Related Articles" recommendation system based on shared tags.
 
-### [ ] Track 14: Observability & Resilience
-- **14.1**: ASP.NET Core Health Checks implementation (Endpoint: `/health`).
-- **14.2**: Caching layer for article summaries using In-Memory or Redis.
-- **14.3**: Structured logging enrichment with Serilog for production tracing.
+### [✓] Track 14: Observability & Resilience
+- [x] **14.1**: ASP.NET Core Health Checks implementation (Endpoint: `/health`).
+- [x] **14.2**: Caching layer for article summaries using In-Memory or Redis.
+- [x] **14.3**: Structured logging enrichment with Serilog for production tracing.
 
 ### [ ] Track 15: Portfolio Polish & Social
 - **15.1**: Dark Mode support using Tailwind CSS strategy.

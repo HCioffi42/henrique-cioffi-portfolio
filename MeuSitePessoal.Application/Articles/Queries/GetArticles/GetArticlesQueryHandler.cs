@@ -2,6 +2,7 @@ using MediatR;
 using MeuSitePessoal.Application.Common.Models;
 using MeuSitePessoal.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace MeuSitePessoal.Application.Articles.Queries.GetArticles;
 
@@ -11,20 +12,32 @@ namespace MeuSitePessoal.Application.Articles.Queries.GetArticles;
 public class GetArticlesQueryHandler : IRequestHandler<GetArticlesQuery, PagedResult<ArticleSummaryDto>>
 {
     private readonly BlogDbContext _context;
+    private readonly IMemoryCache _cache;
+    private const string ArticlesCacheKeyPrefix = "Articles_";
 
     /// <summary>
-    /// Initializes a new instance of the handler with the injected database context.
+    /// Initializes a new instance of the handler with the injected database context and memory cache.
     /// </summary>
-    public GetArticlesQueryHandler(BlogDbContext context)
+    public GetArticlesQueryHandler(BlogDbContext context, IMemoryCache cache)
     {
         _context = context;
+        _cache = cache;
     }
 
     /// <summary>
-    /// Processes the query by filtering, paginating, and projecting the article summaries.
+    /// Processes the query by filtering, paginating, and projecting the article summaries, utilizing caching for performance.
     /// </summary>
     public async Task<PagedResult<ArticleSummaryDto>> Handle(GetArticlesQuery request, CancellationToken cancellationToken)
     {
+        // Get the current cache version to ensure data consistency after invalidation.
+        var cacheVersion = _cache.GetOrCreate<Guid>("Articles_CacheVersion", _ => Guid.NewGuid());
+        var cacheKey = GenerateCacheKey(request, cacheVersion);
+
+        if (_cache.TryGetValue(cacheKey, out PagedResult<ArticleSummaryDto>? cachedResult))
+        {
+            return cachedResult!;
+        }
+
         var query = _context.Articles.AsNoTracking();
 
         // Chains multiple Where clauses using LINQ Aggregate to ensure all requested tags are present (AND logic).
@@ -32,7 +45,7 @@ public class GetArticlesQueryHandler : IRequestHandler<GetArticlesQuery, PagedRe
         {
             foreach (var tag in request.Tags)
             {
-                var targetTag = tag.ToLower();;
+                var targetTag = tag.ToLower();
                 query = query.Where(a => a.Tags.Any(t => t == targetTag));
             }
         }
@@ -60,6 +73,19 @@ public class GetArticlesQueryHandler : IRequestHandler<GetArticlesQuery, PagedRe
             })
             .ToListAsync(cancellationToken);
 
-        return new PagedResult<ArticleSummaryDto>(items, totalCount, request.PageNumber, request.PageSize);
+        var result = new PagedResult<ArticleSummaryDto>(items, totalCount, request.PageNumber, request.PageSize);
+
+        var cacheEntryOptions = new MemoryCacheEntryOptions()
+            .SetSlidingExpiration(TimeSpan.FromMinutes(10));
+
+        _cache.Set(cacheKey, result, cacheEntryOptions);
+
+        return result;
+    }
+
+    private string GenerateCacheKey(GetArticlesQuery query, object version)
+    {
+        var tagsPart = query.Tags != null ? string.Join(",", query.Tags.OrderBy(t => t)) : "none";
+        return $"{ArticlesCacheKeyPrefix}v{version}_p{query.PageNumber}_s{query.PageSize}_c{query.Category ?? 0}_t{tagsPart}";
     }
 }

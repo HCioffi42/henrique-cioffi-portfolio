@@ -25,6 +25,7 @@ Console.WriteLine(Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINE
 
 // Add custom logging
 builder.Services.AddCustomLogging(builder.Configuration);
+builder.Services.AddCustomTracing();
 builder.Host.UseSerilog();
 
 // Configura o DbContext para utilizar o PostgreSQL com a connection string definida no appsettings.json.
@@ -84,10 +85,17 @@ builder.Services.AddMediatR(cfg =>
     cfg.AddOpenBehavior(typeof(ValidationBehavior<,>));
 });
 
-// Registra todos os validators definidos na camada de Application.
+// Registers all the validators defined in the Application layer.
 builder.Services.AddValidatorsFromAssembly(typeof(CreateArticleCommand).Assembly);
 
-// Adiciona o suporte aos Controllers do ASP.NET Core, permitindo a organização das rotas em classes separadas.
+// Add Health Checks
+builder.Services.AddHealthChecks()
+    .AddDbContextCheck<BlogDbContext>("PostgreSQL");
+
+// Add Memory Cache
+builder.Services.AddMemoryCache();
+
+// Adds support for ASP.NET Core Controllers, allowing route organization in separate classes.
 builder.Services.AddControllers();
 
 // Configura o Swagger para documentação da API com suporte a JWT.
@@ -163,6 +171,9 @@ app.UseAuthorization();
 
 // Mapeia as rotas definidas nos Controllers para que a aplicação possa responder às requisições.
 app.MapControllers();
+
+// Maps the health check endpoint to /health.
+app.MapHealthChecks("/health");
 
 // Executes the data seed asynchronously during startup, skipping it if running in the testing environment.
 // HC: Robust database migration with retry logic to wait for Postgres startup

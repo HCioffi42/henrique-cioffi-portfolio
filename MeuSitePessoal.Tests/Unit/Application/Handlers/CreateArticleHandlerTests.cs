@@ -4,18 +4,21 @@ using MeuSitePessoal.Domain;
 using MeuSitePessoal.Domain.Interfaces;
 using MeuSitePessoal.Application.Articles.Commands;
 using Xunit;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace MeuSitePessoal.Tests.Unit.Application.Handlers;
 
 public class CreateArticleHandlerTests
 {
     private readonly Mock<IArticleRepository> _repositoryMock;
+    private readonly Mock<IMemoryCache> _cacheMock;
     private readonly CreateArticleHandler _handler;
 
     public CreateArticleHandlerTests()
     {
         _repositoryMock = new Mock<IArticleRepository>();
-        _handler = new CreateArticleHandler(_repositoryMock.Object);
+        _cacheMock = new Mock<IMemoryCache>();
+        _handler = new CreateArticleHandler(_repositoryMock.Object, _cacheMock.Object);
     }
 
     [Fact]

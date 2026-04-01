@@ -4,19 +4,23 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using MeuSitePessoal.Application.Articles.Queries.GetArticles;
+using MeuSitePessoal.Application.Common.Models;
 using MeuSitePessoal.Domain;
 using MeuSitePessoal.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
+using Moq;
 using Xunit;
 
 namespace MeuSitePessoal.Tests.Unit.Application.Articles.Queries;
 
 /// <summary>
-/// Unit tests for the GetArticlesQueryHandler using an In-Memory database to validate logic flows.
+/// Unit tests for the GetArticlesQueryHandler using an In-Memory database to validate logic flows and caching.
 /// </summary>
 public class GetArticlesQueryHandlerTests
 {
     private readonly DbContextOptions<BlogDbContext> _options;
+    private readonly Mock<IMemoryCache> _cacheMock;
 
     public GetArticlesQueryHandlerTests()
     {
@@ -24,12 +28,13 @@ public class GetArticlesQueryHandlerTests
         _options = new DbContextOptionsBuilder<BlogDbContext>()
             .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
             .Options;
+        _cacheMock = new Mock<IMemoryCache>();
     }
 
     [Fact]
     public async Task Handle_WithPagination_ShouldCalculateSkipAndTakeCorrectly()
     {
-        // Arrange: Seeds 10 articles into the in-memory store.
+        // Arrange
         using (var context = new BlogDbContext(_options))
         {
             for (int i = 1; i <= 10; i++)
@@ -39,25 +44,60 @@ public class GetArticlesQueryHandlerTests
             await context.SaveChangesAsync();
         }
 
+        // Setup cache miss
+        object? cacheValue = null;
+        _cacheMock.Setup(x => x.TryGetValue(It.IsAny<object>(), out cacheValue)).Returns(false);
+        _cacheMock.Setup(x => x.CreateEntry(It.IsAny<object>())).Returns(new Mock<ICacheEntry>().Object);
+
         using (var context = new BlogDbContext(_options))
         {
-            var handler = new GetArticlesQueryHandler(context);
+            var handler = new GetArticlesQueryHandler(context, _cacheMock.Object);
             var query = new GetArticlesQuery(PageNumber: 2, PageSize: 3);
 
-            // Act: Requests the second page with 3 items.
+            // Act
             var result = await handler.Handle(query, CancellationToken.None);
 
-            // Assert: Verifies that only 3 items are returned and the metadata is accurate.
+            // Assert
             Assert.Equal(3, result.Items.Count);
             Assert.Equal(10, result.TotalCount);
-            Assert.Equal(4, result.TotalPages); // 10/3 rounded up
+            Assert.Equal(4, result.TotalPages);
+        }
+    }
+
+    [Fact]
+    public async Task Handle_WhenCacheHit_ShouldReturnCachedValue()
+    {
+        // Arrange
+        var cachedItems = new List<ArticleSummaryDto> { new ArticleSummaryDto { Id = Guid.NewGuid(), Title = "Cached" } };
+        var cachedResult = new PagedResult<ArticleSummaryDto>(cachedItems, 1, 1, 10);
+        var version = Guid.NewGuid();
+        
+        // Mock version key hit
+        object? versionValue = version;
+        _cacheMock.Setup(x => x.TryGetValue("Articles_CacheVersion", out versionValue)).Returns(true);
+
+        // Mock data key hit (we don't know the exact key but we can match by prefix or anything else)
+        object? dataValue = cachedResult;
+        _cacheMock.Setup(x => x.TryGetValue(It.Is<object>(k => k.ToString()!.StartsWith("Articles_v")), out dataValue)).Returns(true);
+
+        using (var context = new BlogDbContext(_options))
+        {
+            var handler = new GetArticlesQueryHandler(context, _cacheMock.Object);
+            var query = new GetArticlesQuery(PageNumber: 1, PageSize: 10);
+
+            // Act
+            var result = await handler.Handle(query, CancellationToken.None);
+
+            // Assert
+            Assert.Same(cachedResult, result);
+            Assert.Equal("Cached", result.Items.First().Title);
         }
     }
 
     [Fact]
     public async Task Handle_WithTagIntersection_ShouldReturnOnlyArticlesWithAllTags()
     {
-        // Arrange: Seeds articles with specific tag combinations.
+        // Arrange
         using (var context = new BlogDbContext(_options))
         {
             context.Articles.Add(new Article("Match", "Content", "Summary", new List<string> { "dotnet", "csharp" }, ArticleCategory.Technology));
@@ -66,15 +106,20 @@ public class GetArticlesQueryHandlerTests
             await context.SaveChangesAsync();
         }
 
+        // Setup cache miss
+        object? cacheValue = null;
+        _cacheMock.Setup(x => x.TryGetValue(It.IsAny<object>(), out cacheValue)).Returns(false);
+        _cacheMock.Setup(x => x.CreateEntry(It.IsAny<object>())).Returns(new Mock<ICacheEntry>().Object);
+
         using (var context = new BlogDbContext(_options))
         {
-            var handler = new GetArticlesQueryHandler(context);
+            var handler = new GetArticlesQueryHandler(context, _cacheMock.Object);
             var query = new GetArticlesQuery(PageNumber: 1, PageSize: 10, Tags: new List<string> { "dotnet", "csharp" });
 
-            // Act: Performs an intersection (AND) filter.
+            // Act
             var result = await handler.Handle(query, CancellationToken.None);
 
-            // Assert: Only the "Match" article should remain after the filter.
+            // Assert
             Assert.Single(result.Items);
             Assert.Equal("Match", result.Items.First().Title);
             Assert.Equal(1, result.TotalCount);
@@ -92,9 +137,14 @@ public class GetArticlesQueryHandlerTests
             await context.SaveChangesAsync();
         }
 
+        // Setup cache miss
+        object? cacheValue = null;
+        _cacheMock.Setup(x => x.TryGetValue(It.IsAny<object>(), out cacheValue)).Returns(false);
+        _cacheMock.Setup(x => x.CreateEntry(It.IsAny<object>())).Returns(new Mock<ICacheEntry>().Object);
+
         using (var context = new BlogDbContext(_options))
         {
-            var handler = new GetArticlesQueryHandler(context);
+            var handler = new GetArticlesQueryHandler(context, _cacheMock.Object);
             var query = new GetArticlesQuery(PageNumber: 1, PageSize: 10, Category: ArticleCategory.News);
 
             // Act

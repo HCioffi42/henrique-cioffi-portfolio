@@ -2,7 +2,11 @@
 
 This file tracks all the development tracks for this project.
 
+## In Progress
+
 ## Completed Tracks
+- [x] **Track 14: Observability & Resilience**
+  *Link: [./tracks/14-observability/index.md](./tracks/14-observability/index.md)*
 - [x] **Track: SEO & Metadata**
   *Link: [./tracks/10-seo-metadata/index.md](./tracks/10-seo-metadata/index.md)*
 - [x] **Track: Global Systems (Logging & Toasts)**
