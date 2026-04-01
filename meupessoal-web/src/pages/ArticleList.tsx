@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { getArticleSummaries } from '../services/articleService';
+import { getArticleSummaries, searchArticles } from '../services/articleService';
 import type { ArticleSummary } from '../models/ArticleSummary';
 import { ArticleCard } from '../components/ArticleCard';
 import Pagination from '../components/Pagination';
@@ -11,8 +11,7 @@ const PAGE_SIZE = 6;
 
 /**
  * The main article listing page (Home).
- * It fetches paginated summarized data from the optimized backend endpoint and renders a grid of cards.
- * It supports URL-based tag filtering (via route param or query string) and category filtering.
+ * It fetches paginated summarized data and supports URL-based filtering for tags, categories, and keywords.
  */
 const ArticleList = () => {
     const [searchParams, setSearchParams] = useSearchParams();
@@ -25,26 +24,30 @@ const ArticleList = () => {
     const queryCategory = searchParams.get('category');
     const category = queryCategory ? (Number(queryCategory) as ArticleCategory) : undefined;
     
-    // currentTags is an array. Arrays change reference on every render.
+    // HC: Retrieves the search term 'q' from the URL.
+    const searchTerm = searchParams.get('q') || '';
+
     const currentTags = useMemo(() => {
         return searchParams.getAll('tags');
     }, [searchParams]);
 
-    // Created a stable string representation of tags for the useEffect dependency array.
-    // This solves the "complex expression" and "missing dependency" warnings.
     const tagsKey = currentTags.join(',');
 
     useEffect(() => {
         const loadArticles = async () => {
             setLoading(true);
             try {
-                // Sends the tags array to the service for the MediatR intersection logic.
-                const data = await getArticleSummaries(currentPage, PAGE_SIZE, currentTags, category);
+                // HC: Logic branch: if there is a search term, use the search service. 
+                // Otherwise, use the standard summary listing with tags/category.
+                const data = searchTerm.trim()
+                    ? await searchArticles(searchTerm, currentPage, PAGE_SIZE)
+                    : await getArticleSummaries(currentPage, PAGE_SIZE, currentTags, category);
+
                 setArticles(data.items);
                 setTotalPages(data.totalPages);
                 setError(null);
             } catch (err) {
-                console.error("Failed to load article summaries:", err);
+                console.error("Failed to load articles:", err);
                 setError("Unable to load articles at this time.");
             } finally {
                 setLoading(false);
@@ -53,13 +56,16 @@ const ArticleList = () => {
 
         void loadArticles();
         window.scrollTo(0, 0);
-    }, [currentPage, tagsKey, category, currentTags]); 
+    }, [currentPage, tagsKey, category, searchTerm]); 
 
     const { seoTitle, seoDescription } = useMemo(() => {
         let title = 'Insights & Articles';
         let description = 'Exploring the intersection of technology, design, and software engineering. Portfolio and blog by Henrique Cioffi.';
         
-        if (currentTags.length > 0) {
+        if (searchTerm) {
+            title = `Search results for: ${searchTerm}`;
+            description = `Viewing articles matching the search term "${searchTerm}".`;
+        } else if (currentTags.length > 0) {
             title = `Articles tagged #${currentTags.join(', #')}`;
             description = `Discovering content related to ${currentTags.join(' and ')}. Articles and insights on software development and design.`;
         } else if (category !== undefined) {
@@ -68,35 +74,34 @@ const ArticleList = () => {
         }
         
         return { seoTitle: title, seoDescription: description };
-    }, [currentTags, category]);
+    }, [currentTags, category, searchTerm]);
 
-    /**
-     * Updates the URL search parameters while preserving current filters.
-     */
     const handlePageChange = (newPage: number) => {
         const newParams = new URLSearchParams(searchParams);
         newParams.set('page', newPage.toString());
         setSearchParams(newParams);
     };
 
-    /**
-     * Removes a specific tag from the active filters.
-     * If the tag was the route param, we navigate to the base list.
-     */
     const removeTagFilter = (tagToRemove: string) => {
         const newParams = new URLSearchParams(searchParams);
         const remaining = currentTags.filter(t => t !== tagToRemove);
-
         newParams.delete('tags');
         remaining.forEach(t => newParams.append('tags', t));
         newParams.set('page', '1');
-
         setSearchParams(newParams);
     };
 
     const removeCategoryFilter = () => {
         const newParams = new URLSearchParams(searchParams);
         newParams.delete('category');
+        newParams.set('page', '1');
+        setSearchParams(newParams);
+    };
+
+    // HC: New function to clear the search term from the URL.
+    const removeSearchFilter = () => {
+        const newParams = new URLSearchParams(searchParams);
+        newParams.delete('q');
         newParams.set('page', '1');
         setSearchParams(newParams);
     };
@@ -123,28 +128,44 @@ const ArticleList = () => {
             <SEO title={seoTitle} description={seoDescription} />
             <header className="mb-12 text-center">
                 <h1 className="text-4xl font-extrabold text-gray-900 tracking-tight sm:text-5xl mb-4">
-                    {currentTags.length > 0 
-                        ? `Filtering by ${currentTags.length} tags`
-                        : category !== undefined 
-                            ? `Browsing: ${ArticleCategoryLabels[category]}`
-                            : 'Insights & Articles'}
+                    {searchTerm 
+                        ? `Results for "${searchTerm}"`
+                        : currentTags.length > 0 
+                            ? `Filtering by ${currentTags.length} tags`
+                            : category !== undefined 
+                                ? `Browsing: ${ArticleCategoryLabels[category]}`
+                                : 'Insights & Articles'}
                 </h1>
                 <p className="text-lg text-gray-500 max-w-2xl mx-auto">
-                    {currentTags.length > 0 
-                        ? `Discovering content related to ${currentTags.join(' and ')}.`
-                        : category !== undefined
-                            ? `All articles filed under the ${ArticleCategoryLabels[category]} category.`
-                            : 'Exploring the intersection of technology, design, and software engineering.'}
+                    {searchTerm
+                        ? `Found ${articles.length} articles that match your search.`
+                        : currentTags.length > 0 
+                            ? `Discovering content related to ${currentTags.join(' and ')}.`
+                            : category !== undefined
+                                ? `All articles filed under the ${ArticleCategoryLabels[category]} category.`
+                                : 'Exploring the intersection of technology, design, and software engineering.'}
                 </p>
                 <div className="mt-8 flex justify-center">
                     <div className="w-24 h-1 bg-indigo-600 rounded-full"></div>
                 </div>
             </header>
 
-            {(currentTags.length > 0 || category !== undefined) && (
+            {(currentTags.length > 0 || category !== undefined || searchTerm) && (
                 <div className="mb-8 flex flex-col items-center justify-center gap-3">
                     <span className="text-sm text-gray-500 uppercase tracking-widest font-semibold">Active Filters</span>
                     <div className="flex flex-wrap gap-2 justify-center">
+                        {/* HC: Renders the active search filter if present. */}
+                        {searchTerm && (
+                            <div className="inline-flex items-center gap-2 bg-indigo-600 px-4 py-1.5 rounded-full shadow-sm">
+                                <span className="text-sm text-white font-bold tracking-wide">
+                                    Search: {searchTerm}
+                                </span>
+                                <button onClick={removeSearchFilter} className="text-indigo-200 hover:text-white rounded-full p-0.5 transition-colors cursor-pointer">
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                                </button>
+                            </div>
+                        )}
+
                         {category !== undefined && (
                              <div className="inline-flex items-center gap-2 bg-amber-50 border border-amber-100 px-4 py-1.5 rounded-full shadow-sm">
                                 <span className="text-sm text-amber-800 font-bold tracking-wide">
@@ -192,5 +213,4 @@ const ArticleList = () => {
     );
 };
 
-// Changed to default export to avoid Fast Refresh lint issues in some configurations.
 export default ArticleList;
