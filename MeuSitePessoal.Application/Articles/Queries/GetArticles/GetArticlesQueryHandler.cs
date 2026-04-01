@@ -30,8 +30,8 @@ public class GetArticlesQueryHandler : IRequestHandler<GetArticlesQuery, PagedRe
     public async Task<PagedResult<ArticleSummaryDto>> Handle(GetArticlesQuery request, CancellationToken cancellationToken)
     {
         // Get the current cache version to ensure data consistency after invalidation.
-        var cacheVersion = _cache.GetOrCreate("Articles_CacheVersion", _ => Guid.NewGuid());
-        var cacheKey = GenerateCacheKey(request, cacheVersion!);
+        var cacheVersion = _cache.GetOrCreate<Guid>("Articles_CacheVersion", _ => Guid.NewGuid());
+        var cacheKey = GenerateCacheKey(request, cacheVersion);
 
         if (_cache.TryGetValue(cacheKey, out PagedResult<ArticleSummaryDto>? cachedResult))
         {

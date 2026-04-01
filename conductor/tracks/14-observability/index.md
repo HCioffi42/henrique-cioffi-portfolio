@@ -28,10 +28,15 @@
 
 ## Verification Performed
 - **Build**: Successful build of all projects.
-- **Code Review**: Verified XML documentation and adherence to Clean Architecture.
+- **Unit Tests**:
+  - `GetArticlesQueryHandlerTests`: Verified cache hits and misses.
+  - `ArticleCacheInvalidationTests`: Verified that Create, Update, and Delete operations invalidate the cache.
+  - All unit tests passed (93 total).
+- **Integration Tests**:
+  - `HealthCheckTests`: Verified that the `/health` endpoint returns 200 OK.
 - **Manual Verification (Plan)**:
   - Health endpoint is active.
-  - Cache versioning logic verified via code logic.
+  - Cache versioning logic verified via unit tests and code logic.
   - OpenTelemetry configuration verified via build.
 
 ## Suggested Commit Message
