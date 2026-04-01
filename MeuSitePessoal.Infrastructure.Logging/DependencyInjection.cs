@@ -1,12 +1,14 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 using Serilog;
 
 namespace MeuSitePessoal.Infrastructure.Logging;
 
 /**
- * Dependency Injection class for configuring Serilog logging.
- * This class isolates logging infrastructure from the rest of the application.
+ * Dependency Injection class for configuring Serilog logging and OpenTelemetry tracing.
+ * This class isolates logging and observability infrastructure from the rest of the application.
  */
 public static class DependencyInjection
 {
@@ -36,6 +38,26 @@ public static class DependencyInjection
 
         // Registers Serilog as the logging provider.
         services.AddSerilog();
+
+        return services;
+    }
+
+    /**
+     * Extension method to configure OpenTelemetry for basic HTTP and SQL tracing.
+     * @param services The IServiceCollection to add the services to.
+     * @returns The updated IServiceCollection.
+     */
+    public static IServiceCollection AddCustomTracing(this IServiceCollection services)
+    {
+        services.AddOpenTelemetry()
+            .WithTracing(tracing =>
+            {
+                tracing
+                    .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService("MeuSitePessoal.Api"))
+                    .AddAspNetCoreInstrumentation() // Traces incoming HTTP requests.
+                    .AddEntityFrameworkCoreInstrumentation() // Traces database queries.
+                    .AddConsoleExporter(); // Simplifies development by showing traces in the console.
+            });
 
         return services;
     }

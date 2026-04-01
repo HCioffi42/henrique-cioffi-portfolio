@@ -93,3 +93,30 @@ Content-Type: image/png
 --WebAppBoundary--
 
 ###
+
+# ==========================================
+# OBSERVABILITY & RESILIENCE
+# ==========================================
+
+### Check API & Database Health
+# Returns "Healthy" if the API and PostgreSQL are properly connected.
+GET {{host}}/health
+Accept: text/plain
+
+###
+
+# ==========================================
+# ADVANCED SEARCH & DISCOVERY
+# ==========================================
+
+### Search Articles (PostgreSQL FTS)
+# Tests the bilingual Full-Text Search. Try terms like "dotnet" or "desenvolvimento".
+GET {{host}}/api/articles/search?searchTerm=dotnet&pageNumber=1&pageSize=6
+Accept: application/json
+
+### Get Related Articles
+# Fetches articles with shared tags to test the intersection logic.
+GET {{host}}/api/articles/{{articleId}}/related?limit=4
+Accept: application/json
+
+###
