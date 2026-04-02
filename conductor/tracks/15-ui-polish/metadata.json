@@ -1,0 +1,12 @@
+{
+  "track_id": "15-ui-polish",
+  "name": "Portfolio Polish & UI/UX",
+  "status": "Completed",
+  "related_files": [
+    "meupessoal-web/src/components/Layout.tsx",
+    "meupessoal-web/src/hooks/useDarkMode.ts",
+    "meupessoal-web/src/components/ThemeToggle.tsx",
+    "meupessoal-web/src/context/ThemeProvider.tsx",
+    "meupessoal-web/src/index.css"
+  ]
+}

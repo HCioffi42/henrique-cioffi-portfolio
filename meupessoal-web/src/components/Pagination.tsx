@@ -14,21 +14,21 @@ const Pagination = ({ currentPage, totalPages, onPageChange }: PaginationProps) 
         <button
             onClick={() => onPageChange(currentPage - 1)}
             disabled={currentPage <= 1}
-            className="px-4 py-2 bg-white border border-gray-300 rounded-lg 
-                        text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-40 
+            className="px-4 py-2 bg-white dark:bg-slate-900 border border-gray-300 dark:border-slate-800 rounded-lg 
+                        text-sm font-medium text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800 disabled:opacity-40 
                         disabled:cursor-not-allowed transition-all shadow-sm">
             Previous
         </button>
 
-        <div className="text-sm font-medium text-gray-600">
-        Page <span className="text-black">{currentPage}</span> of <span className="text-black">{totalPages}</span>
+        <div className="text-sm font-medium text-gray-600 dark:text-slate-400">
+        Page <span className="text-black dark:text-slate-100">{currentPage}</span> of <span className="text-black dark:text-slate-100">{totalPages}</span>
         </div>
 
         <button
             onClick={() => onPageChange(currentPage + 1)}
             disabled={currentPage >= totalPages}
-            className="px-4 py-2 bg-white border border-gray-300 rounded-lg 
-                        text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-40 
+            className="px-4 py-2 bg-white dark:bg-slate-900 border border-gray-300 dark:border-slate-800 rounded-lg 
+                        text-sm font-medium text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800 disabled:opacity-40 
                         disabled:cursor-not-allowed transition-all shadow-sm">
                 Next
         </button>

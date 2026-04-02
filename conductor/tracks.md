@@ -6,6 +6,8 @@ This file tracks all the development tracks for this project.
 
 
 ## Completed Tracks
+- [x] **Track 15: Portfolio Polish & UI/UX**
+  *Link: [./tracks/15-ui-polish/index.md](./tracks/15-ui-polish/index.md)*
 - [x] **Track: Advanced Search & Discovery**
   *Link: [./tracks/13-advanced-search/index.md](./tracks/13-advanced-search/index.md)*
 - [x] **Track 14: Observability & Resilience**

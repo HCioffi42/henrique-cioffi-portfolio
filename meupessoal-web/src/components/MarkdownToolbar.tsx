@@ -35,9 +35,10 @@ export const MarkdownToolbar: React.FC<MarkdownToolbarProps> = ({
 }) => {
     
     /*
-    * Inserts or wraps selection with Markdown markers.
-    * Automatically detects multi-line selections and applies 
-    * formatting to each line individually to maintain valid syntax.
+    * Inserts, wraps, or unwraps selection with Markdown markers.
+    * Implements toggle behavior: if the selection is already wrapped in the 
+    * requested markers, they are removed. Otherwise, they are applied.
+    * Handles multi-line selections by toggling formatting for each line.
     */
     const insertMarkdown = (prefix: string, suffix: string = '') => {
         const textarea = textareaRef.current;
@@ -50,39 +51,59 @@ export const MarkdownToolbar: React.FC<MarkdownToolbarProps> = ({
 
         // Extra spaces selection handling (common with double-click selection)
         if (selection.length > 0 && !selection.includes('\n')) {
-            // Remove spaces on the right and left of the selection for cleaner formatting
             while (selection.endsWith(' ')) { selection = selection.substring(0, selection.length - 1); end--; }
             while (selection.startsWith(' ')) { selection = selection.substring(1); start++; }
         }
 
         let newSelection = '';
-    
-        // Multi-line detection logic: if the selection contains line breaks, it processes each line independently.
-        if (selection.includes('\n')) {
-            const lines = selection.split('\n');
-            newSelection = lines.map(line => (line.trim().length === 0 ? line : `${prefix}${line}${suffix}`)).join('\n');
+        const isMultiLine = selection.includes('\n');
+        
+        /**
+         * Logic to determine if we should wrap or unwrap.
+         * For multi-line, it checks if all non-empty lines are already wrapped.
+         * For single line, it checks the boundaries of the selection.
+         */
+        const isWrapped = isMultiLine
+            ? selection.split('\n').every(line => 
+                line.trim().length === 0 || (line.trim().startsWith(prefix.trim()) && line.trim().endsWith(suffix.trim()))
+              )
+            : selection.startsWith(prefix) && selection.endsWith(suffix);
+
+        if (isWrapped && selection.length > 0) {
+            // Unwrap logic
+            if (isMultiLine) {
+                newSelection = selection.split('\n').map(line => {
+                    if (line.trim().length === 0) return line;
+                    let newLine = line.trim();
+                    if (newLine.startsWith(prefix.trim())) newLine = newLine.substring(prefix.trim().length);
+                    if (newLine.endsWith(suffix.trim())) newLine = newLine.substring(0, newLine.length - suffix.trim().length);
+                    return newLine.trim();
+                }).join('\n');
+            } else {
+                newSelection = selection.substring(prefix.length, selection.length - suffix.length);
+            }
         } else {
-            // Fallback for single line or empty cursor insertion
-            newSelection = prefix + selection + suffix;
+            // Wrap logic
+            if (isMultiLine) {
+                newSelection = selection.split('\n').map(line => (line.trim().length === 0 ? line : `${prefix}${line}${suffix}`)).join('\n');
+            } else {
+                newSelection = prefix + selection + suffix;
+            }
         }
 
         const before = text.substring(0, start);
         const after = text.substring(end);
 
-        // Apply formatting only to the "clean" text (without leading/trailing spaces)
         const newContent = before + newSelection + after;
         onContentChange(newContent);
 
-        // Uses requestAnimationFrame to ensure the focus returns after the state update
         requestAnimationFrame(() => {
             textarea.focus({ preventScroll: true });
             
-            // If text was selected, keeps the entire newly formatted block highlighted
             if (selection.length > 0) {
                 textarea.setSelectionRange(start, start + newSelection.length);
             } else {
-                // If cursor was empty, positions it between markers
-                const newPos = start + prefix.length;
+                const newPos = start + (isWrapped ? 0 : prefix.length);
                 textarea.setSelectionRange(newPos, newPos);
             }
         });
@@ -90,7 +111,6 @@ export const MarkdownToolbar: React.FC<MarkdownToolbarProps> = ({
 
     /*
     * Configuration for all toolbar items.
-    * All tools now leverage the enhanced multi-line logic automatically.
     */
     const tools = [
         { icon: <Bold size={18} />, label: 'Bold', onClick: () => insertMarkdown('**', '**') },
@@ -102,14 +122,16 @@ export const MarkdownToolbar: React.FC<MarkdownToolbarProps> = ({
     ];
 
     return (
-        <div className="flex items-center justify-between p-2 bg-gray-50 border-b border-gray-200 sticky top-0 z-10">
+        <div className="flex items-center justify-between p-2 bg-gray-50 dark:bg-slate-900 border-b border-gray-200 dark:border-slate-800 sticky top-[72px] z-20 w-full">
             {/* Left Side - Toggle Write/Preview */}
-            <div className="flex bg-gray-200 p-1 rounded-lg">
+            <div className="flex bg-gray-200 dark:bg-slate-800 p-1 rounded-lg">
                 <button
                     type="button"
                     onClick={() => setIsPreviewMode(false)}
-                    className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-bold transition-all ${
-                        !isPreviewMode ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-600 hover:text-gray-900'
+                    className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-bold transition-all cursor-pointer ${
+                        !isPreviewMode 
+                            ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm' 
+                            : 'text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-slate-200'
                     }`}>
                     <Edit3 size={14} /> 
 					Write
@@ -117,8 +139,10 @@ export const MarkdownToolbar: React.FC<MarkdownToolbarProps> = ({
                 <button
                     type="button"
                     onClick={() => setIsPreviewMode(true)}
-                    className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-bold transition-all ${
-                        isPreviewMode ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-600 hover:text-gray-900'
+                    className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-bold transition-all cursor-pointer ${
+                        isPreviewMode 
+                            ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm' 
+                            : 'text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-slate-200'
                     }`}>
                     <Eye size={14} /> 
 					Preview
@@ -133,14 +157,14 @@ export const MarkdownToolbar: React.FC<MarkdownToolbarProps> = ({
                             key={index}
                             type="button"
                             onClick={tool.onClick}
-                            className="p-2 text-gray-600 hover:text-indigo-600 hover:bg-white rounded transition-colors"
+                            className="p-2 text-gray-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-white dark:hover:bg-slate-800 rounded transition-colors cursor-pointer"
                             title={tool.label}
                         >
                             {tool.icon}
                         </button>
                     ))}
                     
-                    <div className="w-px h-6 bg-gray-200 mx-1" />
+                    <div className="w-px h-6 bg-gray-200 dark:bg-slate-800 mx-1" />
                     
                     <div className="relative">
                         <input
@@ -155,8 +179,10 @@ export const MarkdownToolbar: React.FC<MarkdownToolbarProps> = ({
                             type="button"
                             onClick={() => document.getElementById('toolbar-image-upload')?.click()}
                             disabled={isUploading}
-                            className={`p-2 rounded transition-colors ${
-                                isUploading ? 'text-gray-400' : 'text-gray-600 hover:text-indigo-600 hover:bg-white'
+                            className={`p-2 rounded transition-colors cursor-pointer ${
+                                isUploading 
+                                    ? 'text-gray-400 dark:text-slate-600' 
+                                    : 'text-gray-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-white dark:hover:bg-slate-800'
                             }`}
                             title="Upload Image"
                         >
