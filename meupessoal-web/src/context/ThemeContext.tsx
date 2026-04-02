@@ -1,26 +1,11 @@
-import { createContext, useContext, type ReactNode } from 'react';
-import { useDarkMode } from '../hooks/useDarkMode';
+import { createContext, useContext } from 'react';
 
-interface ThemeContextType {
+export interface ThemeContextType {
     theme: 'light' | 'dark';
     toggleTheme: () => void;
 }
 
-const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
-
-/**
- * Provider component that manages the global theme state.
- * It uses the useDarkMode hook to handle persistence and class toggling.
- */
-export const ThemeProvider = ({ children }: { children: ReactNode }) => {
-    const { theme, toggleTheme } = useDarkMode();
-
-    return (
-        <ThemeContext.Provider value={{ theme, toggleTheme }}>
-            {children}
-        </ThemeContext.Provider>
-    );
-};
+export const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 /**
  * Custom hook to access the theme context.

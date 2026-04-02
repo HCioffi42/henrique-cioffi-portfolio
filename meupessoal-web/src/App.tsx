@@ -9,7 +9,7 @@ import Dashboard from './pages/Dashboard';
 import Login from './pages/Login';
 import { Layout } from './components/Layout';
 import { AuthProvider } from './context/AuthProvider';
-import { ThemeProvider } from './context/ThemeContext';
+import { ThemeProvider } from './context/ThemeProvider';
 import ProtectedRoute from './components/ProtectedRoute';
 
 /**

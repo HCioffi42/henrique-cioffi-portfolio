@@ -6,6 +6,7 @@
     "meupessoal-web/src/components/Layout.tsx",
     "meupessoal-web/src/hooks/useDarkMode.ts",
     "meupessoal-web/src/components/ThemeToggle.tsx",
+    "meupessoal-web/src/context/ThemeProvider.tsx",
     "meupessoal-web/src/index.css"
   ]
 }
