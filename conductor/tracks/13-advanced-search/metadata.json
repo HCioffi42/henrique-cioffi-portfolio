@@ -1,0 +1,21 @@
+{
+  "track_id": "13-advanced-search",
+  "name": "Advanced Search & Discovery",
+  "status": "Completed",
+  "related_files": [
+    "MeuSitePessoal.Application/Articles/Queries/GetArticlesSearch/GetArticlesSearchQuery.cs",
+    "MeuSitePessoal.Application/Articles/Queries/GetArticlesSearch/GetArticlesSearchQueryHandler.cs",
+    "MeuSitePessoal.Application/Articles/Queries/GetRelatedArticles/GetRelatedArticlesQuery.cs",
+    "MeuSitePessoal.Application/Articles/Queries/GetRelatedArticles/GetRelatedArticlesQueryHandler.cs",
+    "MeuSitePessoal.Api/Controllers/ArticlesController.cs",
+    "meupessoal-web/src/hooks/useDebounce.ts",
+    "meupessoal-web/src/components/SearchBar.tsx",
+    "meupessoal-web/src/pages/ArticleList.tsx",
+    "meupessoal-web/src/pages/ArticleDetails.tsx",
+    "meupessoal-web/src/services/articleService.ts",
+    "MeuSitePessoal.Tests/Integration/Articles/ArticleSearchTests.cs",
+    "MeuSitePessoal.Tests/Integration/Articles/RelatedArticlesTests.cs",
+    "MeuSitePessoal.Tests/Unit/Application/Articles/Queries/GetArticlesSearchQueryHandlerTests.cs",
+    "MeuSitePessoal.Tests/Unit/Application/Articles/Queries/GetRelatedArticlesQueryHandlerTests.cs"
+  ]
+}

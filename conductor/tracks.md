@@ -1,8 +1,10 @@
-# Tracks Registry
+﻿# Tracks Registry
 
 This file tracks all the development tracks for this project.
 
 ## In Progress
+- [x] **Track: Advanced Search & Discovery**
+  *Link: [./tracks/13-advanced-search/index.md](./tracks/13-advanced-search/index.md)*
 
 ## Completed Tracks
 - [x] **Track 14: Observability & Resilience**

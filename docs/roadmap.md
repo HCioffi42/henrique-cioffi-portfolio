@@ -1,7 +1,7 @@
 # Project Roadmap: MeuSitePessoal
 
 **Current Milestone**: Phase 4: Scalability & Engagement
-**Global Progress**: [██████████░░] 85%
+**Global Progress**: [█████████████████░░░] 88%
 
 ---
 
@@ -79,10 +79,10 @@
 
 ## Phase 4: Scalability & Engagement - IN PROGRESS
 
-### [ ] Track 13: Advanced Search & Discovery
-- **13.1**: Implement Full-Text Search in PostgreSQL using `tsvector`.
-- **13.2**: Frontend search bar with debounce logic to optimize API calls.
-- **13.3**: "Related Articles" recommendation system based on shared tags.
+### [✓] Track 13: Advanced Search & Discovery
+- [x] **13.1**: Implement Full-Text Search in PostgreSQL using `tsvector`.
+- [x] **13.2**: Frontend search bar with debounce logic to optimize API calls.
+- [x] **13.3**: "Related Articles" recommendation system based on shared tags.
 
 ### [✓] Track 14: Observability & Resilience
 - [x] **14.1**: ASP.NET Core Health Checks implementation (Endpoint: `/health`).

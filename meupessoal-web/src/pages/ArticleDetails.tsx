@@ -3,38 +3,46 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext'; 
 import { DeleteModal } from '../components/DeleteModal';
 import { MarkdownRenderer } from '../components/MarkdownRenderer';
-import { deleteArticle, getArticleById } from '../services/articleService';
+import { deleteArticle, getArticleById, getRelatedArticles } from '../services/articleService';
 import type { Article } from '../models/Article';
+import type { ArticleSummary } from '../models/ArticleSummary';
 import { ArticleCategoryLabels } from '../models/ArticleCategory';
 import { SEO } from '../components/SEO';
+import { ArticleCard } from '../components/ArticleCard';
 
 /**
- * Custom hook to handle article data fetching logic.
+ * Custom hook to handle article data fetching logic and related articles.
  * Isolates the side effect and state management from the component.
  */
 const useArticle = (id: string | undefined) => {
     const [article, setArticle] = useState<Article | null>(null);
+    const [related, setRelated] = useState<ArticleSummary[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        const fetchArticle = async () => {
+        const fetchArticleData = async () => {
             if (!id) return;
+            setLoading(true);
             try {
-                const data = await getArticleById(id);
-                setArticle(data);
+                const [articleData, relatedData] = await Promise.all([
+                    getArticleById(id),
+                    getRelatedArticles(id)
+                ]);
+                setArticle(articleData);
+                setRelated(relatedData);
             } catch (err) {
-                console.error("Error fetching article details:", err);
+                console.error("Error fetching article details or related articles:", err);
                 setError("Article not found.");
             } finally {
                 setLoading(false);
             }
         };
 
-        void fetchArticle();
+        void fetchArticleData();
     }, [id]);
 
-    return { article: article, loading, error };
+    return { article, related, loading, error };
 };
 
 /**
@@ -65,7 +73,7 @@ export const ArticleDetails = () => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
     const { user } = useAuth();
-    const { article, loading, error } = useArticle(id);
+    const { article, related, loading, error } = useArticle(id);
     const [isModalOpen, setIsModalOpen] = useState(false);
 
     const handleDelete = async () => {
@@ -143,6 +151,23 @@ export const ArticleDetails = () => {
                     </button>
                 ))}
             </footer>
+
+            {/* HC: Related articles recommendation section based on tag intersection. */}
+            {related.length > 0 && (
+                <section className="mt-20 pt-12 border-t border-gray-100">
+                    <h2 className="text-2xl font-bold text-gray-900 mb-8 flex items-center gap-3">
+                        <svg className="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                        </svg>
+                        Related Stories
+                    </h2>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        {related.map(item => (
+                            <ArticleCard key={item.id} article={item} />
+                        ))}
+                    </div>
+                </section>
+            )}
 
             {/* HC: Safe confirmation modal triggered by the admin delete button. */}
             <DeleteModal 

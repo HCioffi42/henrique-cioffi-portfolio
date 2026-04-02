@@ -45,6 +45,34 @@ export const getArticleSummaries = async (
 };
 
 /**
+ * Searches for articles using a search term.
+ */
+export const searchArticles = async (
+    searchTerm: string,
+    pageNumber: number = 1,
+    pageSize: number = 6
+): Promise<PagedResult<ArticleSummary>> => {
+    const response = await api.get<PagedResult<ArticleSummary>>('/Articles/search', {
+        params: {
+            searchTerm,
+            pageNumber,
+            pageSize
+        }
+    });
+    return response.data;
+};
+
+/**
+ * Retrieves a list of related articles for a specific article.
+ */
+export const getRelatedArticles = async (id: string, limit: number = 4): Promise<ArticleSummary[]> => {
+    const response = await api.get<ArticleSummary[]>(`/Articles/${id}/related`, {
+        params: { limit }
+    });
+    return response.data;
+};
+
+/**
  * Fetches a single article by its unique identifier.
  */
 export const getArticleById = async (id: string): Promise<Article> => {
