@@ -213,7 +213,7 @@ export const CreateArticle = () => {
                     <div>
                         <label className="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-2">Content</label>
                         
-                        <div className="flex flex-col border border-gray-200 dark:border-slate-700 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-indigo-500 transition-all bg-white dark:bg-slate-900">
+                        <div className="flex flex-col border border-gray-200 dark:border-slate-700 rounded-lg relative transition-all bg-white dark:bg-slate-900">
                             <MarkdownToolbar 
                                 textareaRef={contentRef}
                                 onContentChange={(newContent) => setFormData(prev => ({ ...prev, content: newContent }))}

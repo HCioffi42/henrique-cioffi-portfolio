@@ -46,7 +46,3 @@ This track focuses on the visual and structural refinement of the `meupessoal-we
     - Define dark mode color variants using the `dark:` prefix.
     - Ensure background and text colors transition smoothly between modes.
 
-## 4. Constraints
-- **No Emojis**: Forbidden in code, comments, and documentation.
-- **Third-Person**: All technical descriptions must avoid "I", "me", or "my".
-- **Surgical Updates**: Only modify files necessary for the layout and dark mode features.

@@ -5,6 +5,7 @@ This track focuses on enhancing the user experience and visual polish of the `me
 
 ## Tasks
 - [x] 15.1: Sticky Footer & Layout Refactoring
+- [x] 15.2: Sticky Markdown Toolbar & Toggle Logic
 - [x] 15.3: Dark Mode Implementation (Hook & Toggle)
 
 ## Status
@@ -13,4 +14,5 @@ This track focuses on enhancing the user experience and visual polish of the `me
 - **Completion Date**: 2026-04-02
 
 ## Technical Debt / Observations
-- Task 15.2 (Sticky Markdown Toolbar) is excluded from this automated track as per user instructions.
+- All planned UI enhancements and Dark Mode requirements were successfully implemented.
+
