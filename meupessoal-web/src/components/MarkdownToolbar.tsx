@@ -102,14 +102,16 @@ export const MarkdownToolbar: React.FC<MarkdownToolbarProps> = ({
     ];
 
     return (
-        <div className="flex items-center justify-between p-2 bg-gray-50 border-b border-gray-200 sticky top-0 z-10">
+        <div className="flex items-center justify-between p-2 bg-gray-50 dark:bg-slate-900 border-b border-gray-200 dark:border-slate-800 sticky top-0 z-10">
             {/* Left Side - Toggle Write/Preview */}
-            <div className="flex bg-gray-200 p-1 rounded-lg">
+            <div className="flex bg-gray-200 dark:bg-slate-800 p-1 rounded-lg">
                 <button
                     type="button"
                     onClick={() => setIsPreviewMode(false)}
-                    className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-bold transition-all ${
-                        !isPreviewMode ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-600 hover:text-gray-900'
+                    className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-bold transition-all cursor-pointer ${
+                        !isPreviewMode 
+                            ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm' 
+                            : 'text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-slate-200'
                     }`}>
                     <Edit3 size={14} /> 
 					Write
@@ -117,8 +119,10 @@ export const MarkdownToolbar: React.FC<MarkdownToolbarProps> = ({
                 <button
                     type="button"
                     onClick={() => setIsPreviewMode(true)}
-                    className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-bold transition-all ${
-                        isPreviewMode ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-600 hover:text-gray-900'
+                    className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-bold transition-all cursor-pointer ${
+                        isPreviewMode 
+                            ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm' 
+                            : 'text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-slate-200'
                     }`}>
                     <Eye size={14} /> 
 					Preview
@@ -133,14 +137,14 @@ export const MarkdownToolbar: React.FC<MarkdownToolbarProps> = ({
                             key={index}
                             type="button"
                             onClick={tool.onClick}
-                            className="p-2 text-gray-600 hover:text-indigo-600 hover:bg-white rounded transition-colors"
+                            className="p-2 text-gray-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-white dark:hover:bg-slate-800 rounded transition-colors cursor-pointer"
                             title={tool.label}
                         >
                             {tool.icon}
                         </button>
                     ))}
                     
-                    <div className="w-px h-6 bg-gray-200 mx-1" />
+                    <div className="w-px h-6 bg-gray-200 dark:bg-slate-800 mx-1" />
                     
                     <div className="relative">
                         <input
@@ -155,8 +159,10 @@ export const MarkdownToolbar: React.FC<MarkdownToolbarProps> = ({
                             type="button"
                             onClick={() => document.getElementById('toolbar-image-upload')?.click()}
                             disabled={isUploading}
-                            className={`p-2 rounded transition-colors ${
-                                isUploading ? 'text-gray-400' : 'text-gray-600 hover:text-indigo-600 hover:bg-white'
+                            className={`p-2 rounded transition-colors cursor-pointer ${
+                                isUploading 
+                                    ? 'text-gray-400 dark:text-slate-600' 
+                                    : 'text-gray-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-white dark:hover:bg-slate-800'
                             }`}
                             title="Upload Image"
                         >

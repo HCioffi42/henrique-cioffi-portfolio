@@ -127,7 +127,7 @@ const ArticleList = () => {
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
             <SEO title={seoTitle} description={seoDescription} />
             <header className="mb-12 text-center">
-                <h1 className="text-4xl font-extrabold text-gray-900 tracking-tight sm:text-5xl mb-4">
+                <h1 className="text-4xl font-extrabold text-gray-900 dark:text-slate-100 tracking-tight sm:text-5xl mb-4">
                     {searchTerm 
                         ? `Results for "${searchTerm}"`
                         : currentTags.length > 0 
@@ -136,7 +136,7 @@ const ArticleList = () => {
                                 ? `Browsing: ${ArticleCategoryLabels[category]}`
                                 : 'Insights & Articles'}
                 </h1>
-                <p className="text-lg text-gray-500 max-w-2xl mx-auto">
+                <p className="text-lg text-gray-500 dark:text-slate-400 max-w-2xl mx-auto">
                     {searchTerm
                         ? `Found ${articles.length} articles that match your search.`
                         : currentTags.length > 0 
@@ -152,7 +152,7 @@ const ArticleList = () => {
 
             {(currentTags.length > 0 || category !== undefined || searchTerm) && (
                 <div className="mb-8 flex flex-col items-center justify-center gap-3">
-                    <span className="text-sm text-gray-500 uppercase tracking-widest font-semibold">Active Filters</span>
+                    <span className="text-sm text-gray-500 dark:text-slate-500 uppercase tracking-widest font-semibold">Active Filters</span>
                     <div className="flex flex-wrap gap-2 justify-center">
                         {/* HC: Renders the active search filter if present. */}
                         {searchTerm && (
@@ -167,8 +167,8 @@ const ArticleList = () => {
                         )}
 
                         {category !== undefined && (
-                             <div className="inline-flex items-center gap-2 bg-amber-50 border border-amber-100 px-4 py-1.5 rounded-full shadow-sm">
-                                <span className="text-sm text-amber-800 font-bold tracking-wide">
+                             <div className="inline-flex items-center gap-2 bg-amber-50 dark:bg-amber-950/30 border border-amber-100 dark:border-amber-900/50 px-4 py-1.5 rounded-full shadow-sm">
+                                <span className="text-sm text-amber-800 dark:text-amber-500 font-bold tracking-wide">
                                     Category: {ArticleCategoryLabels[category]}
                                 </span>
                                 <button onClick={removeCategoryFilter} className="text-amber-400 hover:text-red-500 rounded-full p-0.5 transition-colors cursor-pointer">
@@ -177,8 +177,8 @@ const ArticleList = () => {
                             </div>
                         )}
                         {currentTags.map(tag => (
-                            <div key={tag} className="inline-flex items-center gap-2 bg-indigo-50 border border-indigo-100 px-4 py-1.5 rounded-full shadow-sm">
-                                <span className="text-sm text-indigo-800 font-bold tracking-wide capitalize">#{tag}</span>
+                            <div key={tag} className="inline-flex items-center gap-2 bg-indigo-50 dark:bg-indigo-950/30 border border-indigo-100 dark:border-indigo-900/50 px-4 py-1.5 rounded-full shadow-sm">
+                                <span className="text-sm text-indigo-800 dark:text-indigo-400 font-bold tracking-wide capitalize">#{tag}</span>
                                 <button onClick={() => removeTagFilter(tag)} className="text-indigo-400 hover:text-red-500 rounded-full p-0.5 transition-colors cursor-pointer">
                                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
                                 </button>
@@ -189,8 +189,8 @@ const ArticleList = () => {
             )}
 
             {articles.length === 0 ? (
-                <div className="text-center py-20 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200">
-                    <p className="text-gray-500 text-lg">No articles match these combined filters.</p>
+                <div className="text-center py-20 bg-gray-50 dark:bg-slate-900/50 rounded-2xl border-2 border-dashed border-gray-200 dark:border-slate-800">
+                    <p className="text-gray-500 dark:text-slate-400 text-lg">No articles match these combined filters.</p>
                 </div>
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">

@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext'; 
 import { DeleteModal } from '../components/DeleteModal';
@@ -51,15 +51,15 @@ const useArticle = (id: string | undefined) => {
 const ArticleHeader = ({ title, createdAt, category }: { title: string; createdAt: string; category: number }) => (
     <header className="mb-10">
         <div className="flex items-center gap-3 mb-4">
-            <span className="px-3 py-1 bg-amber-50 text-amber-700 text-xs font-bold uppercase tracking-wider rounded-md">
+            <span className="px-3 py-1 bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-500 text-xs font-bold uppercase tracking-wider rounded-md">
                 {ArticleCategoryLabels[category as keyof typeof ArticleCategoryLabels]}
             </span>
-            <span className="text-gray-300">|</span>
-            <p className="text-sm text-gray-500 font-medium">
+            <span className="text-gray-300 dark:text-slate-700">|</span>
+            <p className="text-sm text-gray-500 dark:text-slate-400 font-medium">
                 Published on {new Date(createdAt).toLocaleDateString()}
             </p>
         </div>
-        <h1 className="text-4xl font-extrabold text-gray-900 mb-4 tracking-tight leading-tight">
+        <h1 className="text-4xl font-extrabold text-gray-900 dark:text-slate-100 mb-4 tracking-tight leading-tight">
             {title}
         </h1>
     </header>
@@ -109,22 +109,22 @@ export const ArticleDetails = () => {
 
             <button
                 onClick={() => navigate(-1)}
-                className="mb-8 text-indigo-600 hover:text-indigo-800 font-medium
+                className="mb-8 text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 font-medium
                             flex items-center gap-2 transition-colors focus:outline-none">
                 &larr; Back to list
             </button>
 
             {/* HC: Conditional rendering of admin actions if a user session is active. */}
                 {user && (
-                    <div className="flex gap-3">
+                    <div className="flex gap-3 mb-6">
                         <Link 
                             to={`/admin/articles/edit/${article.id}`}
-                            className="bg-amber-50 text-amber-700 px-4 py-2 rounded-lg font-bold text-sm hover:bg-amber-100 transition">
+                            className="bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-500 px-4 py-2 rounded-lg font-bold text-sm hover:bg-amber-100 dark:hover:bg-amber-900/50 transition">
                             Edit Article
                         </Link>
                         <button 
                             onClick={() => setIsModalOpen(true)}
-                            className="bg-red-50 text-red-700 px-4 py-2 rounded-lg font-bold text-sm hover:bg-red-100 transition">
+                            className="bg-red-50 dark:bg-red-950/30 text-red-700 dark:text-red-500 px-4 py-2 rounded-lg font-bold text-sm hover:bg-red-100 dark:hover:bg-red-900/50 transition">
                             Delete
                         </button>
                     </div>
@@ -138,14 +138,14 @@ export const ArticleDetails = () => {
 
             <MarkdownRenderer content={article.content} />
 
-            <footer className="mt-12 pt-8 border-t border-gray-100 flex flex-wrap gap-2">
+            <footer className="mt-12 pt-8 border-t border-gray-100 dark:border-slate-800 flex flex-wrap gap-2">
                 {article.tags.map(tag => (
                     <button
                         key={tag}
                         onClick={() => navigate(`/?tags=${tag.toLowerCase()}`)}
-                        className="bg-indigo-50 text-indigo-600 px-3 py-1 
+                        className="bg-indigo-50 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400 px-3 py-1 
                                     rounded-full text-xs font-semibold capitalize tracking-wider 
-                                    hover:bg-indigo-100 hover:text-indigo-800 transition-colors cursor-pointer 
+                                    hover:bg-indigo-100 dark:hover:bg-indigo-900/50 hover:text-indigo-800 dark:hover:text-indigo-300 transition-colors cursor-pointer 
                                     focus:outline-none focus:ring-2 focus:ring-indigo-500">
                         #{tag}
                     </button>
@@ -154,9 +154,9 @@ export const ArticleDetails = () => {
 
             {/* HC: Related articles recommendation section based on tag intersection. */}
             {related.length > 0 && (
-                <section className="mt-20 pt-12 border-t border-gray-100">
-                    <h2 className="text-2xl font-bold text-gray-900 mb-8 flex items-center gap-3">
-                        <svg className="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <section className="mt-20 pt-12 border-t border-gray-100 dark:border-slate-800">
+                    <h2 className="text-2xl font-bold text-gray-900 dark:text-slate-100 mb-8 flex items-center gap-3">
+                        <svg className="w-6 h-6 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                         </svg>
                         Related Stories

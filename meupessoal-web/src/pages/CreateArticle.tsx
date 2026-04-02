@@ -155,53 +155,53 @@ export const CreateArticle = () => {
     };
 
     return (
-        <div className="max-w-4xl mx-auto px-6 py-12">
+        <div className="max-w-4xl mx-auto px-6 py-12 transition-colors duration-300">
             <header className="mb-8">
-                <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Create New Post</h1>
-                <p className="mt-2 text-gray-600">Share your thoughts and insights with the world.</p>
+                <h1 className="text-3xl font-extrabold text-gray-900 dark:text-slate-100 tracking-tight">Create New Post</h1>
+                <p className="mt-2 text-gray-600 dark:text-slate-400">Share your thoughts and insights with the world.</p>
             </header>
 
             <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-100 space-y-6">
+                <div className="bg-white dark:bg-slate-900 p-8 rounded-xl shadow-sm border border-gray-100 dark:border-slate-800 space-y-6">
                     {/* Meta Section */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="md:col-span-2">
-                            <label htmlFor="title" className="block text-sm font-bold text-gray-700 mb-2">Title</label>
+                            <label htmlFor="title" className="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-2">Title</label>
                             <input
                                 type="text"
                                 id="title"
                                 name="title"
                                 value={formData.title}
                                 onChange={handleChange}
-                                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                                className="w-full px-4 py-3 border border-gray-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition-all bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100"
                                 placeholder="Enter a compelling title"
                             />
                         </div>
 
                         <div>
-                            <label htmlFor="summary" className="block text-sm font-bold text-gray-700 mb-2">Summary</label>
+                            <label htmlFor="summary" className="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-2">Summary</label>
                             <input
                                 type="text"
                                 id="summary"
                                 name="summary"
                                 value={formData.summary}
                                 onChange={handleChange}
-                                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                                className="w-full px-4 py-3 border border-gray-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition-all bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100"
                                 placeholder="A short summary for the readers"
                             />
                         </div>
 
                         <div>
-                            <label htmlFor="category" className="block text-sm font-bold text-gray-700 mb-2">Category</label>
+                            <label htmlFor="category" className="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-2">Category</label>
                             <select
                                 id="category"
                                 name="category"
                                 value={formData.category}
                                 onChange={handleChange}
-                                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition-all bg-white"
+                                className="w-full px-4 py-3 border border-gray-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition-all bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100"
                             >
                                 {ArticleCategoryOptions.map(option => (
-                                    <option key={option.value} value={option.value}>
+                                    <option key={option.value} value={option.value} className="bg-white dark:bg-slate-900">
                                         {option.label}
                                     </option>
                                 ))}
@@ -211,9 +211,9 @@ export const CreateArticle = () => {
 
                     {/* Integrated Editor Section */}
                     <div>
-                        <label className="block text-sm font-bold text-gray-700 mb-2">Content</label>
+                        <label className="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-2">Content</label>
                         
-                        <div className="flex flex-col border border-gray-200 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-indigo-500 transition-all bg-white">
+                        <div className="flex flex-col border border-gray-200 dark:border-slate-700 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-indigo-500 transition-all bg-white dark:bg-slate-900">
                             <MarkdownToolbar 
                                 textareaRef={contentRef}
                                 onContentChange={(newContent) => setFormData(prev => ({ ...prev, content: newContent }))}
@@ -223,7 +223,7 @@ export const CreateArticle = () => {
                                 setIsPreviewMode={setIsPreviewMode}
                             />
 
-                            <div className="min-h-[400px] bg-white">
+                            <div className="min-h-[400px] bg-white dark:bg-slate-900">
                                 {!isPreviewMode ? (
                                     <textarea
                                         id="content"
@@ -232,15 +232,15 @@ export const CreateArticle = () => {
                                         rows={15}
                                         value={formData.content}
                                         onChange={handleChange}
-                                        className="w-full h-full p-6 outline-none resize-none font-mono text-gray-800 leading-relaxed min-h-[400px]"
+                                        className="w-full h-full p-6 outline-none resize-none font-mono text-gray-800 dark:text-slate-200 bg-white dark:bg-slate-900 leading-relaxed min-h-[400px]"
                                         placeholder="Write your story using Markdown..."
                                     />
                                 ) : (
-                                    <div className="p-8 bg-gray-50/30">
+                                    <div className="p-8 bg-gray-50/30 dark:bg-slate-950/30">
                                         {formData.content.trim() ? (
                                             <MarkdownRenderer content={formData.content} />
                                         ) : (
-                                            <p className="text-gray-400 italic text-center mt-20">Nothing to preview yet...</p>
+                                            <p className="text-gray-400 dark:text-slate-600 italic text-center mt-20">Nothing to preview yet...</p>
                                         )}
                                     </div>
                                 )}
@@ -250,32 +250,32 @@ export const CreateArticle = () => {
 
                     {/* Tags Section */}
                     <div>
-                        <label htmlFor="tags" className="block text-sm font-bold text-gray-700 mb-2">Tags</label>
+                        <label htmlFor="tags" className="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-2">Tags</label>
                         <input
                             type="text"
                             id="tags"
                             name="tags"
                             value={formData.tags}
                             onChange={handleChange}
-                            className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                            className="w-full px-4 py-3 border border-gray-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition-all bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100"
                             placeholder="e.g., dotnet, react, web-dev"
                         />
                     </div>
                 </div>
 
                 {/* Form Actions */}
-                <div className="flex justify-end items-center gap-4 pt-4">
+                <div className="flex justify-end items-center gap-4 pt-4 pb-8">
                     <button
                         type="button"
                         onClick={() => navigate('/admin/dashboard')}
-                        className="px-6 py-2.5 text-sm font-bold text-gray-600 hover:text-gray-800 transition-all"
+                        className="px-6 py-2.5 text-sm font-bold text-gray-600 dark:text-slate-400 hover:text-gray-800 dark:hover:text-slate-200 transition-all cursor-pointer"
                     >
                         Cancel
                     </button>
                     <button
                         type="submit"
                         disabled={isSubmitting}
-                        className={`px-10 py-2.5 text-sm font-bold text-white rounded-lg transition-all shadow-md ${
+                        className={`px-10 py-2.5 text-sm font-bold text-white rounded-lg transition-all shadow-md cursor-pointer ${
                             isSubmitting
                                 ? 'bg-indigo-400 cursor-not-allowed'
                                 : 'bg-indigo-600 hover:bg-indigo-700 hover:shadow-lg transform hover:-translate-y-0.5 active:translate-y-0'
