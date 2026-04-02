@@ -90,18 +90,22 @@
 - [x] **14.3**: Structured logging enrichment with Serilog for production tracing.
 
 ### [ ] Track 15: Portfolio Polish & Social
-- **15.1**: Dark Mode support using Tailwind CSS strategy.
-- **15.2**: Newsletter subscription form with automated email integration.
-- **15.3**: Contact form with server-side validation and notifications.
+- [ ] **15.1 - Sticky Footer & Padding**: Refactor Layout.tsx to fix the footer on the page or to make the container have a "always in viewport.
+- [ ] **15.2 - Sticky Markdown Toolbar**: Adjsut the article writing components. The tool bar should have a Stiky top behaviour, keeping it in screen view while the user scroll when writing a text.
+- [ ] **15.3 - Dark Mode (Tailwind)**: Dark Mode support using Tailwind CSS strategy and `localStorage` persistence.
 
+### [ ] Track 16: Engagement & Community
+- [ ] **16.1 - Newsletter System**: Email subscription management featuring idempotency validation to prevent duplicate entries.
+- [ ] **16.2 - Comment Section**: Implementation of a nested comment system (threaded discussions) located below article content.
+- [ ] **16.3 - Identity Expansion**: Identity framework adjustments to support dedicated reader profiles and integration with external authentication providers (OIDC/OAuth2).
 ---
 
 ## Phase 5: SDET Excellence (Quality Engineering)
 
-### [ ] Track 16: Automated Quality Suite
-- **16.1**: End-to-End (E2E) testing suite with **Playwright** for critical flows.
-- **16.2**: Automated accessibility (A11y) audits in the CI pipeline.
-- **16.3**: Performance benchmarking using **k6** for API endpoints.
+### [ ] Track 17: Automated Quality Suite
+- [ ] **17.1**: End-to-End (E2E) testing suite with **Playwright** for critical flows.
+- [ ] **17.2**: Automated accessibility (A11y) audits in the CI pipeline.
+- [ ] **17.3**: Performance benchmarking using **k6** for API endpoints.
 
 ---
 
