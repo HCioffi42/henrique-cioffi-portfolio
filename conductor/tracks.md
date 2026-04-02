@@ -3,10 +3,11 @@
 This file tracks all the development tracks for this project.
 
 ## In Progress
-- [x] **Track: Advanced Search & Discovery**
-  *Link: [./tracks/13-advanced-search/index.md](./tracks/13-advanced-search/index.md)*
+
 
 ## Completed Tracks
+- [x] **Track: Advanced Search & Discovery**
+  *Link: [./tracks/13-advanced-search/index.md](./tracks/13-advanced-search/index.md)*
 - [x] **Track 14: Observability & Resilience**
   *Link: [./tracks/14-observability/index.md](./tracks/14-observability/index.md)*
 - [x] **Track: SEO & Metadata**
