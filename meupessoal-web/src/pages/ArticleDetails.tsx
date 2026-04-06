@@ -10,6 +10,7 @@ import { ArticleCategoryLabels } from '../models/ArticleCategory';
 import { SEO } from '../components/SEO';
 import { ArticleCard } from '../components/ArticleCard';
 import { NewsletterBox } from '../components/NewsletterBox';
+import { CommentSection } from '../components/CommentSection';
 
 /**
  * Custom hook to handle article data fetching logic and related articles.
@@ -177,8 +178,8 @@ export const ArticleDetails = () => {
                 onConfirm={handleDelete}
                 onCancel={() => setIsModalOpen(false)}/>
 
-            <div className="mt-16 border-t border-gray-100 dark:border-slate-800 pt-16">
-                <NewsletterBox />
+            <div className="mt-16">
+                <CommentSection articleId={article.id} />
             </div>
         </div>
     );

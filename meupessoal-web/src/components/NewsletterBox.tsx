@@ -49,22 +49,22 @@ export const NewsletterBox: React.FC<NewsletterBoxProps> = ({ variant = 'default
         <div className={`
             ${isSidebar 
                 ? 'bg-transparent p-0 border-none shadow-none w-full' 
-                : 'bg-white dark:bg-zinc-900 rounded-2xl p-6 shadow-sm border border-zinc-200 dark:border-zinc-800 w-full max-w-md mx-auto'}
+                : 'bg-white dark:bg-zinc-900 rounded-2xl p-8 shadow-sm border border-zinc-200 dark:border-zinc-800 w-full max-w-lg mx-auto'}
         `}>
             <h3 className={`
-                ${isSidebar ? 'text-sm font-bold uppercase tracking-wider' : 'text-xl font-bold'} 
+                ${isSidebar ? 'text-sm font-bold uppercase tracking-wider' : 'text-2xl font-bold'} 
                 text-zinc-900 dark:text-white mb-2
             `}>
                 Newsletter
             </h3>
             <p className={`
-                ${isSidebar ? 'text-[11px] leading-relaxed' : 'text-sm'} 
-                text-zinc-500 dark:text-zinc-400 mb-4
+                ${isSidebar ? 'text-[11px] leading-relaxed' : 'text-base'} 
+                text-zinc-500 dark:text-zinc-400 mb-6
             `}>
                 Get the latest articles delivered directly to your inbox.
             </p>
             
-            <form onSubmit={handleSubmit} className={`flex ${isSidebar ? 'flex-col' : 'flex-col sm:flex-row'} gap-2`}>
+            <form onSubmit={handleSubmit} className={`flex ${isSidebar ? 'flex-col' : 'flex-col sm:flex-row'} gap-3`}>
                 <input
                     type="email"
                     value={email}
@@ -73,7 +73,7 @@ export const NewsletterBox: React.FC<NewsletterBoxProps> = ({ variant = 'default
                     required
                     disabled={status === 'loading'}
                     className={`
-                        flex-1 px-3 py-1.5 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 text-zinc-900 dark:text-white disabled:opacity-50 transition-colors
+                        flex-1 px-4 py-2 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-zinc-900 dark:text-white disabled:opacity-50 transition-all
                         ${isSidebar ? 'text-xs' : 'text-sm'}
                     `}
                 />
@@ -81,8 +81,8 @@ export const NewsletterBox: React.FC<NewsletterBoxProps> = ({ variant = 'default
                     type="submit"
                     disabled={status === 'loading'}
                     className={`
-                        ${isSidebar ? 'w-full text-xs' : 'px-6 text-sm'} 
-                        py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg shadow-sm disabled:opacity-50 transition-colors focus:outline-none focus:ring-1 focus:ring-indigo-500
+                        ${isSidebar ? 'w-full text-xs py-2' : 'px-8 text-sm py-2'} 
+                        bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl shadow-md shadow-indigo-500/20 disabled:opacity-50 transition-all active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-indigo-500/20
                     `}
                 >
                     {status === 'loading' ? '...' : 'Subscribe'}
@@ -90,11 +90,17 @@ export const NewsletterBox: React.FC<NewsletterBoxProps> = ({ variant = 'default
             </form>
             
             {status === 'success' && (
-                <p className="mt-4 text-sm text-emerald-600 dark:text-emerald-400 font-medium">{message}</p>
+                <p className="mt-4 text-xs text-emerald-600 dark:text-emerald-400 font-medium flex items-center gap-1.5 animate-in fade-in slide-in-from-top-1">
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                    {message}
+                </p>
             )}
             
             {status === 'error' && (
-                <p className="mt-4 text-sm text-red-600 dark:text-red-400 font-medium">{message}</p>
+                <p className="mt-4 text-xs text-red-600 dark:text-red-400 font-medium flex items-center gap-1.5 animate-in fade-in slide-in-from-top-1">
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    {message}
+                </p>
             )}
         </div>
     );

@@ -200,13 +200,6 @@ const ArticleList = () => {
                             <ArticleCard key={article.id} article={article} />
                         ))}
                     </div>
-
-                    {/* Floating Newsletter Widget - Positioned bottom-right */}
-                    <aside className="hidden lg:block fixed bottom-8 right-8 z-40 w-80 animate-in slide-in-from-bottom-10 duration-700">
-                        <div className="bg-white dark:bg-zinc-900 rounded-2xl p-5 shadow-2xl border border-zinc-200 dark:border-zinc-800">
-                            <NewsletterBox variant="sidebar" />
-                        </div>
-                    </aside>
                 </>
             )}
 

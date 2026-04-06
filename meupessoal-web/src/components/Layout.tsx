@@ -6,6 +6,7 @@ import { useAuth } from '../context/AuthContext';
 import { SearchBar } from './SearchBar';
 import { ThemeToggle } from './ThemeToggle';
 import { MobileMenu } from './MobileMenu';
+import { NewsletterBox } from './NewsletterBox';
 
 interface LayoutProps {
     children: ReactNode;
@@ -19,6 +20,9 @@ export const Layout = ({ children }: LayoutProps) => {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
     const currentSearchParam = useMemo(() => searchParams.get('q') || '', [searchParams]);
+
+    // HC: Determine if we should show the floating newsletter (only for non-authenticated visitors)
+    const showNewsletter = !isAuthenticated;
 
     const handleLogout = () => {
         logout();
@@ -109,6 +113,15 @@ export const Layout = ({ children }: LayoutProps) => {
             <main className="flex-grow pb-16">
                 {children}
             </main>
+
+            {/* Floating Newsletter Widget - Global visibility for visitors */}
+            {showNewsletter && (
+                <aside className="hidden lg:block fixed bottom-20 right-8 z-40 w-80 animate-in slide-in-from-right-10 duration-700">
+                    <div className="bg-white dark:bg-zinc-900 rounded-2xl p-6 shadow-[0_20px_50px_rgba(0,0,0,0.15)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.3)] border border-zinc-200 dark:border-zinc-800 transition-all hover:shadow-[0_20px_60px_rgba(79,70,229,0.1)]">
+                        <NewsletterBox variant="sidebar" />
+                    </div>
+                </aside>
+            )}
 
             <footer className="fixed bottom-0 left-0 right-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm border-t border-gray-200 dark:border-slate-800 py-3 transition-colors duration-300 z-10">
                 <div className="max-w-5xl mx-auto px-6 text-center text-gray-400 dark:text-slate-500 text-[10px] sm:text-xs">

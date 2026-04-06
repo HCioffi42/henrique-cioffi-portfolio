@@ -10,6 +10,11 @@ public class Article
     public ArticleCategory Category { get; set; }
     public DateTime CreatedAt { get; set; }
 
+    /// <summary>
+    /// Gets or sets the collection of comments posted by users on this article.
+    /// </summary>
+    public ICollection<Entities.Comment> Comments { get; set; } = new List<Entities.Comment>();
+
     public Article(string title, string content, string summary, List<string> tags, ArticleCategory category)
     {
         if (string.IsNullOrWhiteSpace(title))

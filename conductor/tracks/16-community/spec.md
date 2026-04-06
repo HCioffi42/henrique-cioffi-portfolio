@@ -1,49 +1,100 @@
-# Anonymous Newsletter System Specification
+# Nested Comment System Specification (Task 16.2)
 
 ## 1. Overview
-The goal is to implement an anonymous newsletter subscription system capturing reader emails with clear feedback on subscription status. It needs to be independent of the Identity/User framework.
+The objective is to implement a nested (threaded) comment system that allows users to post comments on articles and reply to existing comments. This system will support multiple levels of nesting.
 
 ## 2. API Contracts
-**Endpoint:** `POST /api/newsletter/subscribe`
+### 2.1 `GET /api/articles/{articleId}/comments`
+Returns a hierarchical tree of comments for a given article.
 
-**Request Body (`SubscribeRequestDto`):**
+**Response Body (`CommentResponse`):**
+```json
+[
+  {
+    "id": "guid",
+    "content": "string",
+    "authorName": "string",
+    "createdAt": "datetime",
+    "parentCommentId": "guid?",
+    "replies": [
+      {
+        "id": "guid",
+        "content": "string",
+        "authorName": "string",
+        "createdAt": "datetime",
+        "parentCommentId": "guid",
+        "replies": []
+      }
+    ]
+  }
+]
+```
+
+### 2.2 `POST /api/comments`
+Creates a new comment or reply.
+
+**Request Body (`CreateCommentRequest`):**
 ```json
 {
-  "email": "user@example.com"
+  "articleId": "guid",
+  "content": "string",
+  "authorName": "string",
+  "parentCommentId": "guid?"
 }
 ```
 
 **Responses:**
-*   **200 OK:** Successfully subscribed, returns no content or a success boolean.
-*   **400 Bad Request:** Validation failed (empty or invalid email format).
-*   **409 Conflict:** Email already exists and is active. Returns a specific error message `{"message": "This email is already subscribed."}`.
+*   **201 Created:** Returns the created comment.
+*   **400 Bad Request:** Validation failed (empty content, invalid article/parent ID).
+*   **404 Not Found:** Article or Parent comment not found.
 
 ## 3. Data Models
-**C# Domain Entity (`Subscriber`):**
+### 3.1 C# Domain Entity (`Comment`)
 *   `Id` (Guid)
-*   `Email` (string, unique constraint)
-*   `SubscribedAt` (DateTime)
-*   `IsActive` (bool)
+*   `Content` (string)
+*   `AuthorName` (string)
+*   `CreatedAt` (DateTime)
+*   `ArticleId` (Guid)
+*   `ParentCommentId` (Guid?)
+*   **Navigation Properties:**
+    *   `Article` (Article)
+    *   `ParentComment` (Comment?)
+    *   `Replies` (ICollection<Comment>)
 
-**C# DTOs / Commands:**
-*   `SubscribeToNewsletterCommand(string Email)` : `IRequest<Result>` (using a custom Result object or returning success/fail enum). For simplicity, returning a specific `NewsletterSubscriptionResult` or handling exceptions/custom responses in the controller.
+### 3.2 C# CQRS Models
+*   `CreateCommentCommand(Guid ArticleId, string Content, string AuthorName, Guid? ParentCommentId)`
+*   `GetCommentsByArticleIdQuery(Guid ArticleId)`
 
-**TypeScript Interface (`NewsletterSubscriptionRequest`):**
+### 3.3 TypeScript Interfaces
 ```typescript
-export interface NewsletterSubscriptionRequest {
-    email: string;
+export interface Comment {
+    id: string;
+    content: string;
+    authorName: string;
+    createdAt: string;
+    parentCommentId?: string;
+    replies: Comment[];
+}
+
+export interface CreateCommentRequest {
+    articleId: string;
+    content: string;
+    authorName: string;
+    parentCommentId?: string;
 }
 ```
 
 ## 4. Architecture Design & Patterns
-*   **Backend (MeuSitePessoal.Api):**
-    *   **Clean Architecture:**
-        *   **Domain:** `Subscriber` entity added to Domain.
-        *   **Application:** CQRS via MediatR. `SubscribeToNewsletterCommand`, `SubscribeToNewsletterCommandHandler`.
-        *   **Validation:** FluentValidation rules integrated in a `SubscribeToNewsletterCommandValidator` class to validate the e-mail explicitly.
-        *   **Infrastructure:** EF Core. `BlogDbContext` will contain `DbSet<Subscriber>`. A new migration will be generated.
-    *   **Idempotency & Behavior:** The handler will check if the email exists. If true and `IsActive`, returns conflict. If `!IsActive`, marks as `IsActive = true` and updates `SubscribedAt`.
-*   **Frontend (meupessoal-web):**
-    *   **Component (`NewsletterBox.tsx`):** A functional component using React Hooks for state management (`idle`, `loading`, `success`, `error`).
-    *   **Integration:** Can be included at the App.tsx level so it renders on all main pages, such as the footer.
-    *   **User Feedback:** Handle the 409 error explicitly and display the exact string to the user.
+### 4.1 Backend (Clean Architecture)
+*   **Domain:** Add `Comment` entity and update `Article` to have a `Comments` collection.
+*   **Application:** Implement commands and handlers using MediatR.
+    *   **Recursion Strategy (API):** The Query Handler will fetch all comments for an article and build a tree structure in memory before returning the response. This prevents multiple database round-trips for each nesting level.
+*   **Infrastructure:** EF Core. Configure `Comment` entity in `BlogDbContext` with a self-referencing relationship for `ParentCommentId`.
+*   **API:** Controller endpoints for getting and posting comments.
+
+### 4.2 Frontend (meupessoal-web)
+*   **Recursion Strategy (Rendering):**
+    *   `CommentSection.tsx`: Fetches the comment tree and renders top-level `CommentItem` components.
+    *   `CommentItem.tsx`: Renders the comment details and recursively renders its own `replies` using `CommentItem` again.
+*   **Indentation:** Use CSS classes (e.g., `border-l-2 ml-4 pl-4`) to visually represent nesting levels.
+*   **UI/UX:** Include a "Reply" button on each comment to toggle the `CommentForm` for that specific comment.

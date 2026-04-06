@@ -1,18 +1,23 @@
 {
   "track_id": "16-community",
-  "name": "Anonymous Newsletter System",
+  "name": "Community Features (Newsletter & Comments)",
   "status": "Completed",
   "related_files": [
-    "MeuSitePessoal.Application/Common/Models/Result.cs",
-    "MeuSitePessoal.Domain/Entities/Subscriber.cs",
-    "MeuSitePessoal.Application/Newsletter/Commands/Subscribe/SubscribeToNewsletterCommand.cs",
-    "MeuSitePessoal.Application/Newsletter/Commands/Subscribe/SubscribeToNewsletterCommandHandler.cs",
-    "MeuSitePessoal.Application/Newsletter/Commands/Subscribe/SubscribeToNewsletterCommandValidator.cs",
-    "MeuSitePessoal.Api/Controllers/NewsletterController.cs",
+    "MeuSitePessoal.Domain/Entities/Comment.cs",
+    "MeuSitePessoal.Domain/Article.cs",
     "MeuSitePessoal.Infrastructure/Data/BlogDbContext.cs",
-    "meupessoal-web/src/components/NewsletterBox.tsx",
-    "meupessoal-web/src/services/newsletterService.ts",
+    "MeuSitePessoal.Application/Comments/Commands/CreateComment/CreateCommentCommand.cs",
+    "MeuSitePessoal.Application/Comments/Commands/CreateComment/CreateCommentCommandHandler.cs",
+    "MeuSitePessoal.Application/Comments/Queries/GetCommentsByArticleId/GetCommentsByArticleIdQuery.cs",
+    "MeuSitePessoal.Application/Comments/Queries/GetCommentsByArticleId/GetCommentsByArticleIdQueryHandler.cs",
+    "MeuSitePessoal.Api/Controllers/CommentsController.cs",
+    "meupessoal-web/src/components/CommentSection.tsx",
+    "meupessoal-web/src/components/CommentItem.tsx",
+    "meupessoal-web/src/components/CommentForm.tsx",
+    "meupessoal-web/src/models/Comment.ts",
+    "meupessoal-web/src/services/commentService.ts",
     "meupessoal-web/src/pages/ArticleDetails.tsx",
-    "meupessoal-web/src/pages/ArticleList.tsx"
+    "MeuSitePessoal.Domain/Entities/Subscriber.cs",
+    "meupessoal-web/src/components/NewsletterBox.tsx"
   ]
 }
