@@ -1,0 +1,110 @@
+import React, { useState } from 'react';
+import { newsletterService } from '../services/newsletterService';
+import axios from 'axios';
+
+/**
+ * Props for the NewsletterBox component.
+ */
+interface NewsletterBoxProps {
+    /** The visual variant of the box. 'sidebar' is more compact and vertically stacked. */
+    variant?: 'default' | 'sidebar';
+}
+
+/**
+ * Renders a newsletter subscription box allowing users to opt-in with their email.
+ * Supports a 'default' wide card variant and a 'sidebar' compact variant.
+ */
+export const NewsletterBox: React.FC<NewsletterBoxProps> = ({ variant = 'default' }) => {
+    const [email, setEmail] = useState('');
+    const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+    const [message, setMessage] = useState('');
+
+    const isSidebar = variant === 'sidebar';
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        
+        if (!email) return;
+
+        setStatus('loading');
+        setMessage('');
+
+        try {
+            await newsletterService.subscribe({ email });
+            setStatus('success');
+            setMessage('Thank you for subscribing!');
+            setEmail('');
+        } catch (error: unknown) {
+            setStatus('error');
+            if (axios.isAxiosError(error)) {
+                if (error.response?.status === 409) {
+                    setMessage(error.response.data?.message || 'This email is already subscribed.');
+                } else if (error.response?.status === 400) {
+                    setMessage(error.response.data?.title || error.response.data?.message || 'Invalid email format.');
+                }
+            } else {
+                setMessage('An unexpected error occurred. Please try again.');
+            }
+        }
+    };
+
+    return (
+        <div className={`
+            ${isSidebar 
+                ? 'bg-transparent p-0 border-none shadow-none w-full' 
+                : 'bg-white dark:bg-zinc-900 rounded-2xl p-8 shadow-sm border border-zinc-200 dark:border-zinc-800 w-full max-w-lg mx-auto'}
+        `}>
+            <h3 className={`
+                ${isSidebar ? 'text-sm font-bold uppercase tracking-wider' : 'text-2xl font-bold'} 
+                text-zinc-900 dark:text-white mb-2
+            `}>
+                Newsletter
+            </h3>
+            <p className={`
+                ${isSidebar ? 'text-[11px] leading-relaxed' : 'text-base'} 
+                text-zinc-500 dark:text-zinc-400 mb-6
+            `}>
+                Get the latest articles delivered directly to your inbox.
+            </p>
+            
+            <form onSubmit={handleSubmit} className={`flex ${isSidebar ? 'flex-col' : 'flex-col sm:flex-row'} gap-3`}>
+                <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="Email address"
+                    required
+                    disabled={status === 'loading'}
+                    className={`
+                        flex-1 px-4 py-2 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-zinc-900 dark:text-white disabled:opacity-50 transition-all
+                        ${isSidebar ? 'text-xs' : 'text-sm'}
+                    `}
+                />
+                <button
+                    type="submit"
+                    disabled={status === 'loading'}
+                    className={`
+                        ${isSidebar ? 'w-full text-xs py-2' : 'px-8 text-sm py-2'} 
+                        bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl shadow-md shadow-indigo-500/20 disabled:opacity-50 transition-all active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-indigo-500/20
+                    `}
+                >
+                    {status === 'loading' ? '...' : 'Subscribe'}
+                </button>
+            </form>
+            
+            {status === 'success' && (
+                <p className="mt-4 text-xs text-emerald-600 dark:text-emerald-400 font-medium flex items-center gap-1.5 animate-in fade-in slide-in-from-top-1">
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                    {message}
+                </p>
+            )}
+            
+            {status === 'error' && (
+                <p className="mt-4 text-xs text-red-600 dark:text-red-400 font-medium flex items-center gap-1.5 animate-in fade-in slide-in-from-top-1">
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    {message}
+                </p>
+            )}
+        </div>
+    );
+};

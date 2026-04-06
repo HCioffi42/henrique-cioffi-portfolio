@@ -12,36 +12,56 @@ import type { User } from '../models/Auth';
  * @returns {JSX.Element} The provider element.
  */
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  // Using lazy initialization to read from storage synchronously during the first render.
-  // This avoids cascading renders and satisfies the 'no-set-state-in-effect' lint rule.
+  // Initializes token state by reading from persistent storage.
   const [token, setToken] = useState<string | null>(() => storage.getToken());
   
+  // Initializes user state by checking for a saved username in storage.
   const [user, setUser] = useState<User | null>(() => {
     const savedUsername = storage.getUsername();
     return savedUsername ? { username: savedUsername } : null;
   });
 
-  // Since storage reading is now synchronous, the context is initialized immediately.
+  // The initialization flag is set to true as storage reading is synchronous.
   const [isInitialized] = useState(true);
 
+  /**
+   * Updates the authentication state and persists credentials to storage.
+   * @param newToken The JWT issued by the backend.
+   * @param username The display name associated with the user.
+   */
   const login = (newToken: string, username: string) => {
+    // Persists session data using the storage utility.
     storage.saveSession(newToken, username);
+    
+    // Updates React state, which triggers an automatic update of 'isAuthenticated'.
     setToken(newToken);
     setUser({ username });
   };
 
+  /**
+   * Clears all authentication data from state and persistent storage.
+   */
   const logout = () => {
+    // Removes all credentials from localStorage.
     storage.clearSession();
+    
+    // Resets React state to null.
     setToken(null);
     setUser(null);
   };
 
-  // Avoids flashing protected content while recovering the session.
-  // In this synchronous version, isInitialized is true by default.
+  // Prevents rendering until the initial state hydration is complete.
   if (!isInitialized) return null; 
 
   return (
-    <AuthContext.Provider value={{ user, token, isAuthenticated: !!token, isInitialized, login, logout }}>
+    <AuthContext.Provider value={{ 
+      user, 
+      token, 
+      isAuthenticated: !!token, // Derived property: true if token is not null.
+      isInitialized, 
+      login, 
+      logout 
+    }}>
       {children}
     </AuthContext.Provider>
   );

@@ -28,24 +28,30 @@ public class TokenService : ITokenService
     /// <returns>A JWT token string.</returns>
     public string GenerateToken(IdentityUser user, IList<string> roles)
     {
+        // Retrieves JWT settings from the configuration.
         var jwtSettings = _configuration.GetSection("JwtSettings");
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["Key"]!));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
+        // Maps user properties to JWT claims.
+        // Uses Id for Sub/NameIdentifier to ensure a permanent unique reference.
+        // Uses UserName for ClaimTypes.Name to provide the display name for the UI.
         var claims = new List<Claim>
         {
-            new Claim(JwtRegisteredClaimNames.Sub, user.UserName!),
+            new Claim(JwtRegisteredClaimNames.Sub, user.Id),
             new Claim(JwtRegisteredClaimNames.Email, user.Email!),
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-            new Claim(ClaimTypes.Name, user.UserName!)
+            new Claim(ClaimTypes.NameIdentifier, user.Id),
+            new Claim(ClaimTypes.Name, user.UserName ?? user.Email!)
         };
 
-        // Add roles as claims
+        // Iterates through user roles and adds each as a role claim.
         foreach (var role in roles)
         {
             claims.Add(new Claim(ClaimTypes.Role, role));
         }
 
+        // Creates the security token descriptor and instantiates the JWT.
         var token = new JwtSecurityToken(
             issuer: jwtSettings["Issuer"],
             audience: jwtSettings["Audience"],
@@ -54,6 +60,7 @@ public class TokenService : ITokenService
             signingCredentials: creds
         );
 
+        // Encodes the token into a string format.
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
 }

@@ -1,0 +1,26 @@
+{
+  "track_id": "16.3-identity-expansion",
+  "name": "Identity Expansion & Modular Auth",
+  "status": "Completed",
+  "related_files": [
+    "MeuSitePessoal.Domain/Interfaces/IFeatureToggleService.cs",
+    "MeuSitePessoal.Infrastructure/Services/FeatureToggleService.cs",
+    "MeuSitePessoal.Infrastructure/Configuration/DbInitializer.cs",
+    "MeuSitePessoal.Application/Auth/Commands/Register/RegisterCommand.cs",
+    "MeuSitePessoal.Application/Auth/Commands/Register/RegisterCommandValidator.cs",
+    "MeuSitePessoal.Application/Auth/Commands/Register/RegisterCommandHandler.cs",
+    "MeuSitePessoal.Application/Auth/Commands/Login/LoginCommand.cs",
+    "MeuSitePessoal.Application/Auth/Commands/Login/LoginCommandHandler.cs",
+    "MeuSitePessoal.Application/Auth/Commands/VerifyTwoFactor/VerifyTwoFactorCommand.cs",
+    "MeuSitePessoal.Application/Auth/Commands/VerifyTwoFactor/VerifyTwoFactorCommandHandler.cs",
+    "MeuSitePessoal.Api/Controllers/AuthController.cs",
+    "MeuSitePessoal.Api/appsettings.json",
+    "MeuSitePessoal.Api/Program.cs",
+    "meupessoal-web/src/models/Auth.ts",
+    "meupessoal-web/src/services/authService.ts",
+    "meupessoal-web/src/pages/Login.tsx",
+    "meupessoal-web/src/pages/Register.tsx",
+    "meupessoal-web/src/pages/OAuthCallback.tsx",
+    "meupessoal-web/src/App.tsx"
+  ]
+}
