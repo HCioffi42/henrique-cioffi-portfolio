@@ -9,7 +9,6 @@ import type { ArticleSummary } from '../models/ArticleSummary';
 import { ArticleCategoryLabels } from '../models/ArticleCategory';
 import { SEO } from '../components/SEO';
 import { ArticleCard } from '../components/ArticleCard';
-import { NewsletterBox } from '../components/NewsletterBox';
 import { CommentSection } from '../components/CommentSection';
 
 /**

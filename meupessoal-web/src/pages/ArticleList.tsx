@@ -6,7 +6,6 @@ import { ArticleCard } from '../components/ArticleCard';
 import Pagination from '../components/Pagination';
 import { ArticleCategory, ArticleCategoryLabels } from '../models/ArticleCategory';
 import { SEO } from '../components/SEO';
-import { NewsletterBox } from '../components/NewsletterBox';
 
 const PAGE_SIZE = 6;
 
