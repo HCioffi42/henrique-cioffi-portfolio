@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { commentService } from '../services/commentService';
+import { useAuth } from '../context/AuthContext';
 
 interface CommentFormProps {
     articleId: string;
@@ -18,23 +19,30 @@ export const CommentForm: React.FC<CommentFormProps> = ({
     onCommentCreated,
     onCancel 
 }) => {
+    const { user, isAuthenticated } = useAuth();
     const [content, setContent] = useState('');
     const [authorName, setAuthorName] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    // HC: Load the last used author name from local storage.
+    // HC: Initialize or update authorName based on auth status or local storage.
     useEffect(() => {
-        const savedName = localStorage.getItem('comment_author_name');
-        if (savedName) {
-            setAuthorName(savedName);
+        if (isAuthenticated && user) {
+            setAuthorName(user.username);
+        } else {
+            const savedName = localStorage.getItem('comment_author_name');
+            if (savedName) {
+                setAuthorName(savedName);
+            }
         }
-    }, []);
+    }, [isAuthenticated, user]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         
-        if (!content.trim() || !authorName.trim()) {
+        const finalAuthorName = isAuthenticated && user ? user.username : authorName.trim();
+
+        if (!content.trim() || !finalAuthorName) {
             setError('Both name and comment content are required.');
             return;
         }
@@ -46,12 +54,14 @@ export const CommentForm: React.FC<CommentFormProps> = ({
             await commentService.createComment({
                 articleId,
                 content: content.trim(),
-                authorName: authorName.trim(),
+                authorName: finalAuthorName,
                 parentCommentId
             });
 
-            // HC: Save the author name for future comments.
-            localStorage.setItem('comment_author_name', authorName.trim());
+            // HC: Save the author name for future comments if not logged in.
+            if (!isAuthenticated) {
+                localStorage.setItem('comment_author_name', finalAuthorName);
+            }
             
             setContent('');
             onCommentCreated();
@@ -65,16 +75,23 @@ export const CommentForm: React.FC<CommentFormProps> = ({
 
     return (
         <form onSubmit={handleSubmit} className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <input
-                    type="text"
-                    value={authorName}
-                    onChange={(e) => setAuthorName(e.target.value)}
-                    placeholder="Your Name"
-                    required
-                    disabled={isSubmitting}
-                    className="px-4 py-2 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 text-zinc-900 dark:text-white text-sm transition-colors"
-                />
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                {isAuthenticated && user ? (
+                    <div className="flex items-center gap-2 px-1">
+                        <span className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Commenting as:</span>
+                        <span className="text-sm font-bold text-indigo-600 dark:text-indigo-400">{user.username}</span>
+                    </div>
+                ) : (
+                    <input
+                        type="text"
+                        value={authorName}
+                        onChange={(e) => setAuthorName(e.target.value)}
+                        placeholder="Your Name"
+                        required
+                        disabled={isSubmitting}
+                        className="w-full sm:w-64 px-4 py-2 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 text-zinc-900 dark:text-white text-sm transition-colors"
+                    />
+                )}
             </div>
             
             <textarea
@@ -94,7 +111,7 @@ export const CommentForm: React.FC<CommentFormProps> = ({
             <div className="flex items-center gap-3">
                 <button
                     type="submit"
-                    disabled={isSubmitting || !content.trim() || !authorName.trim()}
+                    disabled={isSubmitting || !content.trim() || (isAuthenticated ? false : !authorName.trim())}
                     className="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold rounded-xl shadow-sm disabled:opacity-50 transition-all focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-zinc-900"
                 >
                     {isSubmitting ? 'Posting...' : (parentCommentId ? 'Post Reply' : 'Post Comment')}
@@ -114,3 +131,4 @@ export const CommentForm: React.FC<CommentFormProps> = ({
         </form>
     );
 };
+
