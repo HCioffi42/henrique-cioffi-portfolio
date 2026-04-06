@@ -44,32 +44,40 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, LoginResult>
     /// <returns>A <see cref="LoginResult"/> with a token or a RequiresTwoFactor flag.</returns>
     public async Task<LoginResult> Handle(LoginCommand request, CancellationToken cancellationToken)
     {
-        var user = await _userManager.FindByNameAsync(request.Username);
+        // Attempts to find the user by their unique username (handle) first.
+        // Falls back to searching by email address if no match is found by name.
+        var user = await _userManager.FindByNameAsync(request.Username) 
+                   ?? await _userManager.FindByEmailAsync(request.Username);
+
         if (user == null)
         {
-            _logger.LogWarning("Login failed: user '{Username}' not found.", request.Username);
+            _logger.LogWarning("Login failed: identity not found for '{Username}'.", request.Username);
             return new LoginResult(null, null, false);
         }
 
+        // Verifies the provided password against the stored hash.
         var result = await _signInManager.CheckPasswordSignInAsync(user, request.Password, lockoutOnFailure: false);
+        
         if (!result.Succeeded)
         {
-            _logger.LogWarning("Login failed: incorrect password for user '{Username}'.", request.Username);
+            _logger.LogWarning("Login failed: incorrect password for user '{Username}'.", user.UserName);
             return new LoginResult(null, null, false);
         }
 
-        // The 2FA toggle determines the next step after successful password validation.
+        // Evaluates the 2FA feature toggle before proceeding with token issuance.
         if (_featureToggle.Is2FAEnabled())
         {
-            _logger.LogInformation("2FA required for user '{Username}'.", request.Username);
+            _logger.LogInformation("2FA challenge triggered for user '{Username}'.", user.UserName);
             return new LoginResult(null, user.UserName, RequiresTwoFactor: true);
         }
 
-        // 2FA is disabled — issue a token immediately.
+        // Retrieves user roles and generates the JWT token with the display name (UserName).
         var roles = await _userManager.GetRolesAsync(user);
         var token = _tokenService.GenerateToken(user, roles);
 
-        _logger.LogInformation("Successful login for user '{Username}'.", request.Username);
+        _logger.LogInformation("User '{Username}' authenticated successfully.", user.UserName);
+        
+        // Returns the token and the actual UserName (display name) to the frontend.
         return new LoginResult(token, user.UserName, RequiresTwoFactor: false);
     }
 }

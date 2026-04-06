@@ -93,9 +93,9 @@
 - [x] **15.1 - Sticky Footer & Padding**: Refactor Layout.tsx to fix the footer on the page or to make the container have a "always in viewport.
 - [x] **15.2 - Sticky Markdown Toolbar**: Adjsut the article writing components. The tool bar should have a Stiky top behaviour, keeping it in screen view while the user scroll when writing a text.
 - [x] **15.3 - Dark Mode (Tailwind)**: Dark Mode support using Tailwind CSS strategy and `localStorage` persistence.
-- [ ] **15.4 - Header Standardization**: Fix dimensions for Search and Theme buttons to ensure visual symmetry and consistent "square" aspect ratios.
-- [ ] **15.5 - Accessibility Toggle**: Replace the simple icon-only button with a proper Switch/Toggle component including descriptive labels for better accessibility.
-- [ ] **15.6 - Mobile Navigation**: Implement a "Hamburger" (Sandwich) menu for smaller viewports to declutter the header.
+- [x] **15.4 - Header Standardization**: Fix dimensions for Search and Theme buttons to ensure visual symmetry and consistent "square" aspect ratios.
+- [x] **15.5 - Accessibility Toggle**: Replace the simple icon-only button with a proper Switch/Toggle component including descriptive labels for better accessibility.
+- [x] **15.6 - Mobile Navigation**: Implement a "Hamburger" (Sandwich) menu for smaller viewports to declutter the header.
 
 ### [✓] Track 16: Engagement & Community
 - [x] **16.1 - Newsletter System**: Email subscription management featuring idempotency validation to prevent duplicate entries.

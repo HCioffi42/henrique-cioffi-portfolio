@@ -37,7 +37,8 @@ builder.Services.AddDbContext<BlogDbContext>(options =>
 
 // Register Identity services
 builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
-{
+    {
+    options.User.RequireUniqueEmail = true;
     options.Password.RequireDigit = true;
     options.Password.RequireLowercase = true;
     options.Password.RequireUppercase = true;

@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using MediatR;
 using MeuSitePessoal.Application.Auth.Commands.Login;
 using MeuSitePessoal.Application.Auth.Commands.Register;
@@ -67,7 +68,7 @@ public class AuthController : ControllerBase
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] RegisterRequest request)
     {
-        var result = await _mediator.Send(new RegisterCommand(request.Email, request.Password));
+        var result = await _mediator.Send(new RegisterCommand(request.UserName, request.Email, request.Password));
 
         if (!result.Succeeded)
             return BadRequest(new { errors = result.Errors });
@@ -115,6 +116,7 @@ public class AuthController : ControllerBase
     [HttpGet("external-callback")]
     public async Task<IActionResult> ExternalLoginCallback()
     {
+        // Retrieves the login information provided by the external OAuth2 provider.
         var info = await _signInManager.GetExternalLoginInfoAsync();
         if (info == null)
         {
@@ -122,7 +124,7 @@ public class AuthController : ControllerBase
             return BadRequest("External login failed.");
         }
 
-        // Attempt to sign in with the existing external login link.
+        // Attempts to sign in the user if the external provider is already linked to an account.
         var signInResult = await _signInManager.ExternalLoginSignInAsync(
             info.LoginProvider, info.ProviderKey, isPersistent: false);
 
@@ -130,33 +132,57 @@ public class AuthController : ControllerBase
 
         if (!signInResult.Succeeded)
         {
-            // The user does not exist locally — auto-provision a new Reader account.
-            var email = info.Principal.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value ?? string.Empty;
-            user = new IdentityUser { UserName = email, Email = email, EmailConfirmed = true };
-
-            var createResult = await _userManager.CreateAsync(user);
-            if (!createResult.Succeeded)
+            // Extracts the email from external provider claims.
+            var email = info.Principal.FindFirstValue(ClaimTypes.Email);
+            if (string.IsNullOrEmpty(email))
             {
-                _logger.LogError("Failed to create external user {Email}.", email);
-                return BadRequest("Unable to create account from external login.");
+                return BadRequest("Email claim missing from external provider.");
             }
 
-            await _userManager.AddToRoleAsync(user, "Reader");
+            // Checks if a local user with the same email already exists.
+            user = await _userManager.FindByEmailAsync(email);
+
+            if (user == null)
+            {
+                // Generates a display name from the provider's info or falls back to the email prefix.
+                var displayName = info.Principal.FindFirstValue(ClaimTypes.Name) ?? email.Split('@')[0];
+
+                // Ensures the generated UserName is unique within the database.
+                if (await _userManager.FindByNameAsync(displayName) != null)
+                {
+                    displayName = $"{displayName}_{Guid.NewGuid().ToString().Substring(0, 4)}";
+                }
+
+                user = new IdentityUser { UserName = displayName, Email = email, EmailConfirmed = true };
+                var createResult = await _userManager.CreateAsync(user);
+
+                if (!createResult.Succeeded)
+                {
+                    _logger.LogError("Failed to auto-provision user for email {Email}.", email);
+                    return BadRequest("Unable to create account from external login.");
+                }
+
+                // Assigns the default Reader role to the newly created external user.
+                await _userManager.AddToRoleAsync(user, "Reader");
+            }
+
+            // Links the external login provider to the existing or newly created local account.
             await _userManager.AddLoginAsync(user, info);
-            _logger.LogInformation("New Reader account auto-provisioned for external user {Email}.", email);
         }
         else
         {
+            // Retrieves the user associated with the successful external sign-in.
             user = await _userManager.FindByLoginAsync(info.LoginProvider, info.ProviderKey);
         }
 
         if (user == null) return BadRequest("Unable to resolve user after external login.");
 
+        // Generates a JWT token for the authenticated user.
         var roles = await _userManager.GetRolesAsync(user);
         var token = _tokenService.GenerateToken(user, roles);
 
-        // Redirects the frontend to the OAuth callback page with the token in the URL fragment.
-        var frontendUrl = $"/#/oauth/callback?token={Uri.EscapeDataString(token)}&username={Uri.EscapeDataString(user.UserName ?? user.Email!)}";
+        // Redirects the client to the frontend callback route with the token and display name.
+        var frontendUrl = $"/#/oauth/callback?token={Uri.EscapeDataString(token)}&username={Uri.EscapeDataString(user.UserName!)}";
         return Redirect(frontendUrl);
     }
 
@@ -166,7 +192,8 @@ public class AuthController : ControllerBase
     public record LoginRequest(string Username, string Password);
 
     /// <summary>The request body for the registration endpoint.</summary>
-    public record RegisterRequest(string Email, string Password);
+    /// <remarks>UserName property is used as the public display name.</remarks>
+    public record RegisterRequest(string UserName, string Email, string Password);
 
     /// <summary>The request body for the 2FA verification endpoint.</summary>
     public record VerifyTwoFactorRequest(string Username, string Code);

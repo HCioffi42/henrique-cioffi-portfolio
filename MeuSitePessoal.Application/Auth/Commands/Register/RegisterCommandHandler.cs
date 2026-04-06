@@ -34,7 +34,7 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, RegisterR
     {
         var user = new IdentityUser
         {
-            UserName = request.Email,
+            UserName = request.UserName,
             Email = request.Email,
             EmailConfirmed = true
         };
@@ -44,8 +44,9 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, RegisterR
         if (!result.Succeeded)
         {
             var errors = result.Errors.Select(e => e.Description);
-            _logger.LogWarning("Registration failed for {Email}: {Errors}", request.Email, string.Join(", ", errors));
-            return new RegisterResult(false, errors);
+            var errorList = errors.ToList();
+            _logger.LogWarning("Registration failed for {Email}: {Errors}", request.Email, string.Join(", ", errorList));
+            return new RegisterResult(false, errorList);
         }
 
         await _userManager.AddToRoleAsync(user, "Reader");

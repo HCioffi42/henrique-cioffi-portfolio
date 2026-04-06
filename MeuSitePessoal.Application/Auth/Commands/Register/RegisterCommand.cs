@@ -5,7 +5,7 @@ namespace MeuSitePessoal.Application.Auth.Commands.Register;
 /// </summary>
 /// <param name="Email">The email address of the new user.</param>
 /// <param name="Password">The password for the new user account.</param>
-public record RegisterCommand(string Email, string Password) : MediatR.IRequest<RegisterResult>;
+public record RegisterCommand(string UserName, string Email, string Password) : MediatR.IRequest<RegisterResult>;
 
 /// <summary>
 /// Represents the result of a registration attempt.
