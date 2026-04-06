@@ -25,7 +25,7 @@ export const CommentSection: React.FC<CommentSectionProps> = ({ articleId }) => 
         try {
             const data = await commentService.getCommentsByArticleId(articleId);
             setComments(data);
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error('Failed to load comments:', err);
             setError('Comments are temporarily unavailable.');
         } finally {

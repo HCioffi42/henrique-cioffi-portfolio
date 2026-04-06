@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { newsletterService } from '../services/newsletterService';
+import axios from 'axios';
 
 /**
  * Props for the NewsletterBox component.
@@ -33,12 +34,14 @@ export const NewsletterBox: React.FC<NewsletterBoxProps> = ({ variant = 'default
             setStatus('success');
             setMessage('Thank you for subscribing!');
             setEmail('');
-        } catch (error: any) {
+        } catch (error: unknown) {
             setStatus('error');
-            if (error.response?.status === 409) {
-                setMessage(error.response.data?.message || 'This email is already subscribed.');
-            } else if (error.response?.status === 400) {
-                setMessage(error.response.data?.title || error.response.data?.message || 'Invalid email format.');
+            if (axios.isAxiosError(error)) {
+                if (error.response?.status === 409) {
+                    setMessage(error.response.data?.message || 'This email is already subscribed.');
+                } else if (error.response?.status === 400) {
+                    setMessage(error.response.data?.title || error.response.data?.message || 'Invalid email format.');
+                }
             } else {
                 setMessage('An unexpected error occurred. Please try again.');
             }

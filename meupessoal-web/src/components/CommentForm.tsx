@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { commentService } from '../services/commentService';
 import { useAuth } from '../context/AuthContext';
+import axios from 'axios';
 
 interface CommentFormProps {
     articleId: string;
@@ -65,9 +66,14 @@ export const CommentForm: React.FC<CommentFormProps> = ({
             
             setContent('');
             onCommentCreated();
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error('Failed to post comment:', err);
-            setError(err.response?.data?.message || 'Failed to post comment. Please try again.');
+            // Checks if the error is an Axios error to safely access response data.
+            if (axios.isAxiosError(err)) {
+                setError(err.response?.data?.message || 'Failed to post comment. Please try again.');
+            } else {
+                setError('An unexpected error occurred. Please try again.');
+            }
         } finally {
             setIsSubmitting(false);
         }
