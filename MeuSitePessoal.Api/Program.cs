@@ -28,7 +28,7 @@ builder.Services.AddCustomLogging(builder.Configuration);
 builder.Services.AddCustomTracing();
 builder.Host.UseSerilog();
 
-// Configura o DbContext para utilizar o PostgreSQL com a connection string definida no appsettings.json.
+// Configures the DbContext to use PostgreSQL with the connection string defined in appsettings.json.
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<BlogDbContext>(options =>
     options.UseNpgsql(connectionString));
@@ -78,7 +78,7 @@ builder.Services.AddAuthorization();
 // Registers AutoMapper to handle mapping between DTOs/Commands and Entities.
 builder.Services.AddAutoMapper(typeof(CreateArticleCommand).Assembly);
 
-// Registra o MediatR para gerenciar os Commands e Handlers da camada de Application.
+// Registers MediatR to manage Commands and Handlers from the Application layer.
 builder.Services.AddMediatR(cfg =>
 {
     cfg.RegisterServicesFromAssembly(typeof(CreateArticleCommand).Assembly);
@@ -98,7 +98,7 @@ builder.Services.AddMemoryCache();
 // Adds support for ASP.NET Core Controllers, allowing route organization in separate classes.
 builder.Services.AddControllers();
 
-// Configura o Swagger para documentação da API com suporte a JWT.
+// Configures Swagger for API documentation with JWT support.
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
@@ -154,7 +154,7 @@ app.UseStaticFiles();
 // Enable Serilog request logging
 app.UseSerilogRequestLogging();
 
-// Habilita o Swagger apenas no ambiente de desenvolvimento para facilitar os testes da API.
+// Enables Swagger only in the development environment to facilitate API testing.
 if (app.Environment.IsDevelopment() || app.Environment.IsEnvironment("Docker"))
 {
     app.UseSwagger();
@@ -169,7 +169,7 @@ if (!app.Environment.IsDevelopment() && !app.Environment.IsEnvironment("Docker")
 app.UseAuthentication();
 app.UseAuthorization();
 
-// Mapeia as rotas definidas nos Controllers para que a aplicação possa responder às requisições.
+// Maps the routes defined in the Controllers so the application can respond to requests.
 app.MapControllers();
 
 // Maps the health check endpoint to /health.
@@ -188,15 +188,15 @@ if (!app.Environment.IsEnvironment("Testing"))
     {
         try
         {
-            Console.WriteLine("--> Tentando aplicar migrações... (Tentativa " + (11 - retryCount) + ")");
+            Console.WriteLine("--> Trying to apply migrations... (Attempt " + (11 - retryCount) + ")");
             await context.Database.MigrateAsync();
-            Console.WriteLine("--> Migrações aplicadas com sucesso!");
+            Console.WriteLine("--> Migrations applied successfully!");
             break;
         }
         catch (Exception)
         {
             retryCount--;
-            Console.WriteLine($"--> Banco de dados ainda não está pronto. Aguardando 3s...");
+            Console.WriteLine($"--> Database is not ready yet. Waiting 3s...");
             if (retryCount == 0) throw;
             await Task.Delay(3000);
         }
@@ -205,9 +205,9 @@ if (!app.Environment.IsEnvironment("Testing"))
     var userManager = services.GetRequiredService<UserManager<IdentityUser>>();
     var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
     
-    Console.WriteLine("--> Iniciando Seed de dados...");
+    Console.WriteLine("--> Starting data seed...");
     await DbInitializer.SeedAsync(context, userManager, roleManager);
-    Console.WriteLine("--> Ciclo de inicialização FINALIZADO, Chefia!");
+    Console.WriteLine("--> Initialization cycle FINISHED, Boss!");
 }
 
 app.Run();

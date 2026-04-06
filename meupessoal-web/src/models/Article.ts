@@ -1,6 +1,6 @@
-﻿import { ArticleCategory } from './ArticleCategory';
+import { ArticleCategory } from './ArticleCategory';
 
-// Define a estrutura de um artigo vindo da API para garantir tipagem forte no frontend.
+// Defines the structure of an API article to ensure strong typing in the frontend.
 export interface Article {
     id: string;
     title: string;
@@ -11,7 +11,7 @@ export interface Article {
     createdAt: string;
 }
 
-// Representa a estrutura de paginação que o seu PagedList.cs retorna.
+// Represents the pagination structure returned by PagedList.cs.
 export interface PagedArticles {
     items: Article[];
     currentPage: number;

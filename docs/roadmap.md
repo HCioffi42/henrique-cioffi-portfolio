@@ -89,23 +89,32 @@
 - [x] **14.2**: Caching layer for article summaries using In-Memory or Redis.
 - [x] **14.3**: Structured logging enrichment with Serilog for production tracing.
 
-### [ ] Track 15: Portfolio Polish & Social
-- [ ] **15.1 - Sticky Footer & Padding**: Refactor Layout.tsx to fix the footer on the page or to make the container have a "always in viewport.
-- [ ] **15.2 - Sticky Markdown Toolbar**: Adjsut the article writing components. The tool bar should have a Stiky top behaviour, keeping it in screen view while the user scroll when writing a text.
-- [ ] **15.3 - Dark Mode (Tailwind)**: Dark Mode support using Tailwind CSS strategy and `localStorage` persistence.
+### [/] Track 15: Portfolio Polish & Social
+- [x] **15.1 - Sticky Footer & Padding**: Refactor Layout.tsx to fix the footer on the page or to make the container have a "always in viewport.
+- [x] **15.2 - Sticky Markdown Toolbar**: Adjsut the article writing components. The tool bar should have a Stiky top behaviour, keeping it in screen view while the user scroll when writing a text.
+- [x] **15.3 - Dark Mode (Tailwind)**: Dark Mode support using Tailwind CSS strategy and `localStorage` persistence.
+- [ ] **15.4 - Header Standardization**: Fix dimensions for Search and Theme buttons to ensure visual symmetry and consistent "square" aspect ratios.
+- [ ] **15.5 - Accessibility Toggle**: Replace the simple icon-only button with a proper Switch/Toggle component including descriptive labels for better accessibility.
+- [ ] **15.6 - Mobile Navigation**: Implement a "Hamburger" (Sandwich) menu for smaller viewports to declutter the header.
 
-### [ ] Track 16: Engagement & Community
-- [ ] **16.1 - Newsletter System**: Email subscription management featuring idempotency validation to prevent duplicate entries.
+### [/] Track 16: Engagement & Community
+- [x] **16.1 - Newsletter System**: Email subscription management featuring idempotency validation to prevent duplicate entries.
 - [ ] **16.2 - Comment Section**: Implementation of a nested comment system (threaded discussions) located below article content.
 - [ ] **16.3 - Identity Expansion**: Identity framework adjustments to support dedicated reader profiles and integration with external authentication providers (OIDC/OAuth2).
+
+### [ ] Track 17: Automated Quality Suite
+- [ ] **17.1 - i18next Setup**: Configure the translation framework in the React frontend.
+- [ ] **17.2 - Language Toggle**: Add the PT/EN selector to the header (using a toggle or select component).
+- [ ] **17.3 - Multi-language Schema**: Adjust the PostgreSQL schema to handle translated content (titles, summaries, and tags).
+
 ---
 
 ## Phase 5: SDET Excellence (Quality Engineering)
 
-### [ ] Track 17: Automated Quality Suite
-- [ ] **17.1**: End-to-End (E2E) testing suite with **Playwright** for critical flows.
-- [ ] **17.2**: Automated accessibility (A11y) audits in the CI pipeline.
-- [ ] **17.3**: Performance benchmarking using **k6** for API endpoints.
+### [ ] Track 18: Automated Quality Suite
+- [ ] **18.1**: End-to-End (E2E) testing suite with **Playwright** for critical flows.
+- [ ] **18.2**: Automated accessibility (A11y) audits in the CI pipeline.
+- [ ] **18.3**: Performance benchmarking using **k6** for API endpoints.
 
 ---
 

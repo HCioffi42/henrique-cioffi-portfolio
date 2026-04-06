@@ -1,4 +1,5 @@
-﻿using MeuSitePessoal.Domain;
+using MeuSitePessoal.Domain;
+using MeuSitePessoal.Domain.Entities;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
@@ -13,6 +14,9 @@ public class BlogDbContext : IdentityDbContext
 
     // Maps the Article entity to a table called Articles in the database.
     public DbSet<Article> Articles { get; set; }
+    
+    // Maps the Subscriber entity to a table called Subscribers in the database.
+    public DbSet<Subscriber> Subscribers { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -27,6 +31,15 @@ public class BlogDbContext : IdentityDbContext
             builder.Property(a => a.Tags).IsRequired();
             builder.Property(a => a.Category).IsRequired();
             builder.Property(a => a.CreatedAt).IsRequired();
+        });
+
+        // Configures the Subscriber entity with unique index for the email.
+        modelBuilder.Entity<Subscriber>(builder =>
+        {
+            builder.ToTable("Subscribers");
+            builder.HasKey(s => s.Id);
+            builder.Property(s => s.Email).IsRequired().HasMaxLength(255);
+            builder.HasIndex(s => s.Email).IsUnique();
         });
 
         base.OnModelCreating(modelBuilder);

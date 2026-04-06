@@ -26,11 +26,11 @@ export const Layout = ({ children }: LayoutProps) => {
         const isHomePage = location.pathname === '/';
         const normalizedTerm = searchTerm.trim();
 
-        // 1. Se tem termo, navega para a home com a busca
+        // 1. If there is a term, navigate to the home page with the search
         if (normalizedTerm) {
             navigate(`/?q=${encodeURIComponent(normalizedTerm)}&page=1`);
         } 
-        // 2. Se o termo está vazio, estamos na home e existia uma busca, limpamos
+        // 2. If the term is empty, we are on the home page and there was a search, we clear it
         else if (isHomePage && currentSearchParam) {
             setSearchParams(prev => {
                 const next = new URLSearchParams(prev);
@@ -39,8 +39,8 @@ export const Layout = ({ children }: LayoutProps) => {
                 return next;
             });
         }
-        // 3. Se estivermos no ArticleDetails e a busca for vazia, NÃO fazemos nada.
-        // Isso impede o "sequestro" da navegação e permite ler o artigo em paz.
+        // 3. If we are in ArticleDetails and the search is empty, we do NOTHING.
+        // This prevents navigation hijacking and allows reading the article in peace.
     }, [navigate, location.pathname, currentSearchParam, setSearchParams]);
 
     return (

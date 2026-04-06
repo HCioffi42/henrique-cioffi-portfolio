@@ -29,46 +29,46 @@ public class ImagesController : ControllerBase
     [HttpPost("upload")]
     public async Task<IActionResult> Upload(IFormFile? file)
     {
-        // Verifica se o arquivo existe e tem conteúdo para evitar processar requisições vazias.
+        // Checks if the file exists and has content to avoid processing empty requests.
         if (file == null || file.Length == 0)
         {
-            _logger.LogWarning("Tentativa de upload com arquivo nulo ou vazio.");
+            _logger.LogWarning("Upload attempt with null or empty file.");
             return BadRequest("No file uploaded.");
         }
 
-        // Valida o tamanho do arquivo para proteger o servidor contra abusos de armazenamento.
+        // Validates file size to protect the server from storage abuse.
         if (file.Length > MaxFileSize)
         {
-            _logger.LogWarning("Arquivo excede o limite de 5MB: {FileName} ({Size} bytes)", file.FileName, file.Length);
+            _logger.LogWarning("File exceeds the 5MB limit: {FileName} ({Size} bytes)", file.FileName, file.Length);
             return BadRequest("File size exceeds the limit of 5MB.");
         }
 
-        // Valida a extensão para garantir que apenas formatos de imagem suportados sejam salvos.
+        // Validates the extension to ensure only supported image formats are saved.
         var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
         if (!_allowedExtensions.Contains(extension))
         {
-            _logger.LogWarning("Extensão de arquivo não permitida: {Extension}", extension);
+            _logger.LogWarning("File extension not allowed: {Extension}", extension);
             return BadRequest("Invalid file type. Only images are allowed.");
         }
 
         try
         {
-            _logger.LogInformation("Iniciando upload do arquivo: {FileName}", file.FileName);
+            _logger.LogInformation("Starting upload for file: {FileName}", file.FileName);
 
-            // Abre o stream de leitura do arquivo enviado pelo cliente.
+            // Opens the read stream of the file sent by the client.
             await using var stream = file.OpenReadStream();
             
-            // Persiste o arquivo através do serviço de armazenamento (Local ou Cloud).
+            // Persists the file via the storage service (Local or Cloud).
             var url = await _storageService.SaveFileAsync(stream, file.FileName, file.ContentType);
 
-            _logger.LogInformation("Upload concluído com sucesso. URL gerada: {Url}", url);
+            _logger.LogInformation("Upload completed successfully. Generated URL: {Url}", url);
             
             return Ok(new { url });
         }
         catch (Exception ex)
         {
-            // Registra a exceção completa no Log para facilitar a depuração via IDE ou arquivos de log.
-            _logger.LogError(ex, "Falha crítica ao processar upload do arquivo {FileName}", file.FileName);
+            // Logs the full exception to ease debugging via the IDE or log files.
+            _logger.LogError(ex, "Critical failure during upload of file {FileName}", file.FileName);
             return StatusCode(500, "An internal error occurred while saving the file.");
         }
     }

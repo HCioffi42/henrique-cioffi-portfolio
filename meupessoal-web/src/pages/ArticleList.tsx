@@ -6,6 +6,7 @@ import { ArticleCard } from '../components/ArticleCard';
 import Pagination from '../components/Pagination';
 import { ArticleCategory, ArticleCategoryLabels } from '../models/ArticleCategory';
 import { SEO } from '../components/SEO';
+import { NewsletterBox } from '../components/NewsletterBox';
 
 const PAGE_SIZE = 6;
 
@@ -193,11 +194,20 @@ const ArticleList = () => {
                     <p className="text-gray-500 dark:text-slate-400 text-lg">No articles match these combined filters.</p>
                 </div>
             ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    {articles.map(article => (
-                        <ArticleCard key={article.id} article={article} />
-                    ))}
-                </div>
+                <>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        {articles.map(article => (
+                            <ArticleCard key={article.id} article={article} />
+                        ))}
+                    </div>
+
+                    {/* Floating Newsletter Widget - Positioned bottom-right */}
+                    <aside className="hidden lg:block fixed bottom-8 right-8 z-40 w-80 animate-in slide-in-from-bottom-10 duration-700">
+                        <div className="bg-white dark:bg-zinc-900 rounded-2xl p-5 shadow-2xl border border-zinc-200 dark:border-zinc-800">
+                            <NewsletterBox variant="sidebar" />
+                        </div>
+                    </aside>
+                </>
             )}
 
             {articles.length > 0 && totalPages > 1 && (
