@@ -87,7 +87,7 @@ export const Layout = ({ children }: LayoutProps) => {
                                 </button>
                             </div>
                         ) : (
-                            <Link to="/login" className="hidden lg:block text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 font-medium transition-colors">Admin</Link>
+                            <Link to="/login" className="hidden lg:block text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 font-medium transition-colors">Login</Link>
                         )}
 
                         {/* HC: Mobile-only Hamburger menu trigger. Standardized size to match other header actions. */}

@@ -19,6 +19,7 @@ export interface LoginResponse {
  * Represents the request body for the register endpoint.
  */
 export interface RegisterRequest {
+  userName: string;
   email: string;
   password: string;
 }
