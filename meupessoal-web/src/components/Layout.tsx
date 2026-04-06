@@ -1,9 +1,11 @@
 ﻿import type { ReactNode } from 'react';
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { Link, useNavigate, useSearchParams, useLocation } from 'react-router-dom';
+import { Menu } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { SearchBar } from './SearchBar';
 import { ThemeToggle } from './ThemeToggle';
+import { MobileMenu } from './MobileMenu';
 
 interface LayoutProps {
     children: ReactNode;
@@ -14,6 +16,7 @@ export const Layout = ({ children }: LayoutProps) => {
     const navigate = useNavigate();
     const location = useLocation();
     const [searchParams, setSearchParams] = useSearchParams();
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
     const currentSearchParam = useMemo(() => searchParams.get('q') || '', [searchParams]);
 
@@ -45,22 +48,29 @@ export const Layout = ({ children }: LayoutProps) => {
 
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-slate-950 text-gray-900 dark:text-slate-100 flex flex-col transition-colors duration-300">
-            <header className="bg-white dark:bg-slate-900 border-b border-gray-200 dark:border-slate-800 shadow-sm sticky top-0 z-10 transition-colors duration-300">
-                <nav className="max-w-5xl mx-auto px-6 py-4 flex justify-between items-center">
-                    <Link to="/" className="text-xl font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 transition-colors">
+            <header className="bg-white dark:bg-slate-900 border-b border-gray-200 dark:border-slate-800 shadow-sm sticky top-0 z-20 transition-colors duration-300">
+                <nav className="max-w-5xl mx-auto px-6 py-2.5 flex justify-between items-center h-14">
+                    <Link to="/" className="text-lg font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 transition-colors shrink-0">
                         Cioffi's Projects
                     </Link>
                     
-                    <div className="flex items-center gap-6">
-                        <Link to="/" className="text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 font-medium transition-colors">Blog</Link>
+                    <div className="flex items-center gap-3 sm:gap-4">
+                        {/* HC: Desktop-only navigation links. */}
+                        <div className="hidden lg:flex items-center gap-6">
+                            <Link to="/" className="text-sm text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 font-medium transition-colors">Blog</Link>
+                        </div>
 
-                         <SearchBar onSearch={handleGlobalSearch} initialValue={currentSearchParam} />
+                        <SearchBar onSearch={handleGlobalSearch} initialValue={currentSearchParam} />
                         
-                        <ThemeToggle />
+                        {/* HC: ThemeToggle refined with standard height and sliding switch. Hidden on ultra-small screens if needed, but here kept for accessibility. */}
+                        <div className="hidden sm:block">
+                            <ThemeToggle />
+                        </div>
                         
+                        {/* HC: Desktop-only authentication and admin actions. */}
                         {isAuthenticated ? (
-                            <div className="flex items-center gap-4 border-l border-gray-100 dark:border-slate-800 pl-6">
-                                <span className="text-sm text-gray-500 dark:text-gray-400 hidden sm:inline">
+                            <div className="hidden lg:flex items-center gap-4 border-l border-gray-100 dark:border-slate-800 pl-6">
+                                <span className="text-sm text-gray-500 dark:text-gray-400">
                                     Hello, <span className="font-semibold">{user?.username}</span>
                                 </span>
                                 <Link to="/admin/new-post" className="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-indigo-700 transition-all">
@@ -73,11 +83,28 @@ export const Layout = ({ children }: LayoutProps) => {
                                 </button>
                             </div>
                         ) : (
-                            <Link to="/login" className="text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 font-medium transition-colors">Admin</Link>
+                            <Link to="/login" className="hidden lg:block text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 font-medium transition-colors">Admin</Link>
                         )}
+
+                        {/* HC: Mobile-only Hamburger menu trigger. Standardized size to match other header actions. */}
+                        <button 
+                            onClick={() => setIsMobileMenuOpen(true)}
+                            className="lg:hidden w-9 h-9 flex items-center justify-center rounded-lg bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-slate-700 transition-colors cursor-pointer"
+                            aria-label="Open navigation menu">
+                            <Menu className="w-5 h-5" />
+                        </button>
                     </div>
                 </nav>
             </header>
+
+            {/* HC: Mobile navigation menu overlay. */}
+            <MobileMenu 
+                isOpen={isMobileMenuOpen} 
+                onClose={() => setIsMobileMenuOpen(false)}
+                isAuthenticated={isAuthenticated}
+                user={user}
+                onLogout={handleLogout}
+            />
 
             <main className="flex-grow pb-16">
                 {children}

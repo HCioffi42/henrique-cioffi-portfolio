@@ -46,3 +46,48 @@ This track focuses on the visual and structural refinement of the `meupessoal-we
     - Define dark mode color variants using the `dark:` prefix.
     - Ensure background and text colors transition smoothly between modes.
 
+## 4. Header Standardization (Task 15.4)
+
+### 4.1 UI/UX Requirements
+- Interactive header elements (Search, Theme Toggle, Auth buttons) must have consistent visual weight.
+- Use fixed square dimensions (e.g., `w-10 h-10`) for icon-based buttons to ensure symmetry.
+- Icons must be perfectly centered within their containers using Flexbox or Grid.
+- Maintain consistent spacing (gap) between navigation elements.
+
+### 4.2 Implementation Strategy
+- **Container Sizing**: Apply standard Tailwind width/height classes to all header action buttons.
+- **Alignment**: Use `flex items-center justify-center` for centralized icon placement.
+- **Consistency**: Audit all header components to ensure they adhere to the new sizing standards.
+
+## 5. Accessibility Theme Toggle (Task 15.5)
+
+### 5.1 UI/UX Requirements
+- Transition from a simple icon button to a robust `Switch` or `Toggle` pattern.
+- Include visual indicators (Sun and Moon icons) for both states.
+- Provide descriptive text labels (Light/Dark) that are accessible to Screen Readers.
+- Implement smooth CSS transitions for the "thumb" or background of the toggle.
+
+### 5.2 Technical Requirements
+- **Semantic HTML**: Use a `<button>` with `role="switch"` and `aria-checked`.
+- **Accessibility**: Use `aria-label` to clearly state the current and target theme states.
+- **State Management**: Continue using the existing `ThemeContext` and `useDarkMode` hook.
+- **Animation**: Utilize Tailwind CSS transitions or CSS keyframes for a polished "slide" effect.
+
+## 6. Mobile Navigation (Task 15.6)
+
+### 6.1 UI/UX Requirements
+- Reveal a "Hamburger" menu icon for viewports below the `lg` breakpoint.
+- Hide standard desktop navigation links on small screens.
+- Reveal a mobile-friendly slide-over or dropdown menu containing all key links:
+    - Blog
+    - Admin/Login
+    - New Post (if authenticated)
+- Ensure the `Search` and `ThemeToggle` remain accessible within the mobile layout.
+- Use a backdrop overlay to focus attention on the active menu.
+
+### 6.2 Technical Requirements
+- **State Management**: Use a local React state to manage the open/closed status of the menu.
+- **Responsive Classes**: Employ Tailwind's `hidden` and `lg:flex` / `lg:block` classes for layout switching.
+- **Animations**: Implement a clean entry/exit transition for the menu.
+- **UX**: Ensure the menu is closed automatically when a navigation link is clicked.
+

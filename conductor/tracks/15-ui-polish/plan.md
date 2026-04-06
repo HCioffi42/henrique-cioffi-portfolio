@@ -40,9 +40,36 @@
     - Audit `ArticleCard.tsx` and `MarkdownRenderer.tsx` for hardcoded light-mode colors and apply `dark:` variants.
     - Refine `Login.tsx`, `Dashboard.tsx`, `ArticleList.tsx`, `ArticleDetails.tsx`, `CreateArticle.tsx`, and `EditArticle.tsx`.
 
-## 5. Validation & Testing
-- [x] Verify sticky footer behavior on pages with low content (e.g., Login, empty search).
-- [x] Test dark mode persistence across page reloads.
-- [x] Verify system preference detection (changing OS theme should update the site if no manual override exists).
-- [x] Ensure mobile responsiveness remains intact after layout changes.
+## 6. Task 15.4: Header Standardization
+- [x] **Modify `meupessoal-web/src/components/SearchBar.tsx`**:
+    - Update the search button container to use consistent dimensions (`w-10 h-10`).
+    - Use Flexbox to ensure the search icon is perfectly centered.
+- [x] **Audit `meupessoal-web/src/components/Layout.tsx`**:
+    - Standardize dimensions for all header action buttons.
+    - Implement consistent spacing and vertical alignment for navigation items.
+
+## 7. Task 15.5: Accessibility Theme Toggle
+- [x] **Refactor `meupessoal-web/src/components/ThemeToggle.tsx`**:
+    - Implement a `Switch` pattern using a `button` with `role="switch"` and `aria-checked`.
+    - Add Sun and Moon icons as visual state indicators.
+    - Include descriptive `aria-labels` and visual (or screen-reader only) labels for accessibility.
+    - Add smooth sliding transitions for the toggle switch thumb.
+    - Maintain integration with the existing `useTheme` context.
+
+## 8. Task 15.6: Mobile Navigation (Hamburger Menu)
+- [x] **Create `meupessoal-web/src/components/MobileMenu.tsx`**:
+    - Implement a slide-over or dropdown menu for mobile devices.
+    - Use a backdrop overlay to focus attention and handle "click-outside" closures.
+    - Ensure all desktop navigation links (Blog, Projects, Admin/Login) are present.
+- [x] **Update `meupessoal-web/src/components/Layout.tsx`**:
+    - Integrate the hamburger menu trigger button (visible below `lg` breakpoint).
+    - Use Tailwind's responsive classes (`hidden lg:flex`) to toggle between desktop and mobile navigation layouts.
+    - Implement logic to close the menu upon navigation.
+
+## 9. Validation & Testing
+- [x] Verify header symmetry and dimension consistency across browsers.
+- [x] Test the Theme Toggle accessibility with screen readers.
+- [x] Validate mobile navigation functionality (Hamburger menu opening/closing and link clicks).
+- [x] Ensure the Search and Theme Toggle remain accessible on mobile devices.
+- [x] Test Dark Mode transitions for smoothness.
 - [x] Run `npm run lint` and `npm run build` to ensure no regressions.
