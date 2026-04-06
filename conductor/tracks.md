@@ -6,6 +6,8 @@ This file tracks all the development tracks for this project.
 
 
 ## Completed Tracks
+- [x] **Track 16.3: Identity Expansion & Modular Auth**
+  *Link: [./tracks/16.3-identity-expansion/index.md](./tracks/16.3-identity-expansion/index.md)*
 - [x] **Track 16.2: Nested Comment System**
   *Link: [./tracks/16-community/index.md](./tracks/16-community/index.md)*
 - [x] **Track 16.1: Anonymous Newsletter System**

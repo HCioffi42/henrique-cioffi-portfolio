@@ -23,7 +23,7 @@ const ArticleList = () => {
     const currentPage = Number(searchParams.get('page')) || 1;
     const queryCategory = searchParams.get('category');
     const category = queryCategory ? (Number(queryCategory) as ArticleCategory) : undefined;
-    
+
     // HC: Retrieves the search term 'q' from the URL.
     const searchTerm = searchParams.get('q') || '';
 
@@ -56,12 +56,12 @@ const ArticleList = () => {
 
         void loadArticles();
         window.scrollTo(0, 0);
-    }, [currentPage, tagsKey, category, searchTerm, currentTags]); 
+    }, [currentPage, tagsKey, category, searchTerm, currentTags]);
 
     const { seoTitle, seoDescription } = useMemo(() => {
         let title = 'Insights & Articles';
         let description = 'Exploring the intersection of technology, design, and software engineering. Portfolio and blog by Henrique Cioffi.';
-        
+
         if (searchTerm) {
             title = `Search results for: ${searchTerm}`;
             description = `Viewing articles matching the search term "${searchTerm}".`;
@@ -72,7 +72,7 @@ const ArticleList = () => {
             title = `Category: ${ArticleCategoryLabels[category]}`;
             description = `All articles filed under the ${ArticleCategoryLabels[category]} category. Focused insights on technology and engineering.`;
         }
-        
+
         return { seoTitle: title, seoDescription: description };
     }, [currentTags, category, searchTerm]);
 
@@ -128,18 +128,18 @@ const ArticleList = () => {
             <SEO title={seoTitle} description={seoDescription} />
             <header className="mb-12 text-center">
                 <h1 className="text-4xl font-extrabold text-gray-900 dark:text-slate-100 tracking-tight sm:text-5xl mb-4">
-                    {searchTerm 
+                    {searchTerm
                         ? `Results for "${searchTerm}"`
-                        : currentTags.length > 0 
+                        : currentTags.length > 0
                             ? `Filtering by ${currentTags.length} tags`
-                            : category !== undefined 
+                            : category !== undefined
                                 ? `Browsing: ${ArticleCategoryLabels[category]}`
                                 : 'Insights & Articles'}
                 </h1>
                 <p className="text-lg text-gray-500 dark:text-slate-400 max-w-2xl mx-auto">
                     {searchTerm
                         ? `Found ${articles.length} articles that match your search.`
-                        : currentTags.length > 0 
+                        : currentTags.length > 0
                             ? `Discovering content related to ${currentTags.join(' and ')}.`
                             : category !== undefined
                                 ? `All articles filed under the ${ArticleCategoryLabels[category]} category.`
@@ -167,7 +167,7 @@ const ArticleList = () => {
                         )}
 
                         {category !== undefined && (
-                             <div className="inline-flex items-center gap-2 bg-amber-50 dark:bg-amber-950/30 border border-amber-100 dark:border-amber-900/50 px-4 py-1.5 rounded-full shadow-sm">
+                            <div className="inline-flex items-center gap-2 bg-amber-50 dark:bg-amber-950/30 border border-amber-100 dark:border-amber-900/50 px-4 py-1.5 rounded-full shadow-sm">
                                 <span className="text-sm text-amber-800 dark:text-amber-500 font-bold tracking-wide">
                                     Category: {ArticleCategoryLabels[category]}
                                 </span>

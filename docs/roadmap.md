@@ -89,7 +89,7 @@
 - [x] **14.2**: Caching layer for article summaries using In-Memory or Redis.
 - [x] **14.3**: Structured logging enrichment with Serilog for production tracing.
 
-### [/] Track 15: Portfolio Polish & Social
+### [✓] Track 15: Portfolio Polish & Social
 - [x] **15.1 - Sticky Footer & Padding**: Refactor Layout.tsx to fix the footer on the page or to make the container have a "always in viewport.
 - [x] **15.2 - Sticky Markdown Toolbar**: Adjsut the article writing components. The tool bar should have a Stiky top behaviour, keeping it in screen view while the user scroll when writing a text.
 - [x] **15.3 - Dark Mode (Tailwind)**: Dark Mode support using Tailwind CSS strategy and `localStorage` persistence.
@@ -97,10 +97,10 @@
 - [ ] **15.5 - Accessibility Toggle**: Replace the simple icon-only button with a proper Switch/Toggle component including descriptive labels for better accessibility.
 - [ ] **15.6 - Mobile Navigation**: Implement a "Hamburger" (Sandwich) menu for smaller viewports to declutter the header.
 
-### [/] Track 16: Engagement & Community
+### [✓] Track 16: Engagement & Community
 - [x] **16.1 - Newsletter System**: Email subscription management featuring idempotency validation to prevent duplicate entries.
-- [ ] **16.2 - Comment Section**: Implementation of a nested comment system (threaded discussions) located below article content.
-- [ ] **16.3 - Identity Expansion**: Identity framework adjustments to support dedicated reader profiles and integration with external authentication providers (OIDC/OAuth2).
+- [x] **16.2 - Comment Section**: Implementation of a nested comment system (threaded discussions) located below article content.
+- [x] **16.3 - Identity Expansion**: Identity framework adjustments to support dedicated reader profiles and integration with external authentication providers (OIDC/OAuth2).
 
 ### [ ] Track 17: Automated Quality Suite
 - [ ] **17.1 - i18next Setup**: Configure the translation framework in the React frontend.

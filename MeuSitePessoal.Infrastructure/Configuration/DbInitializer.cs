@@ -13,10 +13,16 @@ public static class DbInitializer
     public static async Task SeedAsync(BlogDbContext context, UserManager<IdentityUser> userManager, RoleManager<IdentityRole> roleManager)
     {
         // 1. Seed Roles
-        if (!await context.Roles.AnyAsync())
+        if (!await roleManager.RoleExistsAsync("Admin"))
         {
-            Console.WriteLine("--> Seed: Creating Roles...");
+            Console.WriteLine("--> Seed: Creating Admin role...");
             await roleManager.CreateAsync(new IdentityRole("Admin"));
+        }
+
+        if (!await roleManager.RoleExistsAsync("Reader"))
+        {
+            Console.WriteLine("--> Seed: Creating Reader role...");
+            await roleManager.CreateAsync(new IdentityRole("Reader"));
         }
 
         // 2. Seed Admin User

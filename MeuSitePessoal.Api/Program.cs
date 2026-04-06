@@ -1,4 +1,5 @@
 using System.Text;
+using AspNet.Security.OAuth.GitHub;
 using FluentValidation;
 using MeuSitePessoal.Api.Middleware;
 using MeuSitePessoal.Application.Articles.Commands.CreateArticle;
@@ -9,6 +10,7 @@ using MeuSitePessoal.Infrastructure.Data;
 using MeuSitePessoal.Infrastructure.Logging;
 using MeuSitePessoal.Infrastructure.Repositories;
 using MeuSitePessoal.Infrastructure.Services;
+using MeuSitePessoal.Domain.Interfaces;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -49,12 +51,13 @@ builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
 builder.Services.AddScoped<IArticleRepository, ArticleRepository>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IStorageService, LocalStorageService>();
+builder.Services.AddSingleton<IFeatureToggleService, FeatureToggleService>();
 
 // Configure JWT Authentication
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
 var key = Encoding.UTF8.GetBytes(jwtSettings["Key"]!);
 
-builder.Services.AddAuthentication(options =>
+var authBuilder = builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
     options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -72,6 +75,30 @@ builder.Services.AddAuthentication(options =>
         IssuerSigningKey = new SymmetricSecurityKey(key)
     };
 });
+
+// Conditionally registers Google OAuth if credentials are configured.
+var googleClientId = builder.Configuration["OAuthSettings:Google:ClientId"];
+var googleClientSecret = builder.Configuration["OAuthSettings:Google:ClientSecret"];
+if (!string.IsNullOrWhiteSpace(googleClientId) && !string.IsNullOrWhiteSpace(googleClientSecret))
+{
+    authBuilder.AddGoogle(options =>
+    {
+        options.ClientId = googleClientId;
+        options.ClientSecret = googleClientSecret;
+    });
+}
+
+// Conditionally registers GitHub OAuth if credentials are configured.
+var githubClientId = builder.Configuration["OAuthSettings:GitHub:ClientId"];
+var githubClientSecret = builder.Configuration["OAuthSettings:GitHub:ClientSecret"];
+if (!string.IsNullOrWhiteSpace(githubClientId) && !string.IsNullOrWhiteSpace(githubClientSecret))
+{
+    authBuilder.AddGitHub(options =>
+    {
+        options.ClientId = githubClientId;
+        options.ClientSecret = githubClientSecret;
+    });
+}
 
 builder.Services.AddAuthorization();
 

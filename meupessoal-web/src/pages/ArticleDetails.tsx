@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext'; 
+import { useAuth } from '../context/AuthContext';
 import { DeleteModal } from '../components/DeleteModal';
 import { MarkdownRenderer } from '../components/MarkdownRenderer';
 import { deleteArticle, getArticleById, getRelatedArticles } from '../services/articleService';
@@ -96,7 +96,7 @@ export const ArticleDetails = () => {
 
     return (
         <div className="max-w-3xl mx-auto p-8 animate-in fade-in duration-500">
-            <SEO 
+            <SEO
                 title={article.title}
                 description={description}
                 keywords={keywords}
@@ -116,25 +116,25 @@ export const ArticleDetails = () => {
             </button>
 
             {/* HC: Conditional rendering of admin actions if a user session is active. */}
-                {user && (
-                    <div className="flex gap-3 mb-6">
-                        <Link 
-                            to={`/admin/articles/edit/${article.id}`}
-                            className="bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-500 px-4 py-2 rounded-lg font-bold text-sm hover:bg-amber-100 dark:hover:bg-amber-900/50 transition">
-                            Edit Article
-                        </Link>
-                        <button 
-                            onClick={() => setIsModalOpen(true)}
-                            className="bg-red-50 dark:bg-red-950/30 text-red-700 dark:text-red-500 px-4 py-2 rounded-lg font-bold text-sm hover:bg-red-100 dark:hover:bg-red-900/50 transition">
-                            Delete
-                        </button>
-                    </div>
-                )}
+            {user && (
+                <div className="flex gap-3 mb-6">
+                    <Link
+                        to={`/admin/articles/edit/${article.id}`}
+                        className="bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-500 px-4 py-2 rounded-lg font-bold text-sm hover:bg-amber-100 dark:hover:bg-amber-900/50 transition">
+                        Edit Article
+                    </Link>
+                    <button
+                        onClick={() => setIsModalOpen(true)}
+                        className="bg-red-50 dark:bg-red-950/30 text-red-700 dark:text-red-500 px-4 py-2 rounded-lg font-bold text-sm hover:bg-red-100 dark:hover:bg-red-900/50 transition">
+                        Delete
+                    </button>
+                </div>
+            )}
 
-            <ArticleHeader 
-                title={article.title} 
-                createdAt={article.createdAt} 
-                category={article.category} 
+            <ArticleHeader
+                title={article.title}
+                createdAt={article.createdAt}
+                category={article.category}
             />
 
             <MarkdownRenderer content={article.content} />
@@ -171,11 +171,11 @@ export const ArticleDetails = () => {
             )}
 
             {/* HC: Safe confirmation modal triggered by the admin delete button. */}
-            <DeleteModal 
+            <DeleteModal
                 isOpen={isModalOpen}
                 title={article.title}
                 onConfirm={handleDelete}
-                onCancel={() => setIsModalOpen(false)}/>
+                onCancel={() => setIsModalOpen(false)} />
 
             <div className="mt-16">
                 <CommentSection articleId={article.id} />
