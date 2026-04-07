@@ -20,8 +20,26 @@ export const commentService = {
      * @param request - The data required to create the comment.
      * @returns A promise that resolves to the identifier of the newly created comment.
      */
-    createComment: async (request: CreateCommentRequest): Promise<{ id: string }> => {
+    createComment: async (request: Omit<CreateCommentRequest, 'authorName'>): Promise<{ id: string }> => {
+        // authorName is now removed from the request as the backend extracts it from the JWT.
         const response = await api.post<{ id: string }>('/comments', request);
         return response.data;
+    },
+
+    /**
+     * Updates an existing comment's content.
+     * @param id - The ID of the comment to update.
+     * @param content - The new text content.
+     */
+    updateComment: async (id: string, content: string): Promise<void> => {
+        await api.put(`/comments/${id}`, { id, content });
+    },
+
+    /**
+     * Deletes a comment by its ID.
+     * @param id - The ID of the comment to delete.
+     */
+    deleteComment: async (id: string): Promise<void> => {
+        await api.delete(`/comments/${id}`);
     }
 };

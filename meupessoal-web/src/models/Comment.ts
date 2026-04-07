@@ -8,6 +8,8 @@ export interface Comment {
     content: string;
     /** The name of the author who wrote the comment. */
     authorName: string;
+    /** The ID of the author who wrote the comment. */
+    userId?: string;
     /** The timestamp of when the comment was posted. */
     createdAt: string;
     /** The optional identifier for the parent comment if this is a reply. */

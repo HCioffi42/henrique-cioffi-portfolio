@@ -33,6 +33,12 @@ public class Comment
     public DateTime CreatedAt { get; set; }
 
     /// <summary>
+    /// Gets or sets the unique identifier of the user who authored the comment.
+    /// This is used for ownership-based permissions.
+    /// </summary>
+    public string? UserId { get; set; }
+
+    /// <summary>
     /// Gets or sets the unique identifier of the article this comment belongs to.
     /// </summary>
     public Guid ArticleId { get; set; }
@@ -64,6 +70,16 @@ public class Comment
     {
         Id = Guid.NewGuid();
         CreatedAt = DateTime.UtcNow;
+    }
+
+    /// <param name="userId">The unique identifier of the user who authored the comment.</param>
+    public Comment(Guid articleId, string content, string authorName, string? userId, Guid? parentCommentId = null) : this()
+    {
+        ArticleId = articleId;
+        Content = content;
+        AuthorName = authorName;
+        UserId = userId;
+        ParentCommentId = parentCommentId;
     }
 
     /// <summary>

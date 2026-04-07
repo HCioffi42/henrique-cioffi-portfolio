@@ -2,54 +2,91 @@ using MeuSitePessoal.Domain;
 using MeuSitePessoal.Infrastructure.Data;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 
 namespace MeuSitePessoal.Infrastructure.Configuration;
 
 /// <summary>
-/// Responsible for seeding the database with initial data if it is empty.
+/// Responsible for seeding the database with initial data and identity infrastructure.
+/// Refactored for security and robust role management.
 /// </summary>
 public static class DbInitializer
 {
-    public static async Task SeedAsync(BlogDbContext context, UserManager<IdentityUser> userManager, RoleManager<IdentityRole> roleManager)
+    /// <summary>
+    /// Seeds roles, admin user, and initial articles into the database.
+    /// </summary>
+    public static async Task SeedAsync(
+        BlogDbContext context, 
+        UserManager<IdentityUser> userManager, 
+        RoleManager<IdentityRole> roleManager,
+        IConfiguration configuration,
+        ILogger logger)
     {
+        logger.LogInformation("--> Seed: Starting identity infrastructure seeding...");
+
         // 1. Seed Roles
-        if (!await roleManager.RoleExistsAsync("Admin"))
+        var roles = new[] { "Admin", "Reader" };
+        foreach (var role in roles)
         {
-            Console.WriteLine("--> Seed: Creating Admin role...");
-            await roleManager.CreateAsync(new IdentityRole("Admin"));
-        }
-
-        if (!await roleManager.RoleExistsAsync("Reader"))
-        {
-            Console.WriteLine("--> Seed: Creating Reader role...");
-            await roleManager.CreateAsync(new IdentityRole("Reader"));
-        }
-
-        // 2. Seed Admin User
-        if (!await context.Users.AnyAsync())
-        {
-            Console.WriteLine("--> Seed: Creating Admin User...");
-            var adminUser = new IdentityUser { UserName = "admin", Email = "admin@meusitepessoal.com", EmailConfirmed = true };
-            var result = await userManager.CreateAsync(adminUser, "Admin123!");
-            if (result.Succeeded)
+            if (!await roleManager.RoleExistsAsync(role))
             {
-                await userManager.AddToRoleAsync(adminUser, "Admin");
-                Console.WriteLine("--> Seed: Admin User created successfully!");
+                logger.LogInformation("--> Seed: Creating {Role} role...", role);
+                await roleManager.CreateAsync(new IdentityRole(role));
             }
-            else 
+        }
+
+        // 2. Seed/Verify Admin User from Configuration
+        var adminEmail = configuration["AdminSetup:Email"];
+        var adminPassword = configuration["AdminSetup:Password"];
+
+        if (string.IsNullOrWhiteSpace(adminEmail) || string.IsNullOrWhiteSpace(adminPassword))
+        {
+            logger.LogWarning("--> Seed: Admin credentials not configured in AdminSetup section. Skipping admin seeding.");
+        }
+        else
+        {
+            var adminUser = await userManager.FindByEmailAsync(adminEmail);
+
+            if (adminUser == null)
             {
-                Console.WriteLine("--> SEED ERROR: Failed to create user: " + string.Join(", ", result.Errors.Select(e => e.Description)));
+                logger.LogInformation("--> Seed: Admin user {Email} not found. Creating...", adminEmail);
+                adminUser = new IdentityUser 
+                { 
+                    UserName = adminEmail, 
+                    Email = adminEmail, 
+                    EmailConfirmed = true 
+                };
+
+                var result = await userManager.CreateAsync(adminUser, adminPassword);
+                if (result.Succeeded)
+                {
+                    logger.LogInformation("--> Seed: Admin user created successfully.");
+                }
+                else
+                {
+                    var errors = string.Join(", ", result.Errors.Select(e => e.Description));
+                    logger.LogError("--> Seed: Failed to create admin user: {Errors}", errors);
+                    adminUser = null; // Ensure we don't try to add to role if it failed
+                }
+            }
+
+            // Ensure the admin user is in the Admin role
+            if (adminUser != null && !await userManager.IsInRoleAsync(adminUser, "Admin"))
+            {
+                logger.LogInformation("--> Seed: Promoting user {Email} to Admin role...", adminEmail);
+                await userManager.AddToRoleAsync(adminUser, "Admin");
             }
         }
 
         // 3. Seed Articles
         if (await context.Articles.AnyAsync()) 
         {
-            Console.WriteLine("--> Seed: Articles already exist. Skipping...");
+            logger.LogInformation("--> Seed: Articles already exist. Skipping article seeding.");
             return;
         }
 
-        Console.WriteLine("--> Seed: Creating Initial Articles...");
+        logger.LogInformation("--> Seed: Creating initial articles...");
 
         var initialArticles = new List<Article>
         {
@@ -84,6 +121,6 @@ public static class DbInitializer
 
         await context.Articles.AddRangeAsync(initialArticles);
         await context.SaveChangesAsync();
-        Console.WriteLine("--> Seed: Articles saved to database!");
+        logger.LogInformation("--> Seed: Initial articles saved successfully.");
     }
 }

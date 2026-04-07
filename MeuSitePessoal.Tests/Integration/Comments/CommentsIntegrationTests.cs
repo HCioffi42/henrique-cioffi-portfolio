@@ -32,7 +32,7 @@ public class CommentsIntegrationTests : BaseIntegrationTest
     {
         // Arrange
         var articleId = await CreateArticleAsync();
-        var command = new CreateCommentCommand(articleId, "Integration Test Comment", "Tester");
+        var command = new CreateCommentCommand(articleId, "Integration Test Comment");
 
         // Act
         var response = await _client.PostAsJsonAsync("/api/comments", command);
@@ -52,13 +52,13 @@ public class CommentsIntegrationTests : BaseIntegrationTest
         var articleId = await CreateArticleAsync();
         
         // 1. Create root comment
-        var rootCommand = new CreateCommentCommand(articleId, "Root Comment", "Tester");
+        var rootCommand = new CreateCommentCommand(articleId, "Root Comment");
         var rootResponse = await _client.PostAsJsonAsync("/api/comments", rootCommand);
         var rootResult = await rootResponse.Content.ReadFromJsonAsync<CommentIdResponse>();
         Guid rootId = rootResult!.Id;
 
         // 2. Create reply
-        var replyCommand = new CreateCommentCommand(articleId, "Reply Comment", "Tester", rootId);
+        var replyCommand = new CreateCommentCommand(articleId, "Reply Comment", rootId);
 
         // Act
         var response = await _client.PostAsJsonAsync("/api/comments", replyCommand);
@@ -74,13 +74,13 @@ public class CommentsIntegrationTests : BaseIntegrationTest
         var articleId = await CreateArticleAsync();
         
         // 1. Create root comment
-        var rootCommand = new CreateCommentCommand(articleId, "Root", "Tester");
+        var rootCommand = new CreateCommentCommand(articleId, "Root");
         var rootResponse = await _client.PostAsJsonAsync("/api/comments", rootCommand);
         var rootResult = await rootResponse.Content.ReadFromJsonAsync<CommentIdResponse>();
         Guid rootId = rootResult!.Id;
 
         // 2. Create reply to root
-        var replyCommand = new CreateCommentCommand(articleId, "Reply 1", "Tester", rootId);
+        var replyCommand = new CreateCommentCommand(articleId, "Reply 1", rootId);
         await _client.PostAsJsonAsync("/api/comments", replyCommand);
 
         // Act

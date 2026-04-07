@@ -1,12 +1,14 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { X, LogOut, PlusSquare, BookText, Shield } from 'lucide-react';
+import { X, LogOut, PlusSquare, BookText, Shield, LayoutDashboard } from 'lucide-react';
+import { PermissionGate } from './PermissionGate';
+import type { User } from '../models/Auth';
 
 interface MobileMenuProps {
     isOpen: boolean;
     onClose: () => void;
     isAuthenticated: boolean;
-    user: { username: string } | null;
+    user: User | null;
     onLogout: () => void;
 }
 
@@ -61,7 +63,15 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
                             Blog
                         </Link>
 
-                        {isAuthenticated && (
+                        <PermissionGate requiredRole="Admin">
+                            <Link 
+                                to="/admin/dashboard" 
+                                onClick={onClose}
+                                className="flex items-center gap-4 text-lg font-semibold text-gray-700 dark:text-gray-200 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors py-2"
+                            >
+                                <LayoutDashboard className="w-5 h-5" />
+                                Dashboard
+                            </Link>
                             <Link 
                                 to="/admin/new-post" 
                                 onClick={onClose}
@@ -70,7 +80,7 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
                                 <PlusSquare className="w-5 h-5" />
                                 New Post
                             </Link>
-                        )}
+                        </PermissionGate>
                     </nav>
 
                     {/* HC: Footer area for authentication status and actions. */}
@@ -83,7 +93,7 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
                                     </div>
                                     <div className="flex flex-col">
                                         <span className="text-sm font-bold text-gray-900 dark:text-white">{user?.username}</span>
-                                        <span className="text-xs text-gray-500 dark:text-gray-400">Administrator</span>
+                                        <span className="text-xs text-gray-500 dark:text-gray-400">{user?.role}</span>
                                     </div>
                                 </div>
                                 <button 
@@ -104,7 +114,7 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
                                 className="flex items-center justify-center gap-2 w-full bg-indigo-600 text-white px-4 py-3 rounded-xl text-sm font-bold hover:bg-indigo-700 transition-all shadow-md"
                             >
                                 <Shield className="w-4 h-4" />
-                                Admin Login
+                                Login
                             </Link>
                         )}
                     </div>

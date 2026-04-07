@@ -1,4 +1,4 @@
-﻿import type { ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import { useCallback, useMemo, useState } from 'react';
 import { Link, useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { Menu } from 'lucide-react';
@@ -7,6 +7,7 @@ import { SearchBar } from './SearchBar';
 import { ThemeToggle } from './ThemeToggle';
 import { MobileMenu } from './MobileMenu';
 import { NewsletterBox } from './NewsletterBox';
+import { PermissionGate } from './PermissionGate';
 
 interface LayoutProps {
     children: ReactNode;
@@ -46,8 +47,6 @@ export const Layout = ({ children }: LayoutProps) => {
                 return next;
             });
         }
-        // 3. If we are in ArticleDetails and the search is empty, we do NOTHING.
-        // This prevents navigation hijacking and allows reading the article in peace.
     }, [navigate, location.pathname, currentSearchParam, setSearchParams]);
 
     return (
@@ -59,27 +58,31 @@ export const Layout = ({ children }: LayoutProps) => {
                     </Link>
                     
                     <div className="flex items-center gap-3 sm:gap-4">
-                        {/* HC: Desktop-only navigation links. */}
                         <div className="hidden lg:flex items-center gap-6">
                             <Link to="/" className="text-sm text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 font-medium transition-colors">Blog</Link>
                         </div>
 
                         <SearchBar onSearch={handleGlobalSearch} initialValue={currentSearchParam} />
                         
-                        {/* HC: ThemeToggle refined with standard height and sliding switch. Hidden on ultra-small screens if needed, but here kept for accessibility. */}
                         <div className="hidden sm:block">
                             <ThemeToggle />
                         </div>
                         
-                        {/* HC: Desktop-only authentication and admin actions. */}
                         {isAuthenticated ? (
                             <div className="hidden lg:flex items-center gap-4 border-l border-gray-100 dark:border-slate-800 pl-6">
                                 <span className="text-sm text-gray-500 dark:text-gray-400">
                                     Hello, <span className="font-semibold">{user?.username}</span>
                                 </span>
-                                <Link to="/admin/new-post" className="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-indigo-700 transition-all">
-                                    New Post
-                                </Link>
+                                
+                                <PermissionGate requiredRole="Admin">
+                                    <Link to="/admin/dashboard" className="text-sm font-semibold text-zinc-600 dark:text-zinc-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
+                                        Dashboard
+                                    </Link>
+                                    <Link to="/admin/new-post" className="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-indigo-700 transition-all">
+                                        New Post
+                                    </Link>
+                                </PermissionGate>
+
                                 <button 
                                     onClick={handleLogout}
                                     className="text-sm font-semibold text-red-600 dark:text-red-400 hover:text-red-500 transition-colors cursor-pointer">
@@ -90,7 +93,6 @@ export const Layout = ({ children }: LayoutProps) => {
                             <Link to="/login" className="hidden lg:block text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 font-medium transition-colors">Login</Link>
                         )}
 
-                        {/* HC: Mobile-only Hamburger menu trigger. Standardized size to match other header actions. */}
                         <button 
                             onClick={() => setIsMobileMenuOpen(true)}
                             className="lg:hidden w-9 h-9 flex items-center justify-center rounded-lg bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-slate-700 transition-colors cursor-pointer"
@@ -101,7 +103,6 @@ export const Layout = ({ children }: LayoutProps) => {
                 </nav>
             </header>
 
-            {/* HC: Mobile navigation menu overlay. */}
             <MobileMenu 
                 isOpen={isMobileMenuOpen} 
                 onClose={() => setIsMobileMenuOpen(false)}
@@ -114,7 +115,6 @@ export const Layout = ({ children }: LayoutProps) => {
                 {children}
             </main>
 
-            {/* Floating Newsletter Widget - Global visibility for visitors */}
             {showNewsletter && (
                 <aside className="hidden lg:block fixed bottom-20 right-8 z-40 w-80 animate-in slide-in-from-right-10 duration-700">
                     <div className="bg-white dark:bg-zinc-900 rounded-2xl p-6 shadow-[0_20px_50px_rgba(0,0,0,0.15)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.3)] border border-zinc-200 dark:border-zinc-800 transition-all hover:shadow-[0_20px_60px_rgba(79,70,229,0.1)]">

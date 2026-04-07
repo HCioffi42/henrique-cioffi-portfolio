@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
@@ -25,11 +26,16 @@ public class BaseIntegrationTest : IAsyncLifetime
     /// </summary>
     protected async Task AuthenticateAsync()
     {
+        using var scope = _factory.Services.CreateScope();
+        var configuration = scope.ServiceProvider.GetRequiredService<Microsoft.Extensions.Configuration.IConfiguration>();
+        var adminEmail = configuration["AdminSetup:Email"];
+        var adminPassword = configuration["AdminSetup:Password"];
+
         // The method triggers a login request to the API's authentication endpoint.
         var loginResponse = await _client.PostAsJsonAsync("/api/auth/login", new
         {
-            Username = "admin",
-            Password = "Admin123!"
+            Username = adminEmail,
+            Password = adminPassword
         });
 
         var result = await loginResponse.Content.ReadFromJsonAsync<AuthResult>();
@@ -50,6 +56,15 @@ public class BaseIntegrationTest : IAsyncLifetime
                 // Configures the environment to bypass development-only startup logic (like database seeding).
                 builder.UseEnvironment("Testing");
                 
+                builder.ConfigureAppConfiguration((context, config) =>
+                {
+                    config.AddInMemoryCollection(new Dictionary<string, string?>
+                    {
+                        ["AdminSetup:Email"] = "admin@example.com",
+                        ["AdminSetup:Password"] = "Admin123!"
+                    });
+                });
+
                 builder.ConfigureServices(services =>
                 {
                     // Removes the existing DbContext registration to ensure the main application database remains untouched.
@@ -75,13 +90,15 @@ public class BaseIntegrationTest : IAsyncLifetime
         var db = scope.ServiceProvider.GetRequiredService<BlogDbContext>();
         var userManager = scope.ServiceProvider.GetRequiredService<UserManager<IdentityUser>>();
         var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+        var configuration = scope.ServiceProvider.GetRequiredService<Microsoft.Extensions.Configuration.IConfiguration>();
+        var logger = scope.ServiceProvider.GetRequiredService<Microsoft.Extensions.Logging.ILogger<BaseIntegrationTest>>();
         
         // Deletes and recreates the database from scratch to guarantee a clean state for every test execution.
         await db.Database.EnsureDeletedAsync();
         await db.Database.MigrateAsync();
 
         // Seed initial data for testing, including the admin user.
-        await DbInitializer.SeedAsync(db, userManager, roleManager);
+        await DbInitializer.SeedAsync(db, userManager, roleManager, configuration, logger);
         
         // Clean up seeded articles so tests start with an empty article table.
         db.Articles.RemoveRange(db.Articles);

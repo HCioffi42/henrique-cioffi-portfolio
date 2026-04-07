@@ -1,6 +1,8 @@
 using MediatR;
 using MeuSitePessoal.Application.Common.Models;
 using MeuSitePessoal.Application.Comments.Commands.CreateComment;
+using MeuSitePessoal.Application.Comments.Commands.UpdateComment;
+using MeuSitePessoal.Application.Comments.Commands.DeleteComment;
 using MeuSitePessoal.Application.Comments.Queries.GetCommentsByArticleId;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -49,16 +51,16 @@ public class CommentsController : ControllerBase
 
     /// <summary>
     /// Creates a new comment or reply.
+    /// Requires authentication.
     /// </summary>
     [HttpPost]
-    [AllowAnonymous]
+    [Authorize]
     public async Task<IActionResult> Create([FromBody] CreateCommentCommand command)
     {
         var result = await _mediator.Send(command);
 
         if (result.IsSuccess)
         {
-            // We return 201 Created and the ID of the new comment.
             return CreatedAtAction(nameof(GetByArticle), new { articleId = command.ArticleId }, new { id = result.Value });
         }
 
@@ -73,5 +75,53 @@ public class CommentsController : ControllerBase
         }
 
         return BadRequest(new { message = result.Error });
+    }
+
+    /// <summary>
+    /// Updates an existing comment.
+    /// Requires authentication and ownership/admin role.
+    /// </summary>
+    [HttpPut("{id:guid}")]
+    [Authorize]
+    public async Task<IActionResult> Update(Guid id, [FromBody] UpdateCommentCommand command)
+    {
+        if (id != command.Id) return BadRequest();
+
+        var result = await _mediator.Send(command);
+
+        if (result.IsSuccess)
+        {
+            return NoContent();
+        }
+
+        if (result.Type == ErrorType.NotFound)
+        {
+            return NotFound(new { message = result.Error });
+        }
+
+        return Forbid(); // Should return 403 if permission check fails in handler.
+    }
+
+    /// <summary>
+    /// Deletes a comment.
+    /// Requires authentication and ownership/admin role.
+    /// </summary>
+    [HttpDelete("{id:guid}")]
+    [Authorize]
+    public async Task<IActionResult> Delete(Guid id)
+    {
+        var result = await _mediator.Send(new DeleteCommentCommand(id));
+
+        if (result.IsSuccess)
+        {
+            return NoContent();
+        }
+
+        if (result.Type == ErrorType.NotFound)
+        {
+            return NotFound(new { message = result.Error });
+        }
+
+        return Forbid();
     }
 }

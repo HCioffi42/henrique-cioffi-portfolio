@@ -37,7 +37,7 @@ export default function App() {
                                 <Route path="/oauth/callback" element={<OAuthCallback />} />
 
                                 {/* 3. Protected Admin Routes */}
-                                <Route element={<ProtectedRoute />}>
+                                <Route element={<ProtectedRoute requiredRole="Admin" />}>
                                     <Route path="/admin/dashboard" element={<Dashboard />} />
                                     <Route path="/admin/new-post" element={<CreateArticle />} />
                                     <Route path="/admin/articles/edit/:id" element={<EditArticle />} />

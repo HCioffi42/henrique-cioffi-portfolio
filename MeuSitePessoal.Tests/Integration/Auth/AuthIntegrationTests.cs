@@ -18,7 +18,7 @@ public class AuthIntegrationTests : BaseIntegrationTest
     public async Task Login_WithInvalidCredentials_ShouldReturn401Unauthorized()
     {
         // Arrange
-        var invalidRequest = new { Username = "admin", Password = "WrongPassword123" };
+        var invalidRequest = new { Username = "admin@example.com", Password = "WrongPassword123" };
 
         // Act
         var response = await _client.PostAsJsonAsync("/api/Auth/login", invalidRequest);

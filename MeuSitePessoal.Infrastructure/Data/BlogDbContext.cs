@@ -59,6 +59,7 @@ public class BlogDbContext : IdentityDbContext
             builder.Property(c => c.Content).IsRequired().HasMaxLength(2000);
             builder.Property(c => c.AuthorName).IsRequired().HasMaxLength(100);
             builder.Property(c => c.CreatedAt).IsRequired();
+            builder.Property(c => c.UserId).HasMaxLength(450); // Standard Identity User Id length
 
             // Self-referencing relationship for nested replies.
             builder.HasOne(c => c.ParentComment)
@@ -70,3 +71,4 @@ public class BlogDbContext : IdentityDbContext
         base.OnModelCreating(modelBuilder);
     }
 }
+
