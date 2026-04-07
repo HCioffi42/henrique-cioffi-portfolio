@@ -1,0 +1,9 @@
+{
+  "id": "16.4-access-control-rbac",
+  "title": "Access Control & RBAC",
+  "status": "completed",
+  "priority": "high",
+  "dependencies": ["16.3-identity-expansion"],
+  "completedAt": "2026-04-07",
+  "tags": ["security", "rbac", "identity", "backend", "frontend"]
+}

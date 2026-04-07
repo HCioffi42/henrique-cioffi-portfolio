@@ -1,4 +1,4 @@
-﻿using MeuSitePessoal.Api.Middleware;
+using MeuSitePessoal.Api.Middleware;
 using Microsoft.AspNetCore.Mvc;
 using MediatR;
 using MeuSitePessoal.Application.Articles.Commands.CreateArticle;
@@ -18,7 +18,6 @@ namespace MeuSitePessoal.Api.Controllers;
 /// </summary>
 [ApiController]
 [Route("api/[controller]")]
-// [Authorize]
 public class ArticlesController : ControllerBase
 {
     private readonly IMediator _mediator;
@@ -60,7 +59,6 @@ public class ArticlesController : ControllerBase
     [AllowAnonymous]
     public async Task<IActionResult> ListarTodos([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
     {
-        // Passes pagination parameters from the URL query string to the MediatR query.
         var query = new GetAllArticlesQuery(pageNumber, pageSize);
         var result = await _mediator.Send(query);
         
@@ -84,9 +82,10 @@ public class ArticlesController : ControllerBase
 
     /// <summary>
     /// Handles the creation of a new article.
+    /// Restricted to Admin role.
     /// </summary>
     [HttpPost]
-    [Authorize]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Criar([FromBody] CreateArticleCommand command)
     {
         var id = await _mediator.Send(command);
@@ -112,29 +111,29 @@ public class ArticlesController : ControllerBase
     
     /// <summary>
     /// Deletes an article by its unique identifier.
+    /// Restricted to Admin role.
     /// </summary>
     [HttpDelete("{id}")]
-    [Authorize]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Delete(Guid id)
     {
         var success = await _mediator.Send(new DeleteArticleCommand(id));
     
-        // Returns 204 if success, otherwise returns 404 for the integration test.
         return success ? NoContent() : NotFound();
     }
     
     /// <summary>
     /// Updates an existing article using its unique identifier.
+    /// Restricted to Admin role.
     /// </summary>
     [HttpPut("{id}")]
-    [Authorize]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Update(Guid id, [FromBody] UpdateArticleCommand command)
     {
         if (id != command.Id) return BadRequest();
 
         var success = await _mediator.Send(command);
     
-        // Validates the success of the update operation to return the correct HTTP status.
         return success ? NoContent() : NotFound();
     }
 }

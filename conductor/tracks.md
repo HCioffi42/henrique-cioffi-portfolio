@@ -3,6 +3,8 @@
 This file tracks all the development tracks for this project.
 
 ## In Progress
+- [ ] **Track 16.4: Access Control & RBAC**
+  *Link: [./tracks/16.4-access-control-rbac/index.md](./tracks/16.4-access-control-rbac/index.md)*
 
 
 ## Completed Tracks

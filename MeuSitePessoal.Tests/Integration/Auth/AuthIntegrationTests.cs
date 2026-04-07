@@ -2,6 +2,8 @@
 using System.Net.Http.Json;
 using FluentAssertions;
 using MeuSitePessoal.Api.Controllers;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
 namespace MeuSitePessoal.Tests.Integration.Auth;
@@ -18,7 +20,7 @@ public class AuthIntegrationTests : BaseIntegrationTest
     public async Task Login_WithInvalidCredentials_ShouldReturn401Unauthorized()
     {
         // Arrange
-        var invalidRequest = new { Username = "admin", Password = "WrongPassword123" };
+        var invalidRequest = new { Username = "admin@example.com", Password = "WrongPassword123" };
 
         // Act
         var response = await _client.PostAsJsonAsync("/api/Auth/login", invalidRequest);
@@ -34,7 +36,14 @@ public class AuthIntegrationTests : BaseIntegrationTest
     public async Task Login_WithValidCredentials_ShouldReturn200OkWithToken()
     {
         // Arrange
-        var validRequest = new { Username = "admin", Password = "Admin123!" };
+        using var scope = _factory.Services.CreateScope();
+        var config = scope.ServiceProvider.GetRequiredService<IConfiguration>();
+    
+        var validRequest = new 
+        { 
+            Username = config["AdminSetup:Email"], 
+            Password = config["AdminSetup:Password"] 
+        };
 
         // Act
         var response = await _client.PostAsJsonAsync("/api/Auth/login", validRequest);

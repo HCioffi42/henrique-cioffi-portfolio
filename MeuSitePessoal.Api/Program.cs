@@ -10,7 +10,6 @@ using MeuSitePessoal.Infrastructure.Data;
 using MeuSitePessoal.Infrastructure.Logging;
 using MeuSitePessoal.Infrastructure.Repositories;
 using MeuSitePessoal.Infrastructure.Services;
-using MeuSitePessoal.Domain.Interfaces;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -49,6 +48,8 @@ builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
 .AddDefaultTokenProviders();
 
 // Register Services
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 builder.Services.AddScoped<IArticleRepository, ArticleRepository>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IStorageService, LocalStorageService>();
@@ -232,9 +233,11 @@ if (!app.Environment.IsEnvironment("Testing"))
     
     var userManager = services.GetRequiredService<UserManager<IdentityUser>>();
     var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+    var configuration = services.GetRequiredService<IConfiguration>();
+    var logger = services.GetRequiredService<ILogger<Program>>();
     
     Console.WriteLine("--> Starting data seed...");
-    await DbInitializer.SeedAsync(context, userManager, roleManager);
+    await DbInitializer.SeedAsync(context, userManager, roleManager, configuration, logger);
     Console.WriteLine("--> Initialization cycle FINISHED, Boss!");
 }
 

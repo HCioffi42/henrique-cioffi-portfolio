@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
 import { DeleteModal } from '../components/DeleteModal';
 import { MarkdownRenderer } from '../components/MarkdownRenderer';
 import { deleteArticle, getArticleById, getRelatedArticles } from '../services/articleService';
@@ -10,6 +9,7 @@ import { ArticleCategoryLabels } from '../models/ArticleCategory';
 import { SEO } from '../components/SEO';
 import { ArticleCard } from '../components/ArticleCard';
 import { CommentSection } from '../components/CommentSection';
+import { PermissionGate } from '../components/PermissionGate';
 
 /**
  * Custom hook to handle article data fetching logic and related articles.
@@ -73,7 +73,6 @@ const ArticleHeader = ({ title, createdAt, category }: { title: string; createdA
 export const ArticleDetails = () => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
-    const { user } = useAuth();
     const { article, related, loading, error } = useArticle(id);
     const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -115,8 +114,8 @@ export const ArticleDetails = () => {
                 &larr; Back to list
             </button>
 
-            {/* HC: Conditional rendering of admin actions if a user session is active. */}
-            {user && (
+            {/* HC: Conditional rendering of admin actions restricted to the Admin role. */}
+            <PermissionGate requiredRole="Admin">
                 <div className="flex gap-3 mb-6">
                     <Link
                         to={`/admin/articles/edit/${article.id}`}
@@ -129,7 +128,7 @@ export const ArticleDetails = () => {
                         Delete
                     </button>
                 </div>
-            )}
+            </PermissionGate>
 
             <ArticleHeader
                 title={article.title}

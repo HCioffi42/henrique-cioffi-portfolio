@@ -22,6 +22,7 @@ This project uses the Conductor extension for structured development.
   - **Commentary**: Third-person descriptive comments (e.g., "The component renders a grid of articles").
   - **No Drift**: Do not modify files outside the current track's scope.
 - **Constraint Enforcement**: Adhere strictly to the rules defined in `product-guidelines.md` regarding architecture (Clean Architecture, MediatR, SOLID, etc.).
+- **Concerning Interfaces**: All newly created interfaces should be in this namespace: `MeuSitePessoal.Domain.Interfaces`.
 
 ## 3. Testing & Validation
 - Ensure all changes are covered by relevant tests (Unit and/or Integration).
@@ -31,5 +32,5 @@ This project uses the Conductor extension for structured development.
 ## 4. Finalization
 - **Style Check**: Ensure the code matches the approved `spec.md`.
 - **Implementation Summary**: Upon completion, a comprehensive `index.md` must be created in the track subfolder, summarizing the final state of the implementation and any technical debts or observations.
-- **Tracks Registry**: The root `conductor/tracks.md` file must be automatically updated to reflect the progress and "Completed" status of the task.
+- **Tracks Registry**: The root `conductor/tracks.md` file must be automatically updated to reflect the progress and "Completed" status of the task, as well as the `./docs/roadmap.md` regarding the track that is completed.
 - **Commit Readiness**: Prepare a semantic commit message based on the changes documented in the track but do not try to commit. This should be a suggestion only.

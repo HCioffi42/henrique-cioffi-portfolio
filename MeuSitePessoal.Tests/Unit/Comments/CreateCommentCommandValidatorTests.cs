@@ -16,7 +16,7 @@ public class CreateCommentCommandValidatorTests
     [Fact]
     public void Should_Have_Error_When_ArticleId_Is_Empty()
     {
-        var command = new CreateCommentCommand(Guid.Empty, "Content", "Author");
+        var command = new CreateCommentCommand(Guid.Empty, "Content");
         var result = _validator.TestValidate(command);
         result.ShouldHaveValidationErrorFor(x => x.ArticleId);
     }
@@ -24,7 +24,7 @@ public class CreateCommentCommandValidatorTests
     [Fact]
     public void Should_Have_Error_When_Content_Is_Empty()
     {
-        var command = new CreateCommentCommand(Guid.NewGuid(), "", "Author");
+        var command = new CreateCommentCommand(Guid.NewGuid(), "");
         var result = _validator.TestValidate(command);
         result.ShouldHaveValidationErrorFor(x => x.Content);
     }
@@ -32,31 +32,15 @@ public class CreateCommentCommandValidatorTests
     [Fact]
     public void Should_Have_Error_When_Content_Exceeds_MaxLength()
     {
-        var command = new CreateCommentCommand(Guid.NewGuid(), new string('a', 2001), "Author");
+        var command = new CreateCommentCommand(Guid.NewGuid(), new string('a', 2001));
         var result = _validator.TestValidate(command);
         result.ShouldHaveValidationErrorFor(x => x.Content);
     }
 
     [Fact]
-    public void Should_Have_Error_When_AuthorName_Is_Empty()
-    {
-        var command = new CreateCommentCommand(Guid.NewGuid(), "Content", "");
-        var result = _validator.TestValidate(command);
-        result.ShouldHaveValidationErrorFor(x => x.AuthorName);
-    }
-
-    [Fact]
-    public void Should_Have_Error_When_AuthorName_Exceeds_MaxLength()
-    {
-        var command = new CreateCommentCommand(Guid.NewGuid(), "Content", new string('a', 101));
-        var result = _validator.TestValidate(command);
-        result.ShouldHaveValidationErrorFor(x => x.AuthorName);
-    }
-
-    [Fact]
     public void Should_Not_Have_Error_When_Command_Is_Valid()
     {
-        var command = new CreateCommentCommand(Guid.NewGuid(), "Valid Content", "Valid Author");
+        var command = new CreateCommentCommand(Guid.NewGuid(), "Valid Content");
         var result = _validator.TestValidate(command);
         result.ShouldNotHaveAnyValidationErrors();
     }
@@ -64,7 +48,7 @@ public class CreateCommentCommandValidatorTests
     [Fact]
     public void Should_Not_Have_Error_When_Reply_Is_Valid()
     {
-        var command = new CreateCommentCommand(Guid.NewGuid(), "Reply", "Author", Guid.NewGuid());
+        var command = new CreateCommentCommand(Guid.NewGuid(), "Reply", Guid.NewGuid());
         var result = _validator.TestValidate(command);
         result.ShouldNotHaveAnyValidationErrors();
     }
