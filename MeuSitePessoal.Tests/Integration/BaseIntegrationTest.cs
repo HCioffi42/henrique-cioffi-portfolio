@@ -27,7 +27,7 @@ public class BaseIntegrationTest : IAsyncLifetime
     protected async Task AuthenticateAsync()
     {
         using var scope = _factory.Services.CreateScope();
-        var configuration = scope.ServiceProvider.GetRequiredService<Microsoft.Extensions.Configuration.IConfiguration>();
+        var configuration = scope.ServiceProvider.GetRequiredService<IConfiguration>();
         var adminEmail = configuration["AdminSetup:Email"];
         var adminPassword = configuration["AdminSetup:Password"];
 
