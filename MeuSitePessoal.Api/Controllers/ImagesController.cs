@@ -1,3 +1,4 @@
+using MeuSitePessoal.Application.Common.Interfaces;
 using MeuSitePessoal.Domain.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

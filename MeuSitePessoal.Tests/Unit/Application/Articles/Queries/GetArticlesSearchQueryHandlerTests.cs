@@ -5,10 +5,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using MeuSitePessoal.Application.Articles.Queries.GetArticles;
 using MeuSitePessoal.Application.Articles.Queries.GetArticlesSearch;
-using MeuSitePessoal.Domain;
-using MeuSitePessoal.Infrastructure.Data;
-using Microsoft.EntityFrameworkCore;
+using MeuSitePessoal.Application.Common.Interfaces;
+using MeuSitePessoal.Application.Common.Models;
 using Microsoft.Extensions.Caching.Memory;
+using Moq;
 using Xunit;
 
 namespace MeuSitePessoal.Tests.Unit.Application.Articles.Queries;
@@ -18,166 +18,137 @@ namespace MeuSitePessoal.Tests.Unit.Application.Articles.Queries;
 /// </summary>
 public class GetArticlesSearchQueryHandlerTests
 {
-    private readonly DbContextOptions<BlogDbContext> _options;
     private readonly IMemoryCache _cache;
+    private readonly Mock<IArticleSearchService> _searchServiceMock;
 
     public GetArticlesSearchQueryHandlerTests()
     {
-        _options = new DbContextOptionsBuilder<BlogDbContext>()
-            .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
-            .Options;
-            
         // HC: Initializes a real MemoryCache instance to be used across unit tests.
         _cache = new MemoryCache(new MemoryCacheOptions());
+        _searchServiceMock = new Mock<IArticleSearchService>();
     }
 
     [Fact]
-    public async Task Handle_WithSearchTermInTitle_ShouldReturnMatchingArticles()
+    public async Task Handle_WithSearchTerm_ShouldReturnResultsFromService()
     {
         // Arrange
-        using (var context = new BlogDbContext(_options))
+        var searchTerm = "Keyword";
+        var expectedItems = new List<ArticleSummaryDto>
         {
-            context.Articles.Add(new Article("Keyword Title", "Content", "Summary", new List<string>(), ArticleCategory.Technology));
-            context.Articles.Add(new Article("Other Title", "Content", "Summary", new List<string>(), ArticleCategory.Technology));
-            await context.SaveChangesAsync();
-        }
+            new ArticleSummaryDto { Id = Guid.NewGuid(), Title = "Keyword Title" }
+        };
+        var expectedResult = new PagedResult<ArticleSummaryDto>(expectedItems, 1, 1, 1);
 
-        using (var context = new BlogDbContext(_options))
-        {
-            var handler = new GetArticlesSearchQueryHandler(context, _cache);
-            var query = new GetArticlesSearchQuery(SearchTerm: "Keyword");
+        _searchServiceMock
+            .Setup(s => s.SearchAsync(searchTerm, It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(expectedResult);
 
-            // Act
-            var result = await handler.Handle(query, CancellationToken.None);
+        var handler = new GetArticlesSearchQueryHandler(_searchServiceMock.Object, _cache);
+        var query = new GetArticlesSearchQuery(SearchTerm: searchTerm);
 
-            // Assert
-            Assert.Single(result.Items);
-            Assert.Equal("Keyword Title", result.Items.First().Title);
-        }
+        // Act
+        var result = await handler.Handle(query, CancellationToken.None);
+
+        // Assert
+        Assert.Single(result.Items);
+        Assert.Equal("Keyword Title", result.Items.First().Title);
+        _searchServiceMock.Verify(s => s.SearchAsync(searchTerm, 1, 10, It.IsAny<CancellationToken>()), Times.Once);
     }
-
+    
     [Fact]
-    public async Task Handle_WithSearchTermInSummary_ShouldReturnMatchingArticles()
+    public async Task Handle_WithEmptySearchTerm_ShouldCallServiceCorrectly()
     {
         // Arrange
-        using (var context = new BlogDbContext(_options))
+        var expectedItems = new List<ArticleSummaryDto>
         {
-            context.Articles.Add(new Article("Title", "Content", "My unique summary", new List<string>(), ArticleCategory.Technology));
-            context.Articles.Add(new Article("Title 2", "Content", "Common summary", new List<string>(), ArticleCategory.Technology));
-            await context.SaveChangesAsync();
-        }
+            new ArticleSummaryDto { Id = Guid.NewGuid(), Title = "A" },
+            new ArticleSummaryDto { Id = Guid.NewGuid(), Title = "B" }
+        };
+        var expectedResult = new PagedResult<ArticleSummaryDto>(expectedItems, 2, 1, 10);
 
-        using (var context = new BlogDbContext(_options))
-        {
-            var handler = new GetArticlesSearchQueryHandler(context, _cache);
-            var query = new GetArticlesSearchQuery(SearchTerm: "unique");
+        _searchServiceMock
+            .Setup(s => s.SearchAsync("", It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(expectedResult);
 
-            // Act
-            var result = await handler.Handle(query, CancellationToken.None);
+        var handler = new GetArticlesSearchQueryHandler(_searchServiceMock.Object, _cache);
+        var query = new GetArticlesSearchQuery(SearchTerm: "");
 
-            // Assert
-            Assert.Single(result.Items);
-            Assert.Contains("unique", result.Items.First().Summary);
-        }
+        // Act
+        var result = await handler.Handle(query, CancellationToken.None);
+
+        // Assert
+        Assert.Equal(2, result.Items.Count);
+        _searchServiceMock.Verify(s => s.SearchAsync("", 1, 10, It.IsAny<CancellationToken>()), Times.Once);
     }
-
+    
     [Fact]
-    public async Task Handle_WithSearchTermIsCaseInsensitive_ShouldReturnMatchingArticles()
+    public async Task Handle_WithPagination_ShouldPassParametersToService()
     {
         // Arrange
-        using (var context = new BlogDbContext(_options))
+        var expectedItems = new List<ArticleSummaryDto>
         {
-            context.Articles.Add(new Article("UPPERCASE", "Content", "Summary", new List<string>(), ArticleCategory.Technology));
-            await context.SaveChangesAsync();
-        }
+            new ArticleSummaryDto { Title = "Match 1" },
+            new ArticleSummaryDto { Title = "Match 2" }
+        };
+        var expectedResult = new PagedResult<ArticleSummaryDto>(expectedItems, 5, 2, 2);
 
-        using (var context = new BlogDbContext(_options))
-        {
-            var handler = new GetArticlesSearchQueryHandler(context, _cache);
-            var query = new GetArticlesSearchQuery(SearchTerm: "uppercase");
+        _searchServiceMock
+            .Setup(s => s.SearchAsync("Match", 2, 2, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(expectedResult);
 
-            // Act
-            var result = await handler.Handle(query, CancellationToken.None);
+        var handler = new GetArticlesSearchQueryHandler(_searchServiceMock.Object, _cache);
+        var query = new GetArticlesSearchQuery(SearchTerm: "Match", PageNumber: 2, PageSize: 2);
 
-            // Assert
-            Assert.Single(result.Items);
-            Assert.Equal("UPPERCASE", result.Items.First().Title);
-        }
+        // Act
+        var result = await handler.Handle(query, CancellationToken.None);
+
+        // Assert
+        Assert.Equal(2, result.Items.Count);
+        Assert.Equal(5, result.TotalCount);
+        Assert.Equal(3, result.TotalPages);
+        _searchServiceMock.Verify(s => s.SearchAsync("Match", 2, 2, It.IsAny<CancellationToken>()), Times.Once);
     }
-
+    
     [Fact]
-    public async Task Handle_WithEmptySearchTerm_ShouldReturnAllArticles()
+    public async Task Handle_WhenCalledTwice_ShouldReturnFromCache()
     {
         // Arrange
-        using (var context = new BlogDbContext(_options))
-        {
-            context.Articles.Add(new Article("A", "C", "S", new List<string>(), ArticleCategory.Technology));
-            context.Articles.Add(new Article("B", "C", "S", new List<string>(), ArticleCategory.Technology));
-            await context.SaveChangesAsync();
-        }
+        var searchTerm = "CacheTest";
+        var expectedResult = new PagedResult<ArticleSummaryDto>(new List<ArticleSummaryDto>(), 0, 1, 10);
 
-        using (var context = new BlogDbContext(_options))
-        {
-            var handler = new GetArticlesSearchQueryHandler(context, _cache);
-            var query = new GetArticlesSearchQuery(SearchTerm: "");
+        _searchServiceMock
+            .Setup(s => s.SearchAsync(searchTerm, 1, 10, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(expectedResult);
 
-            // Act
-            var result = await handler.Handle(query, CancellationToken.None);
+        var handler = new GetArticlesSearchQueryHandler(_searchServiceMock.Object, _cache);
+        var query = new GetArticlesSearchQuery(SearchTerm: searchTerm);
 
-            // Assert
-            Assert.Equal(2, result.Items.Count);
-        }
+        // Act
+        await handler.Handle(query, CancellationToken.None); // First call hits service
+        await handler.Handle(query, CancellationToken.None); // Second call should hit cache
+
+        // Assert
+        _searchServiceMock.Verify(s => s.SearchAsync(searchTerm, 1, 10, It.IsAny<CancellationToken>()), Times.Once);
     }
-
+    
     [Fact]
     public async Task Handle_WithNoMatches_ShouldReturnEmptyList()
     {
         // Arrange
-        using (var context = new BlogDbContext(_options))
-        {
-            context.Articles.Add(new Article("A", "C", "S", new List<string>(), ArticleCategory.Technology));
-            await context.SaveChangesAsync();
-        }
+        var expectedResult = new PagedResult<ArticleSummaryDto>(new List<ArticleSummaryDto>(), 0, 1, 10);
 
-        using (var context = new BlogDbContext(_options))
-        {
-            var handler = new GetArticlesSearchQueryHandler(context, _cache);
-            var query = new GetArticlesSearchQuery(SearchTerm: "XYZ");
+        _searchServiceMock
+            .Setup(s => s.SearchAsync("XYZ", It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(expectedResult);
 
-            // Act
-            var result = await handler.Handle(query, CancellationToken.None);
+        var handler = new GetArticlesSearchQueryHandler(_searchServiceMock.Object, _cache);
+        var query = new GetArticlesSearchQuery(SearchTerm: "XYZ");
 
-            // Assert
-            Assert.Empty(result.Items);
-            Assert.Equal(0, result.TotalCount);
-        }
-    }
+        // Act
+        var result = await handler.Handle(query, CancellationToken.None);
 
-    [Fact]
-    public async Task Handle_WithPagination_ShouldApplySkipAndTake()
-    {
-        // Arrange
-        using (var context = new BlogDbContext(_options))
-        {
-            for (int i = 1; i <= 5; i++)
-            {
-                context.Articles.Add(new Article($"Match {i}", "Content", "Summary", new List<string>(), ArticleCategory.Technology));
-            }
-            await context.SaveChangesAsync();
-        }
-
-        using (var context = new BlogDbContext(_options))
-        {
-            var handler = new GetArticlesSearchQueryHandler(context, _cache);
-            var query = new GetArticlesSearchQuery(SearchTerm: "Match", PageNumber: 2, PageSize: 2);
-
-            // Act
-            var result = await handler.Handle(query, CancellationToken.None);
-
-            // Assert
-            Assert.Equal(2, result.Items.Count);
-            Assert.Equal(5, result.TotalCount);
-            Assert.Equal(3, result.TotalPages);
-        }
+        // Assert
+        Assert.Empty(result.Items);
+        Assert.Equal(0, result.TotalCount);
     }
 }

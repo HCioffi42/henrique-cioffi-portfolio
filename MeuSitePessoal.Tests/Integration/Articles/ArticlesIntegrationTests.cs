@@ -3,6 +3,7 @@ using System.Net.Http.Json;
 using MeuSitePessoal.Application.Articles.Commands.CreateArticle;
 using MeuSitePessoal.Application.Articles.Commands.UpdateArticle;
 using MeuSitePessoal.Domain;
+using MeuSitePessoal.Domain.Entities;
 
 namespace MeuSitePessoal.Tests.Integration.Articles;
 

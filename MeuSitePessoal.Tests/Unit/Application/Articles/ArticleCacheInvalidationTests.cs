@@ -3,6 +3,7 @@ using MeuSitePessoal.Application.Articles.Commands.CreateArticle;
 using MeuSitePessoal.Application.Articles.Commands.DeleteArtigo;
 using MeuSitePessoal.Application.Articles.Commands.UpdateArticle;
 using MeuSitePessoal.Domain;
+using MeuSitePessoal.Domain.Entities;
 using MeuSitePessoal.Domain.Interfaces;
 using Microsoft.Extensions.Caching.Memory;
 using Moq;

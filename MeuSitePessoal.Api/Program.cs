@@ -4,6 +4,7 @@ using FluentValidation;
 using MeuSitePessoal.Api.Middleware;
 using MeuSitePessoal.Application.Articles.Commands.CreateArticle;
 using MeuSitePessoal.Application.Common.Behaviors;
+using MeuSitePessoal.Application.Common.Interfaces;
 using MeuSitePessoal.Domain.Interfaces;
 using MeuSitePessoal.Infrastructure.Configuration;
 using MeuSitePessoal.Infrastructure.Data;
@@ -54,6 +55,12 @@ builder.Services.AddScoped<IArticleRepository, ArticleRepository>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IStorageService, LocalStorageService>();
 builder.Services.AddSingleton<IFeatureToggleService, FeatureToggleService>();
+
+// HC: Binds the abstract database interface to its concrete EF Core implementation, allowing the Application layer to remain agnostic.
+builder.Services.AddScoped<IBlogDbContext>(provider => provider.GetRequiredService<BlogDbContext>());
+
+// HC: Registers the specialized search service to handle full-text search capabilities, resolving dependencies for the query handlers.
+builder.Services.AddScoped<IArticleSearchService, ArticleSearchService>();
 
 // Configure JWT Authentication
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");

@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Identity;
 
-namespace MeuSitePessoal.Domain.Interfaces;
+namespace MeuSitePessoal.Application.Common.Interfaces;
 
 /// <summary>
 /// Service interface for generating authentication tokens.

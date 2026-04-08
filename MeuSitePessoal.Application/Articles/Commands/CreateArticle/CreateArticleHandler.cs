@@ -1,5 +1,6 @@
 using MediatR;
 using MeuSitePessoal.Domain;
+using MeuSitePessoal.Domain.Entities;
 using MeuSitePessoal.Domain.Interfaces;
 using Microsoft.Extensions.Caching.Memory;
 

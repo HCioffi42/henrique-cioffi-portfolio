@@ -1,4 +1,4 @@
-namespace MeuSitePessoal.Domain;
+namespace MeuSitePessoal.Domain.Entities;
 
 /// <summary>
 /// Defines the available categories for blog articles to ensure data consistency.

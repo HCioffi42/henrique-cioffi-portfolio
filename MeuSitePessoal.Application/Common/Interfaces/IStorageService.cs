@@ -1,4 +1,4 @@
-namespace MeuSitePessoal.Domain.Interfaces;
+namespace MeuSitePessoal.Application.Common.Interfaces;
 
 /// <summary>
 /// Interface for storage operations.

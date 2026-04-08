@@ -1,5 +1,5 @@
 using System.Security.Claims;
-using MeuSitePessoal.Domain.Interfaces;
+using MeuSitePessoal.Application.Common.Interfaces;
 using Microsoft.AspNetCore.Http;
 
 namespace MeuSitePessoal.Infrastructure.Services;

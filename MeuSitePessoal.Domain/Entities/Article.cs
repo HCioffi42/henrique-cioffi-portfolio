@@ -1,4 +1,4 @@
-﻿namespace MeuSitePessoal.Domain;
+﻿namespace MeuSitePessoal.Domain.Entities;
 
 public class Article
 {

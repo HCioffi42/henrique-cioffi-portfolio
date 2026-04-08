@@ -3,7 +3,7 @@ using MediatR;
 using MeuSitePessoal.Application.Auth.Commands.Login;
 using MeuSitePessoal.Application.Auth.Commands.Register;
 using MeuSitePessoal.Application.Auth.Commands.VerifyTwoFactor;
-using MeuSitePessoal.Domain.Interfaces;
+using MeuSitePessoal.Application.Common.Interfaces;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;

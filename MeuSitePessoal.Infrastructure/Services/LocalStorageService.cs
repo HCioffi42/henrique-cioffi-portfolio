@@ -1,4 +1,4 @@
-using MeuSitePessoal.Domain.Interfaces;
+using MeuSitePessoal.Application.Common.Interfaces;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 

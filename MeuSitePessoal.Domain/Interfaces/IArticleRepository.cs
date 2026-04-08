@@ -1,4 +1,5 @@
 ﻿using MeuSitePessoal.Domain;
+using MeuSitePessoal.Domain.Entities;
 
 namespace MeuSitePessoal.Domain.Interfaces;
 

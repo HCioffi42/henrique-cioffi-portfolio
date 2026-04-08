@@ -1,6 +1,7 @@
 using MediatR;
+using MeuSitePessoal.Application.Common.Interfaces;
 using MeuSitePessoal.Application.Common.Models;
-using MeuSitePessoal.Infrastructure.Data;
+using MeuSitePessoal.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 
@@ -11,14 +12,14 @@ namespace MeuSitePessoal.Application.Articles.Queries.GetArticles;
 /// </summary>
 public class GetArticlesQueryHandler : IRequestHandler<GetArticlesQuery, PagedResult<ArticleSummaryDto>>
 {
-    private readonly BlogDbContext _context;
+    private readonly IBlogDbContext _context;
     private readonly IMemoryCache _cache;
     private const string ArticlesCacheKeyPrefix = "Articles_";
 
     /// <summary>
     /// Initializes a new instance of the handler with the injected database context and memory cache.
     /// </summary>
-    public GetArticlesQueryHandler(BlogDbContext context, IMemoryCache cache)
+    public GetArticlesQueryHandler(IBlogDbContext context, IMemoryCache cache)
     {
         _context = context;
         _cache = cache;
@@ -38,7 +39,8 @@ public class GetArticlesQueryHandler : IRequestHandler<GetArticlesQuery, PagedRe
             return cachedResult!;
         }
 
-        var query = _context.Articles.AsNoTracking();
+        // HC: Explicitly typed as IQueryable to avoid the "Ambiguous invocation" error seen before.
+        IQueryable<Article> query = _context.Articles.AsNoTracking();
 
         // Chains multiple Where clauses using LINQ Aggregate to ensure all requested tags are present (AND logic).
         if (request.Tags != null && request.Tags.Any())

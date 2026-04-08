@@ -1,6 +1,8 @@
 using MediatR;
 using MeuSitePessoal.Application.Articles.Queries.GetArticles;
-using MeuSitePessoal.Infrastructure.Data;
+using MeuSitePessoal.Application.Common.Interfaces;
+using MeuSitePessoal.Application.Common.Models;
+using MeuSitePessoal.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 
@@ -11,10 +13,10 @@ namespace MeuSitePessoal.Application.Articles.Queries.GetRelatedArticles;
 /// </summary>
 public class GetRelatedArticlesQueryHandler : IRequestHandler<GetRelatedArticlesQuery, List<ArticleSummaryDto>>
 {
-    private readonly BlogDbContext _context;
+    private readonly IBlogDbContext _context;
     private readonly IMemoryCache _cache;
 
-    public GetRelatedArticlesQueryHandler(BlogDbContext context, IMemoryCache cache)
+    public GetRelatedArticlesQueryHandler(IBlogDbContext context, IMemoryCache cache)
     {
         _context = context;
         _cache = cache;
@@ -27,7 +29,7 @@ public class GetRelatedArticlesQueryHandler : IRequestHandler<GetRelatedArticles
     {
         var cacheVersion = _cache.GetOrCreate<Guid>("Articles_CacheVersion", _ => Guid.NewGuid());
         var cacheKey = $"Related_{request.ArticleId}_l{request.Limit}_v{cacheVersion}";
-
+        
         if (_cache.TryGetValue(cacheKey, out List<ArticleSummaryDto>? cachedList))
         {
             return cachedList!;

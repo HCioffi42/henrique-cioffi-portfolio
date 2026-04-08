@@ -3,6 +3,7 @@ using Moq;
 using MeuSitePessoal.Domain;
 using MeuSitePessoal.Domain.Interfaces;
 using MeuSitePessoal.Application.Articles.Commands;
+using MeuSitePessoal.Domain.Entities;
 using Xunit;
 using Microsoft.Extensions.Caching.Memory;
 

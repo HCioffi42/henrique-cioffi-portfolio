@@ -1,4 +1,5 @@
 using MediatR;
+using MeuSitePessoal.Application.Common.Interfaces;
 using MeuSitePessoal.Domain.Interfaces;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;

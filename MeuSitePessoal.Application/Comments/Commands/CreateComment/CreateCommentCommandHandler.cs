@@ -1,8 +1,7 @@
 using MediatR;
+using MeuSitePessoal.Application.Common.Interfaces;
 using MeuSitePessoal.Application.Common.Models;
-using MeuSitePessoal.Domain.Interfaces;
 using MeuSitePessoal.Domain.Entities;
-using MeuSitePessoal.Infrastructure.Data;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -14,7 +13,7 @@ namespace MeuSitePessoal.Application.Comments.Commands.CreateComment;
 /// </summary>
 public class CreateCommentCommandHandler : IRequestHandler<CreateCommentCommand, Result<Guid>>
 {
-    private readonly BlogDbContext _dbContext;
+    private readonly IBlogDbContext _dbContext;
     private readonly ICurrentUserService _currentUserService;
     private readonly UserManager<IdentityUser> _userManager;
 
@@ -22,7 +21,7 @@ public class CreateCommentCommandHandler : IRequestHandler<CreateCommentCommand,
     /// Initializes a new instance of the <see cref="CreateCommentCommandHandler"/> class.
     /// </summary>
     public CreateCommentCommandHandler(
-        BlogDbContext dbContext, 
+        IBlogDbContext dbContext, 
         ICurrentUserService currentUserService,
         UserManager<IdentityUser> userManager)
     {
@@ -66,15 +65,17 @@ public class CreateCommentCommandHandler : IRequestHandler<CreateCommentCommand,
         // 4. If it's a reply, verify that the parent comment exists and belongs to the same article.
         if (request.ParentCommentId.HasValue)
         {
-            var parentComment = await _dbContext.Comments
-                .FirstOrDefaultAsync(c => c.Id == request.ParentCommentId.Value, cancellationToken);
+            var parentCommentArticleId = await _dbContext.Comments
+                .Where(c => c.Id == request.ParentCommentId.Value)
+                .Select(c => (Guid?)c.ArticleId)
+                .FirstOrDefaultAsync(cancellationToken);
 
-            if (parentComment == null)
+            if (parentCommentArticleId == null)
             {
                 return Result.Failure<Guid>("Parent comment not found.", ErrorType.NotFound);
             }
 
-            if (parentComment.ArticleId != request.ArticleId)
+            if (parentCommentArticleId != request.ArticleId)
             {
                 return Result.Failure<Guid>("Parent comment does not belong to the specified article.", ErrorType.Conflict);
             }
@@ -89,7 +90,7 @@ public class CreateCommentCommandHandler : IRequestHandler<CreateCommentCommand,
             request.ParentCommentId
         );
 
-        await _dbContext.Comments.AddAsync(comment, cancellationToken);
+        _dbContext.Comments.Add(comment);
         await _dbContext.SaveChangesAsync(cancellationToken);
 
         return Result.Success(comment.Id);

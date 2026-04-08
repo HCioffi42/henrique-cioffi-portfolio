@@ -1,6 +1,7 @@
 using System.Net.Http.Json;
 using MeuSitePessoal.Application.Articles.Commands.CreateArticle;
 using MeuSitePessoal.Domain;
+using MeuSitePessoal.Domain.Entities;
 using Xunit;
 
 namespace MeuSitePessoal.Tests.Integration.Articles;

@@ -1,6 +1,7 @@
 using FluentValidation.TestHelper;
 using MeuSitePessoal.Application.Articles.Commands.CreateArticle;
 using MeuSitePessoal.Domain;
+using MeuSitePessoal.Domain.Entities;
 using Xunit;
 
 namespace MeuSitePessoal.Tests.Unit.Application.Articles.Validators;

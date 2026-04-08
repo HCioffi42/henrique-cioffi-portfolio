@@ -1,6 +1,7 @@
 using MediatR;
 using MeuSitePessoal.Application.Common.Models;
 using MeuSitePessoal.Domain;
+using MeuSitePessoal.Domain.Entities;
 using MeuSitePessoal.Domain.Interfaces;
 
 namespace MeuSitePessoal.Application.Articles.Queries.GetAllArticles;

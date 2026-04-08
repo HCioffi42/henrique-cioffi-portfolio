@@ -1,7 +1,6 @@
 using MediatR;
+using MeuSitePessoal.Application.Common.Interfaces;
 using MeuSitePessoal.Application.Common.Models;
-using MeuSitePessoal.Domain.Interfaces;
-using MeuSitePessoal.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
 namespace MeuSitePessoal.Application.Comments.Commands.UpdateComment;
@@ -12,11 +11,11 @@ namespace MeuSitePessoal.Application.Comments.Commands.UpdateComment;
 /// </summary>
 public class UpdateCommentCommandHandler : IRequestHandler<UpdateCommentCommand, Result<bool>>
 {
-    private readonly BlogDbContext _dbContext;
+    private readonly IBlogDbContext _dbContext;
     private readonly ICurrentUserService _currentUserService;
 
     public UpdateCommentCommandHandler(
-        BlogDbContext dbContext, 
+        IBlogDbContext dbContext, 
         ICurrentUserService currentUserService)
     {
         _dbContext = dbContext;
@@ -45,9 +44,7 @@ public class UpdateCommentCommandHandler : IRequestHandler<UpdateCommentCommand,
 
         // 3. Update the content.
         comment.Content = request.Content;
-        
         await _dbContext.SaveChangesAsync(cancellationToken);
-
         return Result.Success(true);
     }
 }

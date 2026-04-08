@@ -12,12 +12,12 @@ namespace MeuSitePessoal.Infrastructure.Logging;
  */
 public static class DependencyInjection
 {
-    /**
-     * Extension method to add custom Serilog configuration to the IServiceCollection.
-     * @param services The IServiceCollection to add the services to.
-     * @param configuration The IConfiguration to read settings from.
-     * @returns The updated IServiceCollection.
-     */
+    /// <summary>
+    /// Extension method to add custom Serilog configuration.
+    /// </summary>
+    /// <param name="services">The service collection.</param>
+    /// <param name="configuration">The configuration provider.</param>
+    /// <returns>The updated service collection.</returns>
     public static IServiceCollection AddCustomLogging(this IServiceCollection services, IConfiguration configuration)
     {
         Log.Logger = new LoggerConfiguration()

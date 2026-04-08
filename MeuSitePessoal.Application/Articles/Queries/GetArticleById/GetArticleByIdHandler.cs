@@ -1,5 +1,6 @@
 using MediatR;
 using MeuSitePessoal.Domain;
+using MeuSitePessoal.Domain.Entities;
 using MeuSitePessoal.Domain.Interfaces;
 
 namespace MeuSitePessoal.Application.Articles.Queries.GetArticleById;

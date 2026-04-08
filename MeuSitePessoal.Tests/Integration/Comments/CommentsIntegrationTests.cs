@@ -3,6 +3,7 @@ using System.Net.Http.Json;
 using MeuSitePessoal.Application.Comments.Commands.CreateComment;
 using MeuSitePessoal.Application.Comments.Queries.GetCommentsByArticleId;
 using MeuSitePessoal.Domain;
+using MeuSitePessoal.Domain.Entities;
 using Xunit;
 
 namespace MeuSitePessoal.Tests.Integration.Comments;

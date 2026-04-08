@@ -22,7 +22,6 @@ This project uses the Conductor extension for structured development.
   - **Commentary**: Third-person descriptive comments (e.g., "The component renders a grid of articles").
   - **No Drift**: Do not modify files outside the current track's scope.
 - **Constraint Enforcement**: Adhere strictly to the rules defined in `product-guidelines.md` regarding architecture (Clean Architecture, MediatR, SOLID, etc.).
-- **Concerning Interfaces**: All newly created interfaces should be in this namespace: `MeuSitePessoal.Domain.Interfaces`.
 
 ## 3. Testing & Validation
 - Ensure all changes are covered by relevant tests (Unit and/or Integration).

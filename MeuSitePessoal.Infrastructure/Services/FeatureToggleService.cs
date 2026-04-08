@@ -1,4 +1,4 @@
-using MeuSitePessoal.Domain.Interfaces;
+using MeuSitePessoal.Application.Common.Interfaces;
 using Microsoft.Extensions.Configuration;
 
 namespace MeuSitePessoal.Infrastructure.Services;

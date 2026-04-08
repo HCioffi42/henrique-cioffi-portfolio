@@ -1,4 +1,5 @@
 ﻿using MeuSitePessoal.Domain;
+using MeuSitePessoal.Domain.Entities;
 using Xunit;
 
 namespace MeuSitePessoal.Tests.Unit.Domain;

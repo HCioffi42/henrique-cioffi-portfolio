@@ -1,5 +1,6 @@
 using System.Text;
 using MeuSitePessoal.Api.Controllers;
+using MeuSitePessoal.Application.Common.Interfaces;
 using MeuSitePessoal.Domain.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;

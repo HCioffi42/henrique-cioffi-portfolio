@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using MeuSitePessoal.Application.Articles.Queries.GetArticles;
 using MeuSitePessoal.Application.Common.Models;
 using MeuSitePessoal.Domain;
+using MeuSitePessoal.Domain.Entities;
 using MeuSitePessoal.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;

@@ -3,6 +3,7 @@ using MeuSitePessoal.Domain;
 using MeuSitePessoal.Domain.Interfaces;
 using MeuSitePessoal.Application.Articles.Queries.GetAllArticles;
 using MeuSitePessoal.Application.Common.Models;
+using MeuSitePessoal.Domain.Entities;
 using Xunit;
 
 namespace MeuSitePessoal.Tests.Unit.Application.Handlers;

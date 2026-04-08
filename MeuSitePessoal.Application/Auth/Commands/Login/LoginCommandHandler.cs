@@ -1,5 +1,5 @@
 using MediatR;
-using MeuSitePessoal.Domain.Interfaces;
+using MeuSitePessoal.Application.Common.Interfaces;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 
@@ -13,7 +13,7 @@ namespace MeuSitePessoal.Application.Auth.Commands.Login;
 public class LoginCommandHandler : IRequestHandler<LoginCommand, LoginResult>
 {
     private readonly UserManager<IdentityUser> _userManager;
-    private readonly SignInManager<IdentityUser> _signInManager;
+    private readonly SignInManager<IdentityUser> _signInManager; // "Cannot resolve symbol 'SignInManager'"
     private readonly ITokenService _tokenService;
     private readonly IFeatureToggleService _featureToggle;
     private readonly ILogger<LoginCommandHandler> _logger;
@@ -23,7 +23,7 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, LoginResult>
     /// </summary>
     public LoginCommandHandler(
         UserManager<IdentityUser> userManager,
-        SignInManager<IdentityUser> signInManager,
+        SignInManager<IdentityUser> signInManager, // "Cannot resolve symbol 'SignInManager'"
         ITokenService tokenService,
         IFeatureToggleService featureToggle,
         ILogger<LoginCommandHandler> logger)

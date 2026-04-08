@@ -10,6 +10,7 @@ using MeuSitePessoal.Application.Articles.Queries.GetArticlesSearch;
 using MeuSitePessoal.Application.Articles.Queries.GetRelatedArticles;
 using Microsoft.AspNetCore.Authorization;
 using MeuSitePessoal.Domain;
+using MeuSitePessoal.Domain.Entities;
 
 namespace MeuSitePessoal.Api.Controllers;
 

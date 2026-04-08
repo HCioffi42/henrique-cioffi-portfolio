@@ -1,7 +1,6 @@
 using MediatR;
+using MeuSitePessoal.Application.Common.Interfaces;
 using MeuSitePessoal.Application.Common.Models;
-using MeuSitePessoal.Domain.Interfaces;
-using MeuSitePessoal.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
 namespace MeuSitePessoal.Application.Comments.Commands.DeleteComment;
@@ -12,11 +11,11 @@ namespace MeuSitePessoal.Application.Comments.Commands.DeleteComment;
 /// </summary>
 public class DeleteCommentCommandHandler : IRequestHandler<DeleteCommentCommand, Result<bool>>
 {
-    private readonly BlogDbContext _dbContext;
+    private readonly IBlogDbContext _dbContext;
     private readonly ICurrentUserService _currentUserService;
 
     public DeleteCommentCommandHandler(
-        BlogDbContext dbContext, 
+        IBlogDbContext dbContext, 
         ICurrentUserService currentUserService)
     {
         _dbContext = dbContext;
@@ -36,7 +35,7 @@ public class DeleteCommentCommandHandler : IRequestHandler<DeleteCommentCommand,
 
         // 2. Check permissions.
         var isOwner = _currentUserService.UserId == comment.UserId;
-        var isAdmin = _currentUserService.IsInRole("Admin");
+        var isAdmin = _currentUserService.IsInRole("Admin"); 
 
         if (!isOwner && !isAdmin)
         {

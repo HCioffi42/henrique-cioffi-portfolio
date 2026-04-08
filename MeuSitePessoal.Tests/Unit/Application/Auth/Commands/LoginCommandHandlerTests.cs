@@ -1,5 +1,6 @@
 ﻿using FluentAssertions;
 using MeuSitePessoal.Application.Auth.Commands.Login;
+using MeuSitePessoal.Application.Common.Interfaces;
 using MeuSitePessoal.Domain.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;

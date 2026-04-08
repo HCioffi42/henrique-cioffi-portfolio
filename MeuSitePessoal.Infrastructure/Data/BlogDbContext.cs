@@ -1,11 +1,11 @@
-using MeuSitePessoal.Domain;
+using MeuSitePessoal.Application.Common.Interfaces;
 using MeuSitePessoal.Domain.Entities;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace MeuSitePessoal.Infrastructure.Data;
 
-public class BlogDbContext : IdentityDbContext
+public class BlogDbContext : IdentityDbContext, IBlogDbContext
 {
     // Defines the context that inherits from IdentityDbContext to manage communication with PostgreSQL and Identity tables.
     public BlogDbContext(DbContextOptions<BlogDbContext> options) : base(options)
@@ -23,7 +23,7 @@ public class BlogDbContext : IdentityDbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        // I configure the Article entity to ensure that business rules are reflected in the database schema.
+        // Configures the Article entity to ensure that business rules are reflected in the database schema.
         modelBuilder.Entity<Article>(builder =>
         {
             builder.ToTable("Articles");
@@ -32,7 +32,12 @@ public class BlogDbContext : IdentityDbContext
             builder.Property(a => a.Content).IsRequired();
             builder.Property(a => a.Summary).IsRequired().HasMaxLength(500);
             builder.Property(a => a.Tags).IsRequired();
-            builder.Property(a => a.Category).IsRequired();
+            
+            // Stores the enum as a string in the database to prevent data corruption if the enum order changes in code.
+            builder.Property(a => a.Category)
+                   .IsRequired()
+                   .HasConversion<string>();
+
             builder.Property(a => a.CreatedAt).IsRequired();
 
             // Configures the one-to-many relationship between Article and Comments.
@@ -71,4 +76,3 @@ public class BlogDbContext : IdentityDbContext
         base.OnModelCreating(modelBuilder);
     }
 }
-

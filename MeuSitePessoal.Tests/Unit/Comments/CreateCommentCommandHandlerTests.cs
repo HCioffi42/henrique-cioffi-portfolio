@@ -1,4 +1,5 @@
 using MeuSitePessoal.Application.Comments.Commands.CreateComment;
+using MeuSitePessoal.Application.Common.Interfaces;
 using MeuSitePessoal.Application.Common.Models;
 using MeuSitePessoal.Domain;
 using MeuSitePessoal.Domain.Entities;

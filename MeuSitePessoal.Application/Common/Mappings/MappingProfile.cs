@@ -4,6 +4,7 @@ using MeuSitePessoal.Application.Articles.Commands.UpdateArticle;
 using MeuSitePessoal.Application.Articles.Queries;
 using MeuSitePessoal.Application.Articles.Queries.GetArticles;
 using MeuSitePessoal.Domain;
+using MeuSitePessoal.Domain.Entities;
 
 namespace MeuSitePessoal.Application.Common.Mappings;
 

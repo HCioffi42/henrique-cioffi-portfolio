@@ -1,6 +1,6 @@
 using MediatR;
+using MeuSitePessoal.Application.Common.Interfaces;
 using MeuSitePessoal.Application.Common.Models;
-using MeuSitePessoal.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
 namespace MeuSitePessoal.Application.Comments.Queries.GetCommentsByArticleId;
@@ -11,13 +11,13 @@ namespace MeuSitePessoal.Application.Comments.Queries.GetCommentsByArticleId;
 /// </summary>
 public class GetCommentsByArticleIdQueryHandler : IRequestHandler<GetCommentsByArticleIdQuery, Result<List<CommentResponse>>>
 {
-    private readonly BlogDbContext _dbContext;
+    private readonly IBlogDbContext _dbContext;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="GetCommentsByArticleIdQueryHandler"/> class.
     /// </summary>
     /// <param name="dbContext">The database context.</param>
-    public GetCommentsByArticleIdQueryHandler(BlogDbContext dbContext)
+    public GetCommentsByArticleIdQueryHandler(IBlogDbContext dbContext)
     {
         _dbContext = dbContext;
     }
@@ -32,6 +32,7 @@ public class GetCommentsByArticleIdQueryHandler : IRequestHandler<GetCommentsByA
     {
         // 1. Verify that the article exists to avoid ambiguous empty results.
         var articleExists = await _dbContext.Articles
+            .AsNoTracking()
             .AnyAsync(a => a.Id == request.ArticleId, cancellationToken);
 
         if (!articleExists)
@@ -42,6 +43,7 @@ public class GetCommentsByArticleIdQueryHandler : IRequestHandler<GetCommentsByA
         // 2. Fetch all comments associated with the article in a single query.
         // We order by CreatedAt to ensure a predictable sequence.
         var allComments = await _dbContext.Comments
+            .AsNoTracking()
             .Where(c => c.ArticleId == request.ArticleId)
             .OrderBy(c => c.CreatedAt)
             .ToListAsync(cancellationToken);
@@ -59,7 +61,8 @@ public class GetCommentsByArticleIdQueryHandler : IRequestHandler<GetCommentsByA
                 Content = comment.Content,
                 AuthorName = comment.AuthorName,
                 CreatedAt = comment.CreatedAt,
-                ParentCommentId = comment.ParentCommentId
+                ParentCommentId = comment.ParentCommentId,
+                Replies = new List<CommentResponse>()
             };
             commentMap[response.Id] = response;
         }

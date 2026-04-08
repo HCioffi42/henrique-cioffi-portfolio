@@ -1,4 +1,4 @@
-namespace MeuSitePessoal.Domain.Interfaces;
+namespace MeuSitePessoal.Application.Common.Interfaces;
 
 /// <summary>
 /// Provides access to feature toggle flags defined in application configuration.

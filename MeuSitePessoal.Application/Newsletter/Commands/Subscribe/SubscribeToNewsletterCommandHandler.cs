@@ -1,7 +1,7 @@
 using MediatR;
+using MeuSitePessoal.Application.Common.Interfaces;
 using MeuSitePessoal.Application.Common.Models;
 using MeuSitePessoal.Domain.Entities;
-using MeuSitePessoal.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
 namespace MeuSitePessoal.Application.Newsletter.Commands.Subscribe;
@@ -11,12 +11,12 @@ namespace MeuSitePessoal.Application.Newsletter.Commands.Subscribe;
 /// </summary>
 public class SubscribeToNewsletterCommandHandler : IRequestHandler<SubscribeToNewsletterCommand, Result>
 {
-    private readonly BlogDbContext _dbContext;
+    private readonly IBlogDbContext _dbContext;
 
     /// <summary>
     /// Initializes a new instance of the handler with the database context.
     /// </summary>
-    public SubscribeToNewsletterCommandHandler(BlogDbContext dbContext)
+    public SubscribeToNewsletterCommandHandler(IBlogDbContext dbContext)
     {
         _dbContext = dbContext;
     }
@@ -26,34 +26,33 @@ public class SubscribeToNewsletterCommandHandler : IRequestHandler<SubscribeToNe
     /// </summary>
     public async Task<Result> Handle(SubscribeToNewsletterCommand request, CancellationToken cancellationToken)
     {
+        var normalizedEmail = request.Email.ToLower();
         var existingSubscriber = await _dbContext.Subscribers
-            .FirstOrDefaultAsync(s => s.Email.ToLower() == request.Email.ToLower(), cancellationToken);
+            .FirstOrDefaultAsync(s => s.Email == normalizedEmail, cancellationToken);
 
         if (existingSubscriber != null)
         {
             if (existingSubscriber.IsActive)
-            {
                 return Result.Failure("This email is already subscribed.", ErrorType.Conflict);
-            }
 
             existingSubscriber.IsActive = true;
             existingSubscriber.SubscribedAt = DateTime.UtcNow;
             
             _dbContext.Subscribers.Update(existingSubscriber);
             await _dbContext.SaveChangesAsync(cancellationToken);
-            
+        
             return Result.Success();
         }
 
         var newSubscriber = new Subscriber
         {
             Id = Guid.NewGuid(),
-            Email = request.Email.ToLower(),
+            Email = normalizedEmail,
             SubscribedAt = DateTime.UtcNow,
             IsActive = true
         };
 
-        await _dbContext.Subscribers.AddAsync(newSubscriber, cancellationToken);
+        _dbContext.Subscribers.Add(newSubscriber);
         await _dbContext.SaveChangesAsync(cancellationToken);
 
         return Result.Success();

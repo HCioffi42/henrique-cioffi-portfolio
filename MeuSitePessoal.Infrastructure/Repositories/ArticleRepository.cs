@@ -1,4 +1,5 @@
 ﻿using MeuSitePessoal.Domain;
+using MeuSitePessoal.Domain.Entities;
 using MeuSitePessoal.Domain.Interfaces;
 using MeuSitePessoal.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
