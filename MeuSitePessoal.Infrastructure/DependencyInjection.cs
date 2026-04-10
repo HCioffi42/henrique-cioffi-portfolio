@@ -22,9 +22,11 @@ public static class DependencyInjection
 
         services.AddScoped<IArticleSearchService, ArticleSearchService>();
 
-        // Registers email configuration and service implementation.
+        // Registers email configuration, template service, and sender implementation.
         services.Configure<EmailSettings>(configuration.GetSection(EmailSettings.SectionName));
+        services.AddSingleton<IEmailTemplateService, RazorEmailTemplateService>();
         services.AddTransient<IEmailSender, MailKitEmailService>();
+
 
         return services;
     }

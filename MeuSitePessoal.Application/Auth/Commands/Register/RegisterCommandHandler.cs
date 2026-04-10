@@ -16,24 +16,23 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, RegisterR
 {
     private readonly UserManager<IdentityUser> _userManager;
     private readonly IEmailSender _emailSender;
+    private readonly IEmailTemplateService _templateService;
     private readonly IConfiguration _configuration;
     private readonly ILogger<RegisterCommandHandler> _logger;
 
     /// <summary>
     /// Initializes a new instance of <see cref="RegisterCommandHandler"/>.
     /// </summary>
-    /// <param name="userManager">The ASP.NET Core Identity user manager.</param>
-    /// <param name="emailSender">The service for sending emails.</param>
-    /// <param name="configuration">The application configuration.</param>
-    /// <param name="logger">The logger instance.</param>
     public RegisterCommandHandler(
         UserManager<IdentityUser> userManager,
         IEmailSender emailSender,
+        IEmailTemplateService templateService,
         IConfiguration configuration,
         ILogger<RegisterCommandHandler> logger)
     {
         _userManager = userManager;
         _emailSender = emailSender;
+        _templateService = templateService;
         _configuration = configuration;
         _logger = logger;
     }
@@ -73,19 +72,18 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, RegisterR
         var baseUrl = _configuration["ClientSettings:BaseUrl"] ?? "https://hcioffi.dev";
         var callbackUrl = $"{baseUrl}/verify-email?userId={user.Id}&token={encodedCode}";
 
-        // Send the verification email.
+        // Render and send the verification email using Razor templates.
         var subject = "Welcome to Meu Site Pessoal! Please confirm your email";
-        var body = $@"
-            <h1>Welcome, {user.UserName}!</h1>
-            <p>Thank you for registering. Please confirm your email address by clicking the link below:</p>
-            <p><a href='{callbackUrl}'>Confirm my email</a></p>
-            <p>Or copy and paste this URL into your browser:</p>
-            <p>{callbackUrl}</p>
-        ";
+        var body = await _templateService.RenderTemplateAsync("ConfirmAccount", new 
+        { 
+            UserName = user.UserName, 
+            ConfirmLink = callbackUrl 
+        });
 
         await _emailSender.SendEmailAsync(user.Email!, subject, body, cancellationToken);
 
         return new RegisterResult(true, Enumerable.Empty<string>());
     }
 }
+
 

@@ -16,6 +16,7 @@ public class ForgotPasswordCommandHandler : IRequestHandler<ForgotPasswordComman
 {
     private readonly UserManager<IdentityUser> _userManager;
     private readonly IEmailSender _emailSender;
+    private readonly IEmailTemplateService _templateService;
     private readonly IConfiguration _configuration;
     private readonly ILogger<ForgotPasswordCommandHandler> _logger;
 
@@ -24,18 +25,16 @@ public class ForgotPasswordCommandHandler : IRequestHandler<ForgotPasswordComman
     /// <summary>
     /// Initializes a new instance of <see cref="ForgotPasswordCommandHandler"/>.
     /// </summary>
-    /// <param name="userManager">The Identity user manager.</param>
-    /// <param name="emailSender">The service for sending emails.</param>
-    /// <param name="configuration">The application configuration.</param>
-    /// <param name="logger">The logger instance.</param>
     public ForgotPasswordCommandHandler(
         UserManager<IdentityUser> userManager,
         IEmailSender emailSender,
+        IEmailTemplateService templateService,
         IConfiguration configuration,
         ILogger<ForgotPasswordCommandHandler> logger)
     {
         _userManager = userManager;
         _emailSender = emailSender;
+        _templateService = templateService;
         _configuration = configuration;
         _logger = logger;
     }
@@ -66,17 +65,13 @@ public class ForgotPasswordCommandHandler : IRequestHandler<ForgotPasswordComman
         var baseUrl = _configuration["ClientSettings:BaseUrl"] ?? "https://hcioffi.dev";
         var resetUrl = $"{baseUrl}/reset-password?email={Uri.EscapeDataString(user.Email!)}&token={encodedToken}";
 
-        // Send the instructions via email.
+        // Render and send the instructions via email using Razor templates.
         var subject = "Reset your password - Meu Site Pessoal";
-        var body = $@"
-            <h1>Password Reset Request</h1>
-            <p>Hello, {user.UserName}!</p>
-            <p>We received a request to reset your password. If you didn't do this, just ignore this email.</p>
-            <p>To set a new password, click the link below:</p>
-            <p><a href='{resetUrl}'>Reset Password</a></p>
-            <p>Or copy and paste this link into your browser:</p>
-            <p>{resetUrl}</p>
-        ";
+        var body = await _templateService.RenderTemplateAsync("ResetPassword", new 
+        { 
+            UserName = user.UserName,
+            ResetLink = resetUrl
+        });
 
         await _emailSender.SendEmailAsync(user.Email!, subject, body, cancellationToken);
         _logger.LogInformation("Password reset instructions sent to {Email}.", request.Email);
@@ -84,3 +79,4 @@ public class ForgotPasswordCommandHandler : IRequestHandler<ForgotPasswordComman
         return new ForgotPasswordResult(true, GenericSuccessMessage);
     }
 }
+

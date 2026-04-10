@@ -105,7 +105,7 @@
 - [/] **16.5 - Email Infrastructure & Identity Verification**:
 	- [x] **16.5.1 - Mail Engine Strategy**: Integration with SMTP/SaaS providers (SendGrid/AWS SES) and implementation of the MailKit provider.
 	- [x] **16.5.2 - Account Lifecycle Verification**: Email confirmation flows for new registrations and secure password recovery systems.
-	- [ ] **16.5.3 - Newsletter Double Opt-in**: Automated subscription verification and legal-compliant unsubscribe mechanisms.
+	- [x] **16.5.3 - Newsletter Double Opt-in**: Automated subscription verification and legal-compliant unsubscribe mechanisms.
 	- [ ] **16.5.4 - Email Templates & Branding**: Development of responsive HTML templates with the blog's visual identity.
 
 ### [ ] Track 17: Internationalization

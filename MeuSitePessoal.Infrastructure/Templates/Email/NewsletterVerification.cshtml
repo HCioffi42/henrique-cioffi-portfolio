@@ -1,0 +1,20 @@
+@{
+    Layout = "_Layout";
+    ViewBag.Title = "Confirm Your Subscription";
+}
+
+<h2>Almost there!</h2>
+<p>Thank you for your interest in subscribing to the <strong>Meu Site Pessoal</strong> newsletter.</p>
+<p>To finalize your subscription and start receiving the latest articles directly in your inbox, please confirm your email address below:</p>
+
+<div style="text-align: center;">
+    <a href="@Model.ConfirmLink" class="button">Confirm Subscription</a>
+</div>
+
+<p>If the button doesn't work, you can also copy and paste the following link into your browser:</p>
+<p style="word-break: break-all; font-size: 14px; color: #5e6ad2;">
+    @Model.ConfirmLink
+</p>
+
+<div class="divider"></div>
+<p>If you didn't request this subscription, no further action is required; you won't be added to the list.</p>

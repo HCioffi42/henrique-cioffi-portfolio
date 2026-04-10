@@ -19,6 +19,7 @@ public class RegisterCommandHandlerTests
 {
     private readonly Mock<UserManager<IdentityUser>> _userManagerMock;
     private readonly Mock<IEmailSender> _emailSenderMock;
+    private readonly Mock<IEmailTemplateService> _templateServiceMock;
     private readonly Mock<IConfiguration> _configurationMock;
     private readonly Mock<ILogger<RegisterCommandHandler>> _loggerMock;
     private readonly RegisterCommandHandler _sut;
@@ -28,15 +29,18 @@ public class RegisterCommandHandlerTests
         var storeMock = new Mock<IUserStore<IdentityUser>>();
         _userManagerMock = new Mock<UserManager<IdentityUser>>(storeMock.Object, null!, null!, null!, null!, null!, null!, null!, null!);
         _emailSenderMock = new Mock<IEmailSender>();
+        _templateServiceMock = new Mock<IEmailTemplateService>();
         _configurationMock = new Mock<IConfiguration>();
         _loggerMock = new Mock<ILogger<RegisterCommandHandler>>();
 
         _sut = new RegisterCommandHandler(
             _userManagerMock.Object,
             _emailSenderMock.Object,
+            _templateServiceMock.Object,
             _configurationMock.Object,
             _loggerMock.Object);
     }
+
 
     /// <summary>
     /// Verifies that a new user is created, assigned the 'Reader' role, and receives a confirmation email.
@@ -55,6 +59,9 @@ public class RegisterCommandHandlerTests
 
         _userManagerMock.Setup(x => x.GenerateEmailConfirmationTokenAsync(It.IsAny<IdentityUser>()))
             .ReturnsAsync("valid-token");
+        
+        _templateServiceMock.Setup(x => x.RenderTemplateAsync(It.IsAny<string>(), It.IsAny<object>()))
+            .ReturnsAsync("<html><body>confirm-email</body></html>");
 
         _configurationMock.Setup(x => x["ClientSettings:BaseUrl"]).Returns("https://test.com");
 

@@ -1,28 +1,41 @@
+using System.Text;
 using MediatR;
 using MeuSitePessoal.Application.Common.Interfaces;
 using MeuSitePessoal.Application.Common.Models;
 using MeuSitePessoal.Domain.Entities;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 
 namespace MeuSitePessoal.Application.Newsletter.Commands.Subscribe;
 
 /// <summary>
-/// Handles the execution of the <see cref="SubscribeToNewsletterCommand"/> by saving the record to the persistence layer.
+/// Handles the execution of the <see cref="SubscribeToNewsletterCommand"/> by initiating a double opt-in verification flow.
 /// </summary>
 public class SubscribeToNewsletterCommandHandler : IRequestHandler<SubscribeToNewsletterCommand, Result>
 {
     private readonly IBlogDbContext _dbContext;
+    private readonly IEmailSender _emailSender;
+    private readonly IEmailTemplateService _templateService;
+    private readonly IConfiguration _configuration;
 
     /// <summary>
-    /// Initializes a new instance of the handler with the database context.
+    /// Initializes a new instance of the handler with the necessary services.
     /// </summary>
-    public SubscribeToNewsletterCommandHandler(IBlogDbContext dbContext)
+    public SubscribeToNewsletterCommandHandler(
+        IBlogDbContext dbContext,
+        IEmailSender emailSender,
+        IEmailTemplateService templateService,
+        IConfiguration configuration)
     {
         _dbContext = dbContext;
+        _emailSender = emailSender;
+        _templateService = templateService;
+        _configuration = configuration;
     }
 
     /// <summary>
-    /// Processes the subscription, checking for existing active subscribers, and saving changes sequentially.
+    /// Processes the subscription request, generating a verification token and sending an opt-in email.
     /// </summary>
     public async Task<Result> Handle(SubscribeToNewsletterCommand request, CancellationToken cancellationToken)
     {
@@ -30,31 +43,69 @@ public class SubscribeToNewsletterCommandHandler : IRequestHandler<SubscribeToNe
         var existingSubscriber = await _dbContext.Subscribers
             .FirstOrDefaultAsync(s => s.Email == normalizedEmail, cancellationToken);
 
+        string token;
+        
         if (existingSubscriber != null)
         {
-            if (existingSubscriber.IsActive)
-                return Result.Failure("This email is already subscribed.", ErrorType.Conflict);
+            // HC: If the user is already verified and active, we inform them gracefully.
+            if (existingSubscriber.IsVerified && existingSubscriber.IsActive)
+                return Result.Success();
 
-            existingSubscriber.IsActive = true;
-            existingSubscriber.SubscribedAt = DateTime.UtcNow;
+            // HC: If the user is not verified, we refresh the token and resend the email.
+            token = GenerateToken();
+            existingSubscriber.VerificationToken = token;
+            existingSubscriber.IsActive = false; // Ensure they are inactive until verified
             
             _dbContext.Subscribers.Update(existingSubscriber);
-            await _dbContext.SaveChangesAsync(cancellationToken);
-        
-            return Result.Success();
+        }
+        else
+        {
+            // HC: New subscriber creation flow.
+            token = GenerateToken();
+            existingSubscriber = new Subscriber
+            {
+                Id = Guid.NewGuid(),
+                Email = normalizedEmail,
+                SubscribedAt = DateTime.UtcNow,
+                IsActive = false,
+                IsVerified = false,
+                VerificationToken = token
+            };
+            
+            _dbContext.Subscribers.Add(existingSubscriber);
         }
 
-        var newSubscriber = new Subscriber
-        {
-            Id = Guid.NewGuid(),
-            Email = normalizedEmail,
-            SubscribedAt = DateTime.UtcNow,
-            IsActive = true
-        };
-
-        _dbContext.Subscribers.Add(newSubscriber);
         await _dbContext.SaveChangesAsync(cancellationToken);
-
+        await SendVerificationEmail(normalizedEmail, token, cancellationToken);
+        
         return Result.Success();
     }
+
+    /// <summary>
+    /// Generates a unique, URL-safe verification token.
+    /// </summary>
+    private static string GenerateToken()
+    {
+        var guid = Guid.NewGuid().ToString();
+        return WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(guid));
+    }
+
+    /// <summary>
+    /// Constructs and sends the double opt-in verification email.
+    /// </summary>
+    private async Task SendVerificationEmail(string email, string token, CancellationToken ct)
+    {
+        var baseUrl = _configuration["ClientSettings:BaseUrl"] ?? "https://hcioffi.dev";
+        var verificationUrl = $"{baseUrl}/newsletter/confirm?email={email}&token={token}";
+
+        var subject = "Confirm your subscription to Meu Site Pessoal Newsletter";
+        var body = await _templateService.RenderTemplateAsync("NewsletterVerification", new 
+        { 
+            ConfirmLink = verificationUrl 
+        });
+
+        await _emailSender.SendEmailAsync(email, subject, body, ct);
+    }
 }
+
+

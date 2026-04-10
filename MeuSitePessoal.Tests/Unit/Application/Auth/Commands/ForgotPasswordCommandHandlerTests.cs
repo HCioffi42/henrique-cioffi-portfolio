@@ -19,6 +19,7 @@ public class ForgotPasswordCommandHandlerTests
 {
     private readonly Mock<UserManager<IdentityUser>> _userManagerMock;
     private readonly Mock<IEmailSender> _emailSenderMock;
+    private readonly Mock<IEmailTemplateService> _templateServiceMock;
     private readonly Mock<IConfiguration> _configurationMock;
     private readonly Mock<ILogger<ForgotPasswordCommandHandler>> _loggerMock;
     private readonly ForgotPasswordCommandHandler _sut;
@@ -28,12 +29,14 @@ public class ForgotPasswordCommandHandlerTests
         var storeMock = new Mock<IUserStore<IdentityUser>>();
         _userManagerMock = new Mock<UserManager<IdentityUser>>(storeMock.Object, null!, null!, null!, null!, null!, null!, null!, null!);
         _emailSenderMock = new Mock<IEmailSender>();
+        _templateServiceMock = new Mock<IEmailTemplateService>();
         _configurationMock = new Mock<IConfiguration>();
         _loggerMock = new Mock<ILogger<ForgotPasswordCommandHandler>>();
 
         _sut = new ForgotPasswordCommandHandler(
             _userManagerMock.Object,
             _emailSenderMock.Object,
+            _templateServiceMock.Object,
             _configurationMock.Object,
             _loggerMock.Object);
     }
