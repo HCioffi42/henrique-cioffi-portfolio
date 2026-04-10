@@ -43,7 +43,8 @@ public class SmtpIntegrationTests
     /// Verifies that an email can be successfully sent to the configured SMTP server.
     /// This test performs real Network I/O and requires valid credentials in appsettings.Test.json.
     /// </summary>
-    [Fact]
+    // [Fact]
+    [Fact(Skip = "Skipping integration test in CI/CD due to missing real SMTP credentials. Run manually with local secrets.")]  
     public async Task SendEmailAsync_ShouldSuccessfullyDeliverToMailtrap()
     {
         // Arrange

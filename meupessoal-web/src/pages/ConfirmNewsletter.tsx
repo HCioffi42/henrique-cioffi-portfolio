@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { CheckCircle, XCircle, Loader2, ArrowLeft } from 'lucide-react';
 import { newsletterService } from '../services/newsletterService';
+import axios from 'axios';
 
 /**
  * Page to handle newsletter subscription confirmation.
@@ -26,10 +27,14 @@ export default function ConfirmNewsletter() {
             try {
                 await newsletterService.confirmSubscription(email, token);
                 setStatus('success');
-            } catch (error: any) {
+            } catch (error: unknown) {
                 setStatus('error');
-                const message = error.response?.data?.message || 'Invalid or expired confirmation link.';
-                setErrorMessage(message);
+                if (axios.isAxiosError(error)) {
+                    const message = error.response?.data?.message || 'Invalid or expired confirmation link.';
+                    setErrorMessage(message);
+                } else {
+                    setErrorMessage('An unexpected error occurred.');
+                }
             }
         };
 

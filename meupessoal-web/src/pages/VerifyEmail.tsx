@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { CheckCircle, XCircle, Loader2, LogIn, ArrowLeft } from 'lucide-react';
 import authService from '../services/authService';
+import axios from 'axios';
 
 /**
  * Page to handle account email verification.
@@ -26,11 +27,15 @@ export default function VerifyEmail() {
             try {
                 await authService.confirmEmail(userId, token);
                 setStatus('success');
-            } catch (error: any) {
+            } catch (error: unknown) {
                 setStatus('error');
-                const errors = error.response?.data?.errors;
-                const message = Array.isArray(errors) ? errors[0] : (error.response?.data?.message || 'Invalid or expired verification link.');
-                setErrorMessage(message);
+                if (axios.isAxiosError(error)) {
+                    const errors = error.response?.data?.errors;
+                    const message = Array.isArray(errors) ? errors[0] : (error.response?.data?.message || 'Invalid or expired verification link.');
+                    setErrorMessage(message);
+                } else {
+                    setErrorMessage('An unexpected error occurred.');
+                }
             }
         };
 
