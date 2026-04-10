@@ -6,6 +6,7 @@ using MeuSitePessoal.Application.Articles.Commands.CreateArticle;
 using MeuSitePessoal.Application.Common.Behaviors;
 using MeuSitePessoal.Application.Common.Interfaces;
 using MeuSitePessoal.Domain.Interfaces;
+using MeuSitePessoal.Infrastructure;
 using MeuSitePessoal.Infrastructure.Configuration;
 using MeuSitePessoal.Infrastructure.Data;
 using MeuSitePessoal.Infrastructure.Logging;
@@ -30,10 +31,8 @@ builder.Services.AddCustomLogging(builder.Configuration);
 builder.Services.AddCustomTracing();
 builder.Host.UseSerilog();
 
-// Configures the DbContext to use PostgreSQL with the connection string defined in appsettings.json.
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-builder.Services.AddDbContext<BlogDbContext>(options =>
-    options.UseNpgsql(connectionString));
+// Register custom infrastructure services
+builder.Services.AddInfrastructure(builder.Configuration);
 
 // Register Identity services
 builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
@@ -57,12 +56,6 @@ builder.Services.AddScoped<IArticleRepository, ArticleRepository>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IStorageService, LocalStorageService>();
 builder.Services.AddSingleton<IFeatureToggleService, FeatureToggleService>();
-
-// HC: Binds the abstract database interface to its concrete EF Core implementation, allowing the Application layer to remain agnostic.
-builder.Services.AddScoped<IBlogDbContext>(provider => provider.GetRequiredService<BlogDbContext>());
-
-// HC: Registers the specialized search service to handle full-text search capabilities, resolving dependencies for the query handlers.
-builder.Services.AddScoped<IArticleSearchService, ArticleSearchService>();
 
 // Configure JWT Authentication
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");

@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using MeuSitePessoal.Application.Common.Models.Email;
 
 namespace MeuSitePessoal.Application.Auth.Commands.ForgotPassword;
 
@@ -67,9 +68,9 @@ public class ForgotPasswordCommandHandler : IRequestHandler<ForgotPasswordComman
 
         // Render and send the instructions via email using Razor templates.
         var subject = "Reset your password - Meu Site Pessoal";
-        var body = await _templateService.RenderTemplateAsync("ResetPassword", new 
+        var body = await _templateService.RenderTemplateAsync("ResetPassword", new ResetPasswordViewModel
         { 
-            UserName = user.UserName,
+            UserName = user.UserName!,
             ResetLink = resetUrl
         });
 
@@ -79,4 +80,3 @@ public class ForgotPasswordCommandHandler : IRequestHandler<ForgotPasswordComman
         return new ForgotPasswordResult(true, GenericSuccessMessage);
     }
 }
-

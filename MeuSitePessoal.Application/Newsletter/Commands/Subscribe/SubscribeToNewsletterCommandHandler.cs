@@ -6,6 +6,7 @@ using MeuSitePessoal.Domain.Entities;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using MeuSitePessoal.Application.Common.Models.Email;
 
 namespace MeuSitePessoal.Application.Newsletter.Commands.Subscribe;
 
@@ -99,7 +100,7 @@ public class SubscribeToNewsletterCommandHandler : IRequestHandler<SubscribeToNe
         var verificationUrl = $"{baseUrl}/newsletter/confirm?email={email}&token={token}";
 
         var subject = "Confirm your subscription to Meu Site Pessoal Newsletter";
-        var body = await _templateService.RenderTemplateAsync("NewsletterVerification", new 
+        var body = await _templateService.RenderTemplateAsync("NewsletterVerification", new NewsletterVerificationViewModel
         { 
             ConfirmLink = verificationUrl 
         });
@@ -107,5 +108,3 @@ public class SubscribeToNewsletterCommandHandler : IRequestHandler<SubscribeToNe
         await _emailSender.SendEmailAsync(email, subject, body, ct);
     }
 }
-
-

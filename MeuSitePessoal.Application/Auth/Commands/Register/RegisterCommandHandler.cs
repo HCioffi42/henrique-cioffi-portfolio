@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using MeuSitePessoal.Application.Common.Models.Email;
 
 namespace MeuSitePessoal.Application.Auth.Commands.Register;
 
@@ -74,9 +75,9 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, RegisterR
 
         // Render and send the verification email using Razor templates.
         var subject = "Welcome to Meu Site Pessoal! Please confirm your email";
-        var body = await _templateService.RenderTemplateAsync("ConfirmAccount", new 
+        var body = await _templateService.RenderTemplateAsync("ConfirmAccount", new ConfirmAccountViewModel
         { 
-            UserName = user.UserName, 
+            UserName = user.UserName!, 
             ConfirmLink = callbackUrl 
         });
 
@@ -85,5 +86,3 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, RegisterR
         return new RegisterResult(true, Enumerable.Empty<string>());
     }
 }
-
-
