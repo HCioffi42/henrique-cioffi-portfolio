@@ -1,6 +1,7 @@
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using MeuSitePessoal.Api;
+using MeuSitePessoal.Application.Common.Interfaces;
 using MeuSitePessoal.Infrastructure.Configuration;
 using MeuSitePessoal.Infrastructure.Data;
 using Microsoft.AspNetCore.Hosting;
@@ -9,6 +10,7 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Moq;
 using Xunit;
 
 namespace MeuSitePessoal.Tests.Integration;
@@ -48,6 +50,33 @@ public class BaseIntegrationTest : IAsyncLifetime
     // Internal DTO captures the login response during test execution.
     private record AuthResult(string Token, string Username);
     
+    /// <summary>
+    /// Manually marks a user's email as confirmed in the Identity database.
+    /// This allows the test suite to proceed with login operations without a real verification token,
+    /// bypassing the RequireConfirmedEmail policy.
+    /// </summary>
+    /// <param name="username">The name of the user whose email will be confirmed.</param>
+    protected async Task ConfirmUserEmailAsync(string username)
+    {
+        using var scope = _factory.Services.CreateScope();
+        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<IdentityUser>>();
+        var user = await userManager.FindByNameAsync(username);
+
+        if (user == null)
+        {
+            throw new InvalidOperationException($"Integration Test Failure: User '{username}' was not found for manual email confirmation.");
+        }
+
+        user.EmailConfirmed = true;
+        var result = await userManager.UpdateAsync(user);
+
+        if (!result.Succeeded)
+        {
+            var errors = string.Join(", ", result.Errors.Select(e => e.Description));
+            throw new InvalidOperationException($"Integration Test Failure: Could not confirm email for user '{username}'. Errors: {errors}");
+        }
+    }
+    
     public async Task InitializeAsync()
     {
         _factory = new WebApplicationFactory<Program>()
@@ -81,6 +110,16 @@ public class BaseIntegrationTest : IAsyncLifetime
                     {
                         options.UseNpgsql(TestConnectionString);
                     });
+                    
+                    var emailSenderDescriptor = services.SingleOrDefault(
+                        d => d.ServiceType == typeof(IEmailSender));
+
+                    if (emailSenderDescriptor != null)
+                    {
+                        services.Remove(emailSenderDescriptor);
+                    }
+
+                    services.AddSingleton<IEmailSender>(sp => new Mock<IEmailSender>().Object);
                 });
             });
 

@@ -1,7 +1,6 @@
 using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
-using MeuSitePessoal.Domain;
 using MeuSitePessoal.Domain.Entities;
 using Xunit;
 
@@ -18,6 +17,8 @@ public class CommentOwnershipTests : BaseIntegrationTest
             Password = "Password123!"
         };
         await _client.PostAsJsonAsync("/api/auth/register", registerRequest);
+        
+        await ConfirmUserEmailAsync(username);
 
         var loginResponse = await _client.PostAsJsonAsync("/api/auth/login", new
         {

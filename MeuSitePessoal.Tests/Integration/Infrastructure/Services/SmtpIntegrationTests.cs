@@ -1,3 +1,4 @@
+using FluentAssertions;
 using MeuSitePessoal.Infrastructure.Configuration;
 using MeuSitePessoal.Infrastructure.Services;
 using Microsoft.Extensions.Configuration;
@@ -63,10 +64,11 @@ public class SmtpIntegrationTests
     }
 
     /// <summary>
-    /// Verifies that providing incorrect credentials results in a MailKit AuthenticationException.
+    /// Verifies that providing incorrect credentials results in a failure related to authentication.
+    /// Handles cases where the server might disconnect abruptly (SmtpProtocolException).
     /// </summary>
     [Fact]
-    public async Task SendEmailAsync_WithInvalidCredentials_ShouldThrowAuthenticationException()
+    public async Task SendEmailAsync_WithInvalidCredentials_ShouldFailWithAuthenticationError()
     {
         // Arrange: Create a copy of the settings with a guaranteed wrong password.
         var invalidSettings = new EmailSettings
@@ -82,10 +84,21 @@ public class SmtpIntegrationTests
         var service = new MailKitEmailService(Options.Create(invalidSettings));
         var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
 
-        // Act & Assert
-        // The service should throw an AuthenticationException during the AuthenticateAsync step.
-        await Assert.ThrowsAsync<MailKit.Security.AuthenticationException>(() => 
+        // Act
+        var exception = await Record.ExceptionAsync(() => 
             service.SendEmailAsync("test@test.com", "Fail Test", "Body", cts.Token));
+
+        // Assert
+        // Checks if the exception is either an AuthenticationException or a ProtocolException 
+        // that contains the "Invalid credentials" message.
+        exception.Should().NotBeNull();
+    
+        bool isAuthException = exception is MailKit.Security.AuthenticationException;
+        bool isProtocolAuthFailure = exception is MailKit.Net.Smtp.SmtpProtocolException && 
+                                     exception.Message.Contains("Invalid credentials");
+
+        (isAuthException || isProtocolAuthFailure).Should().BeTrue(
+            $"Expected an authentication failure, but got {exception.GetType().Name}: {exception.Message}");
     }
 }
 
