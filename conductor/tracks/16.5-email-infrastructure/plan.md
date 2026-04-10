@@ -61,7 +61,9 @@ Integrated `IEmailSender` with ASP.NET Core Identity to enforce email confirmati
 ---
 
 ## 6. Track Registry & Finalization
+- [x] Create automated integration tests for SMTP delivery.
 - [ ] Create `conductor/tracks/16.5-email-infrastructure/index.md` upon completion.
 - [ ] Update root `conductor/tracks.md` with the new track status.
-- [ ] Generate `walkthrough.md` for user review.
+- [x] Generate `walkthrough.md` for user review.
+
 

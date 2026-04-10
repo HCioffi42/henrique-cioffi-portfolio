@@ -102,9 +102,9 @@
 - [x] **16.2 - Comment Section**: Implementation of a nested comment system (threaded discussions) located below article content.
 - [x] **16.3 - Identity Expansion**: Identity framework adjustments to support dedicated reader profiles and integration with external authentication providers (OIDC/OAuth2).
 - [x] **16.4 - Access Control & RBAC**: Enforcement of role-based authorization using JWT claims to restrict CRUD operations to Admins while limiting Readers to social interactions (comments and replies).
-- [ ] **16.5 - Email Infrastructure & Identity Verification**:
-	- [ ] **16.5.1 - Mail Engine Strategy**: Integration with SMTP/SaaS providers (SendGrid/AWS SES) and implementation of the MailKit provider.
-	- [ ] **16.5.2 - Account Lifecycle Verification**: Email confirmation flows for new registrations and secure password recovery systems.
+- [/] **16.5 - Email Infrastructure & Identity Verification**:
+	- [x] **16.5.1 - Mail Engine Strategy**: Integration with SMTP/SaaS providers (SendGrid/AWS SES) and implementation of the MailKit provider.
+	- [x] **16.5.2 - Account Lifecycle Verification**: Email confirmation flows for new registrations and secure password recovery systems.
 	- [ ] **16.5.3 - Newsletter Double Opt-in**: Automated subscription verification and legal-compliant unsubscribe mechanisms.
 	- [ ] **16.5.4 - Email Templates & Branding**: Development of responsive HTML templates with the blog's visual identity.
 
