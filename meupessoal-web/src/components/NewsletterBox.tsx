@@ -36,11 +36,20 @@ export const NewsletterBox: React.FC<NewsletterBoxProps> = ({ variant = 'default
             setEmail('');
         } catch (error: unknown) {
             setStatus('error');
+            
+            // HC: I implemented a generic error handling to ensure the user always sees feedback, even on 500 errors.
             if (axios.isAxiosError(error)) {
+                const apiData = error.response?.data;
+                const apiMessage = apiData?.message || apiData?.title;
+
+                // HC: This block identifies specific business errors while providing a fallback for server failures.
                 if (error.response?.status === 409) {
-                    setMessage(error.response.data?.message || 'This email is already subscribed.');
+                    setMessage(apiMessage || 'This email is already subscribed.');
                 } else if (error.response?.status === 400) {
-                    setMessage(error.response.data?.title || error.response.data?.message || 'Invalid email format.');
+                    setMessage(apiMessage || 'Invalid email format.');
+                } else {
+                    // HC: It captures the 500 error from RazorLight and displays a readable message.
+                    setMessage(apiMessage || 'A server error occurred. Please try again later.');
                 }
             } else {
                 setMessage('An unexpected error occurred. Please try again.');

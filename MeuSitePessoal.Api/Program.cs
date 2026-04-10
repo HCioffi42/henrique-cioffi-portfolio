@@ -166,9 +166,9 @@ builder.Services.AddProblemDetails();
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAll", policy =>
+    options.AddPolicy("DefaultPolicy", policy =>
     {
-        policy.AllowAnyOrigin()
+        policy.WithOrigins("http://localhost:5173")
             .AllowAnyHeader()
             .AllowAnyMethod();
     });
@@ -179,7 +179,7 @@ var app = builder.Build();
 // Enables the global exception handling middleware at the beginning of the pipeline.
 app.UseExceptionHandler();
 
-app.UseCors("AllowAll");
+app.UseCors("DefaultPolicy");
 app.UseStaticFiles();
 
 // Enable Serilog request logging

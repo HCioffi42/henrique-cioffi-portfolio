@@ -55,6 +55,17 @@ const authService = {
     const apiBase = import.meta.env.VITE_API_URL ?? '';
     window.location.href = `${apiBase}/api/auth/external-login?provider=${provider}`;
   },
+
+  /**
+   * Confirms a user's email address using the provided user ID and token.
+   *
+   * @param {string} userId The user's ID.
+   * @param {string} token The verification token.
+   * @returns {Promise<void>} Resolves on success.
+   */
+  confirmEmail: async (userId: string, token: string): Promise<void> => {
+    await api.get('/auth/confirm-email', { params: { userId, token } });
+  },
 };
 
 export default authService;
