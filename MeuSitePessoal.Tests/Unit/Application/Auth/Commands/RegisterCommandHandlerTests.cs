@@ -1,69 +1,105 @@
-﻿using FluentAssertions;
+using System.Text;
+using FluentAssertions;
 using MeuSitePessoal.Application.Auth.Commands.Register;
+using MeuSitePessoal.Application.Common.Interfaces;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using NSubstitute;
+using Moq;
 using Xunit;
 
 namespace MeuSitePessoal.Tests.Unit.Application.Auth.Commands;
 
 /// <summary>
-/// Tests the <see cref="RegisterCommandHandler"/> class.
-/// Ensures user creation and role assignment are performed correctly.
+/// Tests the <see cref="RegisterCommandHandler"/> class using Moq.
+/// Ensures user creation, role assignment, and email delivery are performed correctly.
 /// </summary>
 public class RegisterCommandHandlerTests
 {
-    private readonly UserManager<IdentityUser> _userManager;
+    private readonly Mock<UserManager<IdentityUser>> _userManagerMock;
+    private readonly Mock<IEmailSender> _emailSenderMock;
+    private readonly Mock<IEmailTemplateService> _templateServiceMock;
+    private readonly Mock<IConfiguration> _configurationMock;
+    private readonly Mock<ILogger<RegisterCommandHandler>> _loggerMock;
     private readonly RegisterCommandHandler _sut;
 
     public RegisterCommandHandlerTests()
     {
-        var store = Substitute.For<IUserStore<IdentityUser>>();
-        _userManager = Substitute.For<UserManager<IdentityUser>>(store, null, null, null, null, null, null, null, null);
-        
-        _sut = new RegisterCommandHandler(_userManager, Substitute.For<ILogger<RegisterCommandHandler>>());
+        var storeMock = new Mock<IUserStore<IdentityUser>>();
+        _userManagerMock = new Mock<UserManager<IdentityUser>>(storeMock.Object, null!, null!, null!, null!, null!, null!, null!, null!);
+        _emailSenderMock = new Mock<IEmailSender>();
+        _templateServiceMock = new Mock<IEmailTemplateService>();
+        _configurationMock = new Mock<IConfiguration>();
+        _loggerMock = new Mock<ILogger<RegisterCommandHandler>>();
+
+        _sut = new RegisterCommandHandler(
+            _userManagerMock.Object,
+            _emailSenderMock.Object,
+            _templateServiceMock.Object,
+            _configurationMock.Object,
+            _loggerMock.Object);
     }
 
+
     /// <summary>
-    /// The test verifies that a new user is created and assigned the 'Reader' role upon success.
+    /// Verifies that a new user is created, assigned the 'Reader' role, and receives a confirmation email.
     /// </summary>
     [Fact]
-    public async Task Handle_WhenRegistrationSucceeds_ReturnsSuccessfulResult()
+    public async Task Handle_SuccessfulRegistration_SendsConfirmationEmail()
     {
-        // Arrange: Mokes successful user creation and role addition.
+        // Arrange
         var command = new RegisterCommand("NewUser", "new@test.com", "SecurePass123!");
-        _userManager.CreateAsync(Arg.Any<IdentityUser>(), command.Password)
-            .Returns(IdentityResult.Success);
         
-        _userManager.AddToRoleAsync(Arg.Any<IdentityUser>(), "Reader")
-            .Returns(IdentityResult.Success);
+        _userManagerMock.Setup(x => x.CreateAsync(It.IsAny<IdentityUser>(), command.Password))
+            .ReturnsAsync(IdentityResult.Success);
+        
+        _userManagerMock.Setup(x => x.AddToRoleAsync(It.IsAny<IdentityUser>(), "Reader"))
+            .ReturnsAsync(IdentityResult.Success);
 
-        // Act: Executes the registration process.
+        _userManagerMock.Setup(x => x.GenerateEmailConfirmationTokenAsync(It.IsAny<IdentityUser>()))
+            .ReturnsAsync("valid-token");
+        
+        _templateServiceMock.Setup(x => x.RenderTemplateAsync(It.IsAny<string>(), It.IsAny<object>()))
+            .ReturnsAsync("<html><body>confirm-email</body></html>");
+
+        _configurationMock.Setup(x => x["ClientSettings:BaseUrl"]).Returns("https://test.com");
+
+        // Act
         var result = await _sut.Handle(command, CancellationToken.None);
 
-        // Assert: Validates the success flag.
+        // Assert
         result.Succeeded.Should().BeTrue();
-        result.Errors.Should().BeEmpty();
+        
+        // Verify email was sent
+        _emailSenderMock.Verify(x => x.SendEmailAsync(
+            command.Email,
+            It.Is<string>(s => s.Contains("confirm")),
+            It.Is<string>(b => b.Contains("confirm-email") || b.Contains("verify-email")),
+            It.IsAny<CancellationToken>()), Times.Once);
     }
-    
+
     /// <summary>
-    /// The test verifies that the handler returns a failure result with specific error messages 
-    /// when the registration fails due to a duplicate username.
+    /// Verifies that the handler returns failure when Identity user creation fails.
     /// </summary>
     [Fact]
-    public async Task Handle_WhenUserNameAlreadyExists_ReturnsFailureWithErrors()
+    public async Task Handle_UserCreationFails_ReturnsFailureResult()
     {
-        // Arrange: Mocking a failure from Identity (e.g., Duplicate UserName).
-        var command = new RegisterCommand("ExistingUser", "new@test.com", "Pass123!");
-        var identityError = IdentityResult.Failed(new IdentityError { Description = "Username 'ExistingUser' is already taken." });
-    
-        _userManager.CreateAsync(Arg.Any<IdentityUser>(), command.Password).Returns(identityError);
+        // Arrange
+        var command = new RegisterCommand("ExistingUser", "test@test.com", "Pass123!");
+        var identityError = IdentityResult.Failed(new IdentityError { Description = "Error message" });
+
+        _userManagerMock.Setup(x => x.CreateAsync(It.IsAny<IdentityUser>(), command.Password))
+            .ReturnsAsync(identityError);
 
         // Act
         var result = await _sut.Handle(command, CancellationToken.None);
 
         // Assert
         result.Succeeded.Should().BeFalse();
-        result.Errors.Should().Contain("Username 'ExistingUser' is already taken.");
+        result.Errors.Should().Contain("Error message");
+        
+        // Verify email was NOT sent
+        _emailSenderMock.Verify(x => x.SendEmailAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 }

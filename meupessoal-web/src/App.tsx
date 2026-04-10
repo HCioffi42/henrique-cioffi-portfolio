@@ -8,6 +8,8 @@ import { EditArticle } from './pages/EditArticle';
 import Dashboard from './pages/Dashboard';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import VerifyEmail from './pages/VerifyEmail';
+import ConfirmNewsletter from './pages/ConfirmNewsletter';
 import OAuthCallback from './pages/OAuthCallback';
 import { Layout } from './components/Layout';
 import { AuthProvider } from './context/AuthProvider';
@@ -32,6 +34,8 @@ export default function App() {
                                 <Route path="/article/:id" element={<ArticleDetails />} />
                                 <Route path="/login" element={<Login />} />
                                 <Route path="/register" element={<Register />} />
+                                <Route path="/verify-email" element={<VerifyEmail />} />
+                                <Route path="/newsletter/confirm" element={<ConfirmNewsletter />} />
 
                                 {/* 2. OAuth2 Callback — receives token from backend redirect */}
                                 <Route path="/oauth/callback" element={<OAuthCallback />} />

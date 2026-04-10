@@ -1,8 +1,12 @@
 using System.Security.Claims;
 using MediatR;
+using MeuSitePessoal.Application.Auth.Commands.ConfirmEmail;
+using MeuSitePessoal.Application.Auth.Commands.ForgotPassword;
 using MeuSitePessoal.Application.Auth.Commands.Login;
 using MeuSitePessoal.Application.Auth.Commands.Register;
+using MeuSitePessoal.Application.Auth.Commands.ResetPassword;
 using MeuSitePessoal.Application.Auth.Commands.VerifyTwoFactor;
+
 using MeuSitePessoal.Application.Common.Interfaces;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
@@ -73,11 +77,58 @@ public class AuthController : ControllerBase
         if (!result.Succeeded)
             return BadRequest(new { errors = result.Errors });
 
-        return Ok(new { message = "Registration successful. You can now sign in." });
+        return Ok(new { message = "Registration successful. Please check your email to confirm your account." });
+    }
+
+    /// <summary>
+    /// Confirms a user's email address using the provided user ID and verification token.
+    /// </summary>
+    /// <param name="userId">The ID of the user confirming their email.</param>
+    /// <param name="token">The verification token.</param>
+    /// <returns>200 OK on success, or 400 Bad Request on failure.</returns>
+    [HttpGet("confirm-email")]
+    public async Task<IActionResult> ConfirmEmail([FromQuery] string userId, [FromQuery] string token)
+    {
+        var result = await _mediator.Send(new ConfirmEmailCommand(userId, token));
+
+        if (!result.Succeeded)
+            return BadRequest(new { errors = result.Errors });
+
+        return Ok(new { message = "Email confirmed successfully. You can now sign in." });
+    }
+
+    /// <summary>
+    /// Initiates the password recovery process by sending a reset link to the user's email.
+    /// Returns a generic success message regardless of existence to prevent account enumeration.
+    /// </summary>
+    /// <param name="request">The request containing the user's email.</param>
+    /// <returns>A generic success message.</returns>
+    [HttpPost("forgot-password")]
+    public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequest request)
+    {
+        var result = await _mediator.Send(new ForgotPasswordCommand(request.Email));
+        return Ok(new { message = result.Message });
+    }
+
+    /// <summary>
+    /// Resets a user's password using the provided email, token, and new password.
+    /// </summary>
+    /// <param name="request">The reset request details.</param>
+    /// <returns>200 OK on success, or 400 Bad Request if the token is invalid or expired.</returns>
+    [HttpPost("reset-password")]
+    public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest request)
+    {
+        var result = await _mediator.Send(new ResetPasswordCommand(request.Email, request.Token, request.Password));
+
+        if (!result.Succeeded)
+            return BadRequest(new { errors = result.Errors });
+
+        return Ok(new { message = "Password reset successfully. You can now sign in with your new credentials." });
     }
 
     /// <summary>
     /// Verifies a TOTP code for a user who passed the initial login step with 2FA enabled.
+
     /// Returns a JWT token upon successful verification.
     /// </summary>
     /// <param name="request">The 2FA verification request.</param>
@@ -197,4 +248,11 @@ public class AuthController : ControllerBase
 
     /// <summary>The request body for the 2FA verification endpoint.</summary>
     public record VerifyTwoFactorRequest(string Username, string Code);
+
+    /// <summary>The request body for the forgot password endpoint.</summary>
+    public record ForgotPasswordRequest(string Email);
+
+    /// <summary>The request body for the reset password endpoint.</summary>
+    public record ResetPasswordRequest(string Email, string Token, string Password);
 }
+

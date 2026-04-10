@@ -1,0 +1,22 @@
+@using MeuSitePessoal.Application.Common.Models.Email
+@model ConfirmAccountViewModel
+@{
+    Layout = "_Layout";
+    ViewBag.Title = "Welcome to Meu Site Pessoal";
+}
+
+<h2>Welcome, @Model.UserName!</h2>
+<p>Thank you for registering on my platform. Your account has been successfully created.</p>
+<p>To start exploring all the features, please confirm your email address by clicking the button below:</p>
+
+<div style="text-align: center;">
+    <a href="@Model.ConfirmLink" class="button">Confirm My Email</a>
+</div>
+
+<p>If the button doesn't work, you can also copy and paste the following link into your browser:</p>
+<p style="word-break: break-all; font-size: 14px; color: #5e6ad2;">
+    @Model.ConfirmLink
+</p>
+
+<div class="divider"></div>
+<p>If you didn't create an account, you can safely ignore this email.</p>

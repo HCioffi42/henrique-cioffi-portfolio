@@ -1,7 +1,7 @@
 # Project Roadmap: MeuSitePessoal
 
 **Current Milestone**: Phase 4: Scalability & Engagement
-**Global Progress**: [█████████████████░░░] 88%
+**Global Progress**: [██████████████████░░] 93%
 
 ---
 
@@ -97,18 +97,19 @@
 - [x] **15.5 - Accessibility Toggle**: Replace the simple icon-only button with a proper Switch/Toggle component including descriptive labels for better accessibility.
 - [x] **15.6 - Mobile Navigation**: Implement a "Hamburger" (Sandwich) menu for smaller viewports to declutter the header.
 
-### [/] Track 16: Engagement & Community
+### [✓] Track 16: Engagement & Community
 - [x] **16.1 - Newsletter System**: Email subscription management featuring idempotency validation to prevent duplicate entries.
 - [x] **16.2 - Comment Section**: Implementation of a nested comment system (threaded discussions) located below article content.
 - [x] **16.3 - Identity Expansion**: Identity framework adjustments to support dedicated reader profiles and integration with external authentication providers (OIDC/OAuth2).
 - [x] **16.4 - Access Control & RBAC**: Enforcement of role-based authorization using JWT claims to restrict CRUD operations to Admins while limiting Readers to social interactions (comments and replies).
-- [ ] **16.5 - Email Infrastructure & Identity Verification**:
-	- [ ] **16.5.1 - Mail Engine Strategy**: Integration with SMTP/SaaS providers (SendGrid/AWS SES) and implementation of the MailKit provider.
-	- [ ] **16.5.2 - Account Lifecycle Verification**: Email confirmation flows for new registrations and secure password recovery systems.
-	- [ ] **16.5.3 - Newsletter Double Opt-in**: Automated subscription verification and legal-compliant unsubscribe mechanisms.
-	- [ ] **16.5.4 - Email Templates & Branding**: Development of responsive HTML templates with the blog's visual identity.
+- [x] **16.5 - Email Infrastructure & Identity Verification**:
+	- [x] **16.5.1 - Mail Engine Strategy**: Integration with SMTP/SaaS providers (SendGrid/AWS SES) and implementation of the MailKit provider.
+	- [x] **16.5.2 - Account Lifecycle Verification**: Email confirmation flows for new registrations and secure password recovery systems.
+	- [x] **16.5.3 - Newsletter Double Opt-in**: Automated subscription verification and legal-compliant unsubscribe mechanisms.
+	- [x] **16.5.4 - Email Templates & Branding**: Development of responsive HTML templates with the blog's visual identity.
+	- [x] **16.5.5 - Confirmation UI**: Frontend implementation of verification pages for account and newsletter flows using Next.js and Tailwind CSS.
 
-### [ ] Track 17: Automated Quality Suite
+### [ ] Track 17: Internationalization
 - [ ] **17.1 - i18next Setup**: Configure the translation framework in the React frontend.
 - [ ] **17.2 - Language Toggle**: Add the PT/EN selector to the header (using a toggle or select component).
 - [ ] **17.3 - Multi-language Schema**: Adjust the PostgreSQL schema to handle translated content (titles, summaries, and tags).

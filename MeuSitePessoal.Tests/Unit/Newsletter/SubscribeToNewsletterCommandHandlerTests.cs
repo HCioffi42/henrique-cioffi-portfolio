@@ -1,14 +1,22 @@
+using MeuSitePessoal.Application.Common.Interfaces;
 using MeuSitePessoal.Application.Common.Models;
 using MeuSitePessoal.Application.Newsletter.Commands.Subscribe;
 using MeuSitePessoal.Domain.Entities;
 using MeuSitePessoal.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Moq;
 using Xunit;
 
 namespace MeuSitePessoal.Tests.Unit.Newsletter;
 
 public class SubscribeToNewsletterCommandHandlerTests
 {
+    private readonly Mock<IEmailSender> _emailSenderMock = new();
+    private readonly Mock<IEmailTemplateService> _templateServiceMock = new();
+    private readonly Mock<IConfiguration> _configMock = new();
+
+
     private BlogDbContext GetMemoryContext()
     {
         var options = new DbContextOptionsBuilder<BlogDbContext>()
@@ -19,12 +27,12 @@ public class SubscribeToNewsletterCommandHandlerTests
     }
 
     [Fact]
-    public async Task Handle_Should_ReturnSuccess_When_NewEmailProvided()
+    public async Task Handle_Should_CreateUnverifiedSubscriber_When_EmailIsNew()
     {
         // Arrange
         var context = GetMemoryContext();
-        var handler = new SubscribeToNewsletterCommandHandler(context);
-        var command = new SubscribeToNewsletterCommand("newuser@test.com");
+        var handler = new SubscribeToNewsletterCommandHandler(context, _emailSenderMock.Object, _templateServiceMock.Object, _configMock.Object);
+        var command = new SubscribeToNewsletterCommand("new@test.com");
 
         // Act
         var result = await handler.Handle(command, CancellationToken.None);
@@ -32,56 +40,63 @@ public class SubscribeToNewsletterCommandHandlerTests
         // Assert
         Assert.True(result.IsSuccess);
         
-        var savedSubscriber = await context.Subscribers.FirstOrDefaultAsync();
-        Assert.NotNull(savedSubscriber);
-        Assert.Equal("newuser@test.com", savedSubscriber.Email);
-        Assert.True(savedSubscriber.IsActive);
+        var subscriber = await context.Subscribers.FirstAsync();
+        Assert.False(subscriber.IsVerified);
+        Assert.False(subscriber.IsActive);
+        Assert.NotNull(subscriber.VerificationToken);
+        
+        _emailSenderMock.Verify(x => x.SendEmailAsync(
+            "new@test.com", 
+            It.IsAny<string>(), 
+            It.IsAny<string>(), 
+            It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
-    public async Task Handle_Should_ReturnConflict_When_EmailAlreadyActive()
+    public async Task Handle_Should_ReturnSuccess_When_EmailAlreadyVerifiedAndActive()
     {
         // Arrange
         var context = GetMemoryContext();
-        var existingSubscriber = new Subscriber
+        var existing = new Subscriber
         {
             Id = Guid.NewGuid(),
-            Email = "existing@test.com",
+            Email = "verified@test.com",
+            IsVerified = true,
             IsActive = true,
             SubscribedAt = DateTime.UtcNow
         };
-        context.Subscribers.Add(existingSubscriber);
+        context.Subscribers.Add(existing);
         await context.SaveChangesAsync();
 
-        var handler = new SubscribeToNewsletterCommandHandler(context);
-        var command = new SubscribeToNewsletterCommand("existing@test.com");
+        var handler = new SubscribeToNewsletterCommandHandler(context, _emailSenderMock.Object, _templateServiceMock.Object, _configMock.Object);
+        var command = new SubscribeToNewsletterCommand("verified@test.com");
 
         // Act
         var result = await handler.Handle(command, CancellationToken.None);
 
         // Assert
-        Assert.False(result.IsSuccess);
-        Assert.Equal(ErrorType.Conflict, result.Type);
-        Assert.Equal("This email is already subscribed.", result.Error);
+        Assert.True(result.IsSuccess);
+        _emailSenderMock.Verify(x => x.SendEmailAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
     [Fact]
-    public async Task Handle_Should_Reactivate_When_EmailExistsButInactive()
+    public async Task Handle_Should_ResendToken_When_EmailExistsButNotVerified()
     {
         // Arrange
         var context = GetMemoryContext();
-        var existingSubscriber = new Subscriber
+        var existing = new Subscriber
         {
             Id = Guid.NewGuid(),
-            Email = "inactive@test.com",
+            Email = "unverified@test.com",
+            IsVerified = false,
             IsActive = false,
-            SubscribedAt = DateTime.UtcNow.AddDays(-10)
+            VerificationToken = "old-token"
         };
-        context.Subscribers.Add(existingSubscriber);
+        context.Subscribers.Add(existing);
         await context.SaveChangesAsync();
 
-        var handler = new SubscribeToNewsletterCommandHandler(context);
-        var command = new SubscribeToNewsletterCommand("inactive@test.com");
+        var handler = new SubscribeToNewsletterCommandHandler(context, _emailSenderMock.Object, _templateServiceMock.Object, _configMock.Object);
+        var command = new SubscribeToNewsletterCommand("unverified@test.com");
 
         // Act
         var result = await handler.Handle(command, CancellationToken.None);
@@ -89,10 +104,14 @@ public class SubscribeToNewsletterCommandHandlerTests
         // Assert
         Assert.True(result.IsSuccess);
         
-        var updatedSubscriber = await context.Subscribers.FirstAsync(x => x.Email == "inactive@test.com");
-        Assert.True(updatedSubscriber.IsActive);
+        var updated = await context.Subscribers.FirstAsync();
+        Assert.NotEqual("old-token", updated.VerificationToken);
         
-        // Ensure only one subscriber exists in DB
-        Assert.Equal(1, await context.Subscribers.CountAsync());
+        _emailSenderMock.Verify(x => x.SendEmailAsync(
+            "unverified@test.com", 
+            It.IsAny<string>(), 
+            It.IsAny<string>(), 
+            It.IsAny<CancellationToken>()), Times.Once);
     }
 }
+

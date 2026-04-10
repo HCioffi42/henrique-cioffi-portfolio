@@ -6,6 +6,7 @@ using MeuSitePessoal.Application.Articles.Commands.CreateArticle;
 using MeuSitePessoal.Application.Common.Behaviors;
 using MeuSitePessoal.Application.Common.Interfaces;
 using MeuSitePessoal.Domain.Interfaces;
+using MeuSitePessoal.Infrastructure;
 using MeuSitePessoal.Infrastructure.Configuration;
 using MeuSitePessoal.Infrastructure.Data;
 using MeuSitePessoal.Infrastructure.Logging;
@@ -30,10 +31,8 @@ builder.Services.AddCustomLogging(builder.Configuration);
 builder.Services.AddCustomTracing();
 builder.Host.UseSerilog();
 
-// Configures the DbContext to use PostgreSQL with the connection string defined in appsettings.json.
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-builder.Services.AddDbContext<BlogDbContext>(options =>
-    options.UseNpgsql(connectionString));
+// Register custom infrastructure services
+builder.Services.AddInfrastructure(builder.Configuration);
 
 // Register Identity services
 builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
@@ -44,7 +43,9 @@ builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
     options.Password.RequireUppercase = true;
     options.Password.RequireNonAlphanumeric = true;
     options.Password.RequiredLength = 8;
+    options.SignIn.RequireConfirmedEmail = true;
 })
+
 .AddEntityFrameworkStores<BlogDbContext>()
 .AddDefaultTokenProviders();
 
@@ -55,12 +56,6 @@ builder.Services.AddScoped<IArticleRepository, ArticleRepository>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IStorageService, LocalStorageService>();
 builder.Services.AddSingleton<IFeatureToggleService, FeatureToggleService>();
-
-// HC: Binds the abstract database interface to its concrete EF Core implementation, allowing the Application layer to remain agnostic.
-builder.Services.AddScoped<IBlogDbContext>(provider => provider.GetRequiredService<BlogDbContext>());
-
-// HC: Registers the specialized search service to handle full-text search capabilities, resolving dependencies for the query handlers.
-builder.Services.AddScoped<IArticleSearchService, ArticleSearchService>();
 
 // Configure JWT Authentication
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
@@ -171,9 +166,9 @@ builder.Services.AddProblemDetails();
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAll", policy =>
+    options.AddPolicy("DefaultPolicy", policy =>
     {
-        policy.AllowAnyOrigin()
+        policy.WithOrigins("http://localhost:5173")
             .AllowAnyHeader()
             .AllowAnyMethod();
     });
@@ -184,7 +179,7 @@ var app = builder.Build();
 // Enables the global exception handling middleware at the beginning of the pipeline.
 app.UseExceptionHandler();
 
-app.UseCors("AllowAll");
+app.UseCors("DefaultPolicy");
 app.UseStaticFiles();
 
 // Enable Serilog request logging

@@ -1,7 +1,6 @@
 using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
-using MeuSitePessoal.Domain;
 using MeuSitePessoal.Domain.Entities;
 using Xunit;
 
@@ -19,6 +18,7 @@ public class ArticleAuthorizationTests : BaseIntegrationTest
             Password = "Password123!"
         };
         await _client.PostAsJsonAsync("/api/auth/register", registerRequest);
+        await ConfirmUserEmailAsync(registerRequest.UserName);
 
         // 2. Login as reader
         var loginResponse = await _client.PostAsJsonAsync("/api/auth/login", new

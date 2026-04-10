@@ -70,6 +70,8 @@ public class AuthIntegrationTests : BaseIntegrationTest
         // 2. Act: Executes the registration.
         var regResponse = await _client.PostAsJsonAsync("/api/auth/register", regRequest);
         regResponse.EnsureSuccessStatusCode();
+        
+        await ConfirmUserEmailAsync(uniqueName);
 
         // 3. Act: Executes the login using the email.
         var loginRequest = new AuthController.LoginRequest($"{uniqueName}@test.com", "Password123!");
