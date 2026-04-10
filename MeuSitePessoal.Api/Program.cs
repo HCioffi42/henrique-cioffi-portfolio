@@ -44,7 +44,9 @@ builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
     options.Password.RequireUppercase = true;
     options.Password.RequireNonAlphanumeric = true;
     options.Password.RequiredLength = 8;
+    options.SignIn.RequireConfirmedEmail = true;
 })
+
 .AddEntityFrameworkStores<BlogDbContext>()
 .AddDefaultTokenProviders();
 

@@ -1,6 +1,8 @@
-﻿using MeuSitePessoal.Application.Common.Interfaces;
+using MeuSitePessoal.Application.Common.Interfaces;
 using MeuSitePessoal.Infrastructure.Data;
+using MeuSitePessoal.Infrastructure.Configuration;
 using MeuSitePessoal.Infrastructure.Services;
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -19,6 +21,11 @@ public static class DependencyInjection
         services.AddScoped<IBlogDbContext>(provider => provider.GetRequiredService<BlogDbContext>());
 
         services.AddScoped<IArticleSearchService, ArticleSearchService>();
+
+        // Registers email configuration and service implementation.
+        services.Configure<EmailSettings>(configuration.GetSection(EmailSettings.SectionName));
+        services.AddTransient<IEmailSender, MailKitEmailService>();
+
         return services;
     }
-}
+}

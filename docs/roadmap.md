@@ -108,7 +108,7 @@
 	- [ ] **16.5.3 - Newsletter Double Opt-in**: Automated subscription verification and legal-compliant unsubscribe mechanisms.
 	- [ ] **16.5.4 - Email Templates & Branding**: Development of responsive HTML templates with the blog's visual identity.
 
-### [ ] Track 17: Automated Quality Suite
+### [ ] Track 17: Internationalization
 - [ ] **17.1 - i18next Setup**: Configure the translation framework in the React frontend.
 - [ ] **17.2 - Language Toggle**: Add the PT/EN selector to the header (using a toggle or select component).
 - [ ] **17.3 - Multi-language Schema**: Adjust the PostgreSQL schema to handle translated content (titles, summaries, and tags).
