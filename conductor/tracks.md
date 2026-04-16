@@ -3,11 +3,14 @@
 This file tracks all the development tracks for this project.
 
 ## In Progress
-- [ ] **Track 16.4: Access Control & RBAC**
-  *Link: [./tracks/16.4-access-control-rbac/index.md](./tracks/16.4-access-control-rbac/index.md)*
-
+- [ ] **Track 16.6: Post-Registration & Newsletter Automation**
+  *Link: [./tracks/16.6-newsletter-automation/index.md](./tracks/16.6-newsletter-automation/index.md)*
 
 ## Completed Tracks
+- [x] **Track 16.5: Email Infrastructure & Account Lifecycle**
+  *Link: [./tracks/16.5-email-infrastructure/index.md](./tracks/16.5-email-infrastructure/index.md)*
+- [x] **Track 16.4: Access Control & RBAC**
+  *Link: [./tracks/16.4-access-control-rbac/index.md](./tracks/16.4-access-control-rbac/index.md)*
 - [x] **Track 16.3: Identity Expansion & Modular Auth**
   *Link: [./tracks/16.3-identity-expansion/index.md](./tracks/16.3-identity-expansion/index.md)*
 - [x] **Track 16.2: Nested Comment System**

@@ -2,6 +2,8 @@
 using System.Net.Http.Json;
 using FluentAssertions;
 using MeuSitePessoal.Api.Controllers;
+using MeuSitePessoal.Infrastructure.Data;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
@@ -82,6 +84,16 @@ public class AuthIntegrationTests : BaseIntegrationTest
         var result = await loginResponse.Content.ReadFromJsonAsync<LoginResponseDto>();
         
         result?.Username.Should().Be(uniqueName);;
+
+        // 5. Assert: Verify newsletter subscriber was created
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<BlogDbContext>();
+            var subscriber = await db.Subscribers.FirstOrDefaultAsync(s => s.Email == $"{uniqueName}@test.com");
+            subscriber.Should().NotBeNull();
+            subscriber!.IsActive.Should().BeTrue();
+            subscriber!.IsVerified.Should().BeTrue(); // Confirmed via ConfirmUserEmailAsync
+        }
     }
 
     // Local helper record for type-safe assertion

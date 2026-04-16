@@ -10,12 +10,14 @@ public class CreateArticleHandler : IRequestHandler<CreateArticleCommand, Guid>
 {
     private readonly IArticleRepository _repository;
     private readonly IMemoryCache _cache;
+    private readonly IMediator _mediator;
 
-    // Initializes the handler with the necessary repository and cache through dependency injection.
-    public CreateArticleHandler(IArticleRepository repository, IMemoryCache cache)
+    // Initializes the handler with the necessary repository, cache, and mediator through dependency injection.
+    public CreateArticleHandler(IArticleRepository repository, IMemoryCache cache, IMediator mediator)
     {
         _repository = repository;
         _cache = cache;
+        _mediator = mediator;
     }
 
     // Processes the article creation request by mapping command data to a new domain entity and invalidates the cache.
@@ -32,6 +34,9 @@ public class CreateArticleHandler : IRequestHandler<CreateArticleCommand, Guid>
         
         // Persists the article entity into the PostgreSQL database via the infrastructure layer.
         await _repository.AddAsync(artigo);
+
+        // Notify subscribers through domain event
+        await _mediator.Publish(new Domain.Events.ArticlePublishedEvent(artigo), cancellationToken);
 
         // Invalidate the cache by removing a common key or using a strategy to force refresh.
         // For simplicity in this track, we use a basic approach that would work with prefix-based invalidation if we had it.

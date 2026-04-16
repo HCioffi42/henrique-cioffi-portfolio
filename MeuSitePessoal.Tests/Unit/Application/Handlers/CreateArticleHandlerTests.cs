@@ -1,5 +1,6 @@
 using MeuSitePessoal.Application.Articles.Commands.CreateArticle;
 using Moq;
+using MediatR;
 using MeuSitePessoal.Domain;
 using MeuSitePessoal.Domain.Interfaces;
 using MeuSitePessoal.Application.Articles.Commands;
@@ -13,13 +14,15 @@ public class CreateArticleHandlerTests
 {
     private readonly Mock<IArticleRepository> _repositoryMock;
     private readonly Mock<IMemoryCache> _cacheMock;
+    private readonly Mock<IMediator> _mediatorMock;
     private readonly CreateArticleHandler _handler;
 
     public CreateArticleHandlerTests()
     {
         _repositoryMock = new Mock<IArticleRepository>();
         _cacheMock = new Mock<IMemoryCache>();
-        _handler = new CreateArticleHandler(_repositoryMock.Object, _cacheMock.Object);
+        _mediatorMock = new Mock<IMediator>();
+        _handler = new CreateArticleHandler(_repositoryMock.Object, _cacheMock.Object, _mediatorMock.Object);
     }
 
     [Fact]
@@ -39,6 +42,7 @@ public class CreateArticleHandlerTests
 
         // Assert
         Assert.NotEqual(Guid.Empty, result);
+        _mediatorMock.Verify(m => m.Publish(It.IsAny<MeuSitePessoal.Domain.Events.ArticlePublishedEvent>(), It.IsAny<CancellationToken>()), Times.Once);
         _repositoryMock.Verify(r => r.AddAsync(It.Is<Article>(a => 
             a.Title == command.Title && 
             a.Content == command.Content &&

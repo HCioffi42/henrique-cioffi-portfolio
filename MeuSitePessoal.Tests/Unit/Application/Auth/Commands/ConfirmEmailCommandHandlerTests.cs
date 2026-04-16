@@ -1,6 +1,8 @@
 using System.Text;
 using FluentAssertions;
 using MeuSitePessoal.Application.Auth.Commands.ConfirmEmail;
+using MeuSitePessoal.Domain.Entities;
+using MeuSitePessoal.Domain.Interfaces;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
@@ -16,6 +18,7 @@ public class ConfirmEmailCommandHandlerTests
 {
     private readonly Mock<UserManager<IdentityUser>> _userManagerMock;
     private readonly Mock<ILogger<ConfirmEmailCommandHandler>> _loggerMock;
+    private readonly Mock<ISubscriberRepository> _subscriberRepositoryMock;
     private readonly ConfirmEmailCommandHandler _sut;
 
     public ConfirmEmailCommandHandlerTests()
@@ -23,8 +26,9 @@ public class ConfirmEmailCommandHandlerTests
         var storeMock = new Mock<IUserStore<IdentityUser>>();
         _userManagerMock = new Mock<UserManager<IdentityUser>>(storeMock.Object, null!, null!, null!, null!, null!, null!, null!, null!);
         _loggerMock = new Mock<ILogger<ConfirmEmailCommandHandler>>();
+        _subscriberRepositoryMock = new Mock<ISubscriberRepository>();
 
-        _sut = new ConfirmEmailCommandHandler(_userManagerMock.Object, _loggerMock.Object);
+        _sut = new ConfirmEmailCommandHandler(_userManagerMock.Object, _loggerMock.Object, _subscriberRepositoryMock.Object);
     }
 
     /// <summary>
@@ -35,19 +39,24 @@ public class ConfirmEmailCommandHandlerTests
     {
         // Arrange
         var userId = "user-id";
-        var rawToken = "raw-token";
+        var email = "test@test.com";
+        var subscriber = new Subscriber(email);
+        var rawToken = subscriber.VerificationToken!;
         var encodedToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(rawToken));
         var command = new ConfirmEmailCommand(userId, encodedToken);
-        var user = new IdentityUser { Id = userId, Email = "test@test.com" };
+        var user = new IdentityUser { Id = userId, Email = email };
 
         _userManagerMock.Setup(x => x.FindByIdAsync(userId)).ReturnsAsync(user);
         _userManagerMock.Setup(x => x.ConfirmEmailAsync(user, rawToken)).ReturnsAsync(IdentityResult.Success);
+        _subscriberRepositoryMock.Setup(x => x.GetByEmailAsync(email)).ReturnsAsync(subscriber);
 
         // Act
         var result = await _sut.Handle(command, CancellationToken.None);
 
         // Assert
         result.Succeeded.Should().BeTrue();
+        subscriber.IsVerified.Should().BeTrue();
+        _subscriberRepositoryMock.Verify(x => x.UpdateAsync(subscriber), Times.Once);
     }
 
     /// <summary>

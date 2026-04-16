@@ -57,14 +57,10 @@ public class SubscribeToNewsletterCommandHandlerTests
     {
         // Arrange
         var context = GetMemoryContext();
-        var existing = new Subscriber
-        {
-            Id = Guid.NewGuid(),
-            Email = "verified@test.com",
-            IsVerified = true,
-            IsActive = true,
-            SubscribedAt = DateTime.UtcNow
-        };
+        var existing = new Subscriber("verified@test.com");
+        existing.IsVerified = true;
+        existing.IsActive = true;
+        
         context.Subscribers.Add(existing);
         await context.SaveChangesAsync();
 
@@ -76,7 +72,12 @@ public class SubscribeToNewsletterCommandHandlerTests
 
         // Assert
         Assert.True(result.IsSuccess);
-        _emailSenderMock.Verify(x => x.SendEmailAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
+        _emailSenderMock.Verify(x => x.SendEmailAsync(
+            It.IsAny<string>(), 
+            It.IsAny<string>(), 
+            It.IsAny<string>(), 
+            It.IsAny<CancellationToken>()), Times.Never);
+        
     }
 
     [Fact]
@@ -84,14 +85,12 @@ public class SubscribeToNewsletterCommandHandlerTests
     {
         // Arrange
         var context = GetMemoryContext();
-        var existing = new Subscriber
-        {
-            Id = Guid.NewGuid(),
-            Email = "unverified@test.com",
-            IsVerified = false,
-            IsActive = false,
-            VerificationToken = "old-token"
-        };
+        var existing = new Subscriber("unverified@test.com");
+        existing.IsVerified = false;
+        existing.IsActive = false;
+        
+        existing.UpdateVerificationToken("old-token");
+    
         context.Subscribers.Add(existing);
         await context.SaveChangesAsync();
 

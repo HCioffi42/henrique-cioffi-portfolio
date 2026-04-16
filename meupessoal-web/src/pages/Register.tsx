@@ -43,8 +43,8 @@ const Register: React.FC = () => {
     setIsLoading(true);
     try {
       await authService.register({ userName, email, password });
-      notificationService.success('Account created! You can now sign in.');
-      navigate('/login');
+      notificationService.success('Account created! Please check your email.');
+      navigate('/check-email');
     } catch (err) {
       if (axios.isAxiosError(err)) {
         const data = err.response?.data;

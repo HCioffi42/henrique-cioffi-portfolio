@@ -21,8 +21,9 @@ public class RazorEmailTemplateService : IEmailTemplateService
     {
         _logger = logger;
 
-        // HC: Configure RazorLight to look for templates in the output directory's Templates/Email folder.
-        var templatePath = Path.Combine(AppContext.BaseDirectory, "Templates", "Email");
+        // HC: Sets the root path to the "Templates" folder instead of "Templates/Email".
+        // This allows the engine to resolve subfolders like /Email/ or /Auth/ correctly.
+        var templatePath = Path.Combine(AppContext.BaseDirectory, "Templates");
 
         _engine = new RazorLightEngineBuilder()
             .UseFileSystemProject(templatePath)
@@ -37,9 +38,13 @@ public class RazorEmailTemplateService : IEmailTemplateService
     {
         try
         {
-            // HC: Append .cshtml if not present (RazorLight typically expects the key, 
-            // but FileSystemProject might need the full filename depending on configuration).
-            var templateKey = templateName.EndsWith(".cshtml") ? templateName : $"{templateName}.cshtml";
+            // HC: Normalizes the template key. If the name starts with a slash, it removes it
+            // to prevent resolution errors in some file systems.
+            var templateKey = templateName.StartsWith("/") ? templateName : $"/{templateName}";
+            if (!templateKey.EndsWith(".cshtml"))
+            {
+                templateKey += ".cshtml";
+            }
 
             // 1. Render the Razor template to HTML
             string html = await _engine.CompileRenderAsync(templateKey, model);

@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using MeuSitePessoal.Domain.Entities;
+using MeuSitePessoal.Domain.Interfaces;
 using Moq;
 using Xunit;
 
@@ -22,6 +24,7 @@ public class RegisterCommandHandlerTests
     private readonly Mock<IEmailTemplateService> _templateServiceMock;
     private readonly Mock<IConfiguration> _configurationMock;
     private readonly Mock<ILogger<RegisterCommandHandler>> _loggerMock;
+    private readonly Mock<ISubscriberRepository> _subscriberRepositoryMock;
     private readonly RegisterCommandHandler _sut;
 
     public RegisterCommandHandlerTests()
@@ -32,13 +35,15 @@ public class RegisterCommandHandlerTests
         _templateServiceMock = new Mock<IEmailTemplateService>();
         _configurationMock = new Mock<IConfiguration>();
         _loggerMock = new Mock<ILogger<RegisterCommandHandler>>();
+        _subscriberRepositoryMock = new Mock<ISubscriberRepository>();
 
         _sut = new RegisterCommandHandler(
             _userManagerMock.Object,
             _emailSenderMock.Object,
             _templateServiceMock.Object,
             _configurationMock.Object,
-            _loggerMock.Object);
+            _loggerMock.Object,
+            _subscriberRepositoryMock.Object);
     }
 
 
@@ -71,11 +76,14 @@ public class RegisterCommandHandlerTests
         // Assert
         result.Succeeded.Should().BeTrue();
         
+        // Verify newsletter subscriber was added
+        _subscriberRepositoryMock.Verify(x => x.AddAsync(It.Is<Subscriber>(s => s.Email == command.Email)), Times.Once);
+        
         // Verify email was sent
         _emailSenderMock.Verify(x => x.SendEmailAsync(
             command.Email,
-            It.Is<string>(s => s.Contains("confirm")),
-            It.Is<string>(b => b.Contains("confirm-email") || b.Contains("verify-email")),
+            It.Is<string>(s => s.Contains("Verify")),
+            It.Is<string>(b => b.Contains("confirm-email")),
             It.IsAny<CancellationToken>()), Times.Once);
     }
 

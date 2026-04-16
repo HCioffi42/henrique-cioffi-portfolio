@@ -67,7 +67,7 @@ public class ForgotPasswordCommandHandler : IRequestHandler<ForgotPasswordComman
         var resetUrl = $"{baseUrl}/reset-password?email={Uri.EscapeDataString(user.Email!)}&token={encodedToken}";
 
         // Render and send the instructions via email using Razor templates.
-        var subject = "Reset your password - Meu Site Pessoal";
+        var subject = "Reset your password - hcioffi.dev";
         var body = await _templateService.RenderTemplateAsync("ResetPassword", new ResetPasswordViewModel
         { 
             UserName = user.UserName!,

@@ -75,6 +75,16 @@ public class BaseIntegrationTest : IAsyncLifetime
             var errors = string.Join(", ", result.Errors.Select(e => e.Description));
             throw new InvalidOperationException($"Integration Test Failure: Could not confirm email for user '{username}'. Errors: {errors}");
         }
+
+        // HC: Also verify the newsletter subscriber for integration tests.
+        var db = scope.ServiceProvider.GetRequiredService<BlogDbContext>();
+        var subscriber = await db.Subscribers.FirstOrDefaultAsync(s => s.Email == user.Email);
+        if (subscriber != null)
+        {
+            subscriber.IsVerified = true;
+            subscriber.VerifiedAt = DateTime.UtcNow;
+            await db.SaveChangesAsync();
+        }
     }
     
     public async Task InitializeAsync()
@@ -123,7 +133,10 @@ public class BaseIntegrationTest : IAsyncLifetime
                 });
             });
 
-        _client = _factory.CreateClient();
+        _client = _factory.CreateClient(new WebApplicationFactoryClientOptions
+        {
+            AllowAutoRedirect = false
+        });
         
         using var scope = _factory.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<BlogDbContext>();

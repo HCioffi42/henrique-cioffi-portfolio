@@ -8,6 +8,8 @@ import { EditArticle } from './pages/EditArticle';
 import Dashboard from './pages/Dashboard';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import CheckEmail from './pages/CheckEmail';
+import UnsubscribeSuccess from './pages/UnsubscribeSuccess';
 import VerifyEmail from './pages/VerifyEmail';
 import ConfirmNewsletter from './pages/ConfirmNewsletter';
 import OAuthCallback from './pages/OAuthCallback';
@@ -34,6 +36,8 @@ export default function App() {
                                 <Route path="/article/:id" element={<ArticleDetails />} />
                                 <Route path="/login" element={<Login />} />
                                 <Route path="/register" element={<Register />} />
+                                <Route path="/check-email" element={<CheckEmail />} />
+                                <Route path="/unsubscribe-success" element={<UnsubscribeSuccess />} />
                                 <Route path="/verify-email" element={<VerifyEmail />} />
                                 <Route path="/newsletter/confirm" element={<ConfirmNewsletter />} />
 

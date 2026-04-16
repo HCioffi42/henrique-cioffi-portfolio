@@ -1,4 +1,5 @@
 using AutoMapper;
+using MediatR;
 using MeuSitePessoal.Application.Articles.Commands.CreateArticle;
 using MeuSitePessoal.Application.Articles.Commands.DeleteArtigo;
 using MeuSitePessoal.Application.Articles.Commands.UpdateArticle;
@@ -19,12 +20,14 @@ public class ArticleCacheInvalidationTests
     private readonly Mock<IArticleRepository> _repositoryMock;
     private readonly Mock<IMemoryCache> _cacheMock;
     private readonly Mock<IMapper> _mapperMock;
+    private readonly Mock<IMediator> _mediatorMock;
 
     public ArticleCacheInvalidationTests()
     {
         _repositoryMock = new Mock<IArticleRepository>();
         _cacheMock = new Mock<IMemoryCache>();
         _mapperMock = new Mock<IMapper>();
+        _mediatorMock = new Mock<IMediator>();
     }
 
     [Fact]
@@ -32,7 +35,7 @@ public class ArticleCacheInvalidationTests
     {
         // Arrange
         var command = new CreateArticleCommand("Title", "Content", "Summary", ArticleCategory.Technology, new List<string>());
-        var handler = new CreateArticleHandler(_repositoryMock.Object, _cacheMock.Object);
+        var handler = new CreateArticleHandler(_repositoryMock.Object, _cacheMock.Object, _mediatorMock.Object);
 
         // Act
         await handler.Handle(command, CancellationToken.None);
