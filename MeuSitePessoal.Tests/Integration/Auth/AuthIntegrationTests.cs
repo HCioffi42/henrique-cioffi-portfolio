@@ -2,6 +2,8 @@
 using System.Net.Http.Json;
 using FluentAssertions;
 using MeuSitePessoal.Api.Controllers;
+using MeuSitePessoal.Infrastructure.Data;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
@@ -69,6 +71,12 @@ public class AuthIntegrationTests : BaseIntegrationTest
 
         // 2. Act: Executes the registration.
         var regResponse = await _client.PostAsJsonAsync("/api/auth/register", regRequest);
+        if (!regResponse.IsSuccessStatusCode)
+        {
+            // HC: Captures the actual exception details to avoid guessing the cause of the 500 error.
+            var errorBody = await regResponse.Content.ReadAsStringAsync();
+            throw new Exception($"Integration Test Failed at Register. Body: {errorBody}");
+        }
         regResponse.EnsureSuccessStatusCode();
         
         await ConfirmUserEmailAsync(uniqueName);
@@ -82,6 +90,16 @@ public class AuthIntegrationTests : BaseIntegrationTest
         var result = await loginResponse.Content.ReadFromJsonAsync<LoginResponseDto>();
         
         result?.Username.Should().Be(uniqueName);;
+
+        // 5. Assert: Verify newsletter subscriber was created
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<BlogDbContext>();
+            var subscriber = await db.Subscribers.FirstOrDefaultAsync(s => s.Email == $"{uniqueName}@test.com");
+            subscriber.Should().NotBeNull();
+            subscriber!.IsActive.Should().BeTrue();
+            subscriber!.IsVerified.Should().BeTrue(); // Confirmed via ConfirmUserEmailAsync
+        }
     }
 
     // Local helper record for type-safe assertion

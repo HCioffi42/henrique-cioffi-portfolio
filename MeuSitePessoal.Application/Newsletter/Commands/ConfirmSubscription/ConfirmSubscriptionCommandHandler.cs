@@ -44,11 +44,9 @@ public class ConfirmSubscriptionCommandHandler : IRequestHandler<ConfirmSubscrip
             return Result.Failure("Invalid verification token.", ErrorType.Failure);
         }
 
-        // HC: Activate and verify the subscriber.
-        subscriber.IsVerified = true;
-        subscriber.IsActive = true;
-        subscriber.VerifiedAt = DateTime.UtcNow;
-        subscriber.VerificationToken = null; // Clear token after use
+        // HC: Replace manual property setting with the domain method.
+        // This encapsulates the logic and allows the private setter to be updated.
+        subscriber.ConfirmVerification(request.Token);
 
         _dbContext.Subscribers.Update(subscriber);
         await _dbContext.SaveChangesAsync(cancellationToken);

@@ -51,7 +51,7 @@ public class GetCommentsByArticleIdQueryHandlerTests
 
         // Assert
         Assert.True(result.IsSuccess);
-        Assert.Empty(result.Value);
+        Assert.Empty(result.Value!);
     }
 
     [Fact]
@@ -86,7 +86,7 @@ public class GetCommentsByArticleIdQueryHandlerTests
         // Assert
         Assert.True(result.IsSuccess);
         var tree = result.Value;
-        Assert.Equal(2, tree.Count); // root1 and root2
+        Assert.Equal(2, tree!.Count); // root1 and root2
 
         var root1Response = tree.First(c => c.Id == root1.Id);
         Assert.Equal(2, root1Response.Replies.Count); // reply1 and reply2

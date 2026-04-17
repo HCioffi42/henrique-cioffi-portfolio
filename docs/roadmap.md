@@ -62,7 +62,7 @@
 
 ### [✓] Track 11: CI/CD & Production
 - [x] **11.1**: GitHub Actions for Build & Test
-    * Validation of .NET Backend (96 integration/unit tests passed).
+    * Validation of .NET Backend (178 integration/unit tests passed).
     * Validation of React Frontend (Lint and Build checks).
     * PostgreSQL service container integration for isolated testing.
 - [x] **11.2**: Deployment to VPS (Docker)

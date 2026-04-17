@@ -1,5 +1,6 @@
 using System.Text;
 using MediatR;
+using MeuSitePessoal.Domain.Interfaces;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
@@ -13,16 +14,19 @@ public class ConfirmEmailCommandHandler : IRequestHandler<ConfirmEmailCommand, C
 {
     private readonly UserManager<IdentityUser> _userManager;
     private readonly ILogger<ConfirmEmailCommandHandler> _logger;
+    private readonly ISubscriberRepository _subscriberRepository;
 
     /// <summary>
     /// Initializes a new instance of <see cref="ConfirmEmailCommandHandler"/>.
     /// </summary>
-    /// <param name="userManager">The ASP.NET Core Identity user manager.</param>
-    /// <param name="logger">The logger instance.</param>
-    public ConfirmEmailCommandHandler(UserManager<IdentityUser> userManager, ILogger<ConfirmEmailCommandHandler> logger)
+    public ConfirmEmailCommandHandler(
+        UserManager<IdentityUser> userManager, 
+        ILogger<ConfirmEmailCommandHandler> logger,
+        ISubscriberRepository subscriberRepository)
     {
         _userManager = userManager;
         _logger = logger;
+        _subscriberRepository = subscriberRepository;
     }
 
     /// <summary>
@@ -52,6 +56,20 @@ public class ConfirmEmailCommandHandler : IRequestHandler<ConfirmEmailCommand, C
             if (result.Succeeded)
             {
                 _logger.LogInformation("Email successfully confirmed for user {Email}.", user.Email);
+
+                // HC: Also mark the corresponding newsletter subscriber as verified.
+                if (user.Email != null)
+                {
+                    var subscriber = await _subscriberRepository.GetByEmailAsync(user.Email);
+                    if (subscriber != null)
+                    {
+                        subscriber.IsVerified = true;
+                        subscriber.VerifiedAt = DateTime.UtcNow;
+                        await _subscriberRepository.UpdateAsync(subscriber);
+                        _logger.LogInformation("Newsletter subscription verified for {Email}.", user.Email);
+                    }
+                }
+
                 return new ConfirmEmailResult(true, Enumerable.Empty<string>());
             }
 

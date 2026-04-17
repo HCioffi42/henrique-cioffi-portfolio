@@ -10,6 +10,13 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <None Include="..\MeuSitePessoal.Infrastructure\Templates\**\*.cshtml">
+            <Link>Templates\%(RecursiveDir)%(FileName)%(Extension)</Link>
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+    </ItemGroup>
+
+    <ItemGroup>
         <PackageReference Include="coverlet.collector" Version="6.0.0" />
         <PackageReference Include="FluentAssertions" Version="8.9.0" />
         <PackageReference Include="FluentValidation" Version="12.1.1" />

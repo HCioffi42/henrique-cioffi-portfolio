@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using MeuSitePessoal.Application.Common.Models.Email;
+using MeuSitePessoal.Domain.Interfaces;
 
 namespace MeuSitePessoal.Application.Auth.Commands.Register;
 
@@ -20,6 +21,7 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, RegisterR
     private readonly IEmailTemplateService _templateService;
     private readonly IConfiguration _configuration;
     private readonly ILogger<RegisterCommandHandler> _logger;
+    private readonly ISubscriberRepository _subscriberRepository;
 
     /// <summary>
     /// Initializes a new instance of <see cref="RegisterCommandHandler"/>.
@@ -29,13 +31,15 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, RegisterR
         IEmailSender emailSender,
         IEmailTemplateService templateService,
         IConfiguration configuration,
-        ILogger<RegisterCommandHandler> logger)
+        ILogger<RegisterCommandHandler> logger,
+        ISubscriberRepository subscriberRepository)
     {
         _userManager = userManager;
         _emailSender = emailSender;
         _templateService = templateService;
         _configuration = configuration;
         _logger = logger;
+        _subscriberRepository = subscriberRepository;
     }
 
     /// <summary>
@@ -65,6 +69,15 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, RegisterR
         await _userManager.AddToRoleAsync(user, "Reader");
         _logger.LogInformation("New Reader account created for {Email}. Proceeding with email confirmation flow.", request.Email);
 
+        // HC: Seamlessly add the user to the newsletter subscribers list as well.
+        // They will be considered "Verified" once they confirm their account email.
+        var subscriber = await _subscriberRepository.GetByEmailAsync(request.Email);
+        if (subscriber == null)
+        {
+            // Constructor handles ID, Tokens, and Dates.
+            await _subscriberRepository.AddAsync(new Domain.Entities.Subscriber(request.Email));
+        }
+
         // Generate confirmation token and encode it for URL safety.
         var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
         var encodedCode = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
@@ -74,8 +87,8 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, RegisterR
         var callbackUrl = $"{baseUrl}/verify-email?userId={user.Id}&token={encodedCode}";
 
         // Render and send the verification email using Razor templates.
-        var subject = "Welcome to Meu Site Pessoal! Please confirm your email";
-        var body = await _templateService.RenderTemplateAsync("ConfirmAccount", new ConfirmAccountViewModel
+        var subject = "Welcome to hcioffi.dev | Verify your email";
+        var body = await _templateService.RenderTemplateAsync("Email/ConfirmAccount", new ConfirmAccountViewModel
         { 
             UserName = user.UserName!, 
             ConfirmLink = callbackUrl 

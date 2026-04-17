@@ -1,6 +1,9 @@
 using System.Net;
 using System.Net.Http.Json;
 using MeuSitePessoal.Application.Newsletter.Commands.Subscribe;
+using MeuSitePessoal.Domain.Entities;
+using MeuSitePessoal.Infrastructure.Data;
+using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
 namespace MeuSitePessoal.Tests.Integration.Newsletter;
@@ -19,6 +22,48 @@ public class NewsletterIntegrationTests : BaseIntegrationTest
         // Assert
         response.EnsureSuccessStatusCode();
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Unsubscribe_ShouldRedirectToFrontend_WhenTokenIsValid()
+    {
+        // Arrange
+        var email = "unsub@test.com";
+        string? token = null;
+        
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<BlogDbContext>();
+        
+            // HC: Create using the constructor. 
+            var subscriber = new Subscriber(email);
+            subscriber.IsVerified = true;
+            subscriber.IsActive = true;
+        
+            // HC: We capture the auto-generated token to use in the request.
+            token = subscriber.UnsubscribeToken; 
+
+            db.Subscribers.Add(subscriber);
+            await db.SaveChangesAsync();
+        }
+
+        // Act
+        var response = await _client.GetAsync($"/api/newsletter/unsubscribe?email={email}&token={token}");
+
+        // Assert
+        // Since it's a redirect, the status might be 302 or 200 depending on client config,
+        // but by default HttpClient follows redirects. 
+        // In the controller I used Redirect(url) which is 302.
+        Assert.Equal(HttpStatusCode.Found, response.StatusCode);
+        Assert.Contains("unsubscribe-success", response.Headers.Location?.ToString() ?? "");
+
+        // Verify in DB
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<BlogDbContext>();
+            var sub = db.Subscribers.First(s => s.Email == email);
+            Assert.False(sub.IsActive);
+        }
     }
     
     [Fact]

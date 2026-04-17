@@ -50,11 +50,11 @@ public class SubscribeToNewsletterCommandHandler : IRequestHandler<SubscribeToNe
         {
             // HC: If the user is already verified and active, we inform them gracefully.
             if (existingSubscriber.IsVerified && existingSubscriber.IsActive)
-                return Result.Success();
+                return Result.Success("You are already a verified subscriber.");
 
             // HC: If the user is not verified, we refresh the token and resend the email.
             token = GenerateToken();
-            existingSubscriber.VerificationToken = token;
+            existingSubscriber.UpdateVerificationToken(token);
             existingSubscriber.IsActive = false; // Ensure they are inactive until verified
             
             _dbContext.Subscribers.Update(existingSubscriber);
@@ -63,15 +63,8 @@ public class SubscribeToNewsletterCommandHandler : IRequestHandler<SubscribeToNe
         {
             // HC: New subscriber creation flow.
             token = GenerateToken();
-            existingSubscriber = new Subscriber
-            {
-                Id = Guid.NewGuid(),
-                Email = normalizedEmail,
-                SubscribedAt = DateTime.UtcNow,
-                IsActive = false,
-                IsVerified = false,
-                VerificationToken = token
-            };
+            existingSubscriber = new Subscriber(normalizedEmail);
+            existingSubscriber.UpdateVerificationToken(token);
             
             _dbContext.Subscribers.Add(existingSubscriber);
         }
@@ -97,10 +90,14 @@ public class SubscribeToNewsletterCommandHandler : IRequestHandler<SubscribeToNe
     private async Task SendVerificationEmail(string email, string token, CancellationToken ct)
     {
         var baseUrl = _configuration["ClientSettings:BaseUrl"] ?? "https://hcioffi.dev";
+        if (string.IsNullOrEmpty(baseUrl))
+            // HC: Throws a descriptive exception to avoid cryptic 500 errors in logs.
+            throw new InvalidOperationException("ClientSettings:BaseUrl is missing from configuration.");
+        
         var verificationUrl = $"{baseUrl}/newsletter/confirm?email={email}&token={token}";
 
-        var subject = "Confirm your subscription to Meu Site Pessoal Newsletter";
-        var body = await _templateService.RenderTemplateAsync("NewsletterVerification", new NewsletterVerificationViewModel
+        var subject = "Confirm your subscription to hcioffi.dev Newsletter";
+        var body = await _templateService.RenderTemplateAsync("Email/NewsletterVerification", new NewsletterVerificationViewModel
         { 
             ConfirmLink = verificationUrl 
         });
