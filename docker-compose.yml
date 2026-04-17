@@ -6,41 +6,43 @@ services:
     restart: always
     environment:
       - POSTGRES_USER=admin
-      - POSTGRES_PASSWORD=sua_senha_segura
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - POSTGRES_DB=meu_site_db
       - PGDATA=/var/lib/postgresql/data/pgdata
     ports:
       - "5432:5432"
     volumes:
-      - ./postgres-data:/var/lib/postgresql/data
+      # HC: Using the named volume found on the server for better persistence
+      - postgres_production_data:/var/lib/postgresql/data
     networks:
       - blog-network
 
   # Backend Service: .NET 8 Web API
   backend:
-    build: .
-    image: meusitepessoal-backend
+    image: henriquecioffi/meu-site-api:latest
     container_name: meu_site_api
     restart: always
     depends_on:
       - database
     environment:
       # HC: Notice the Host is set to 'database' to match the service name above.
-      - ASPNETCORE_URLS=http://+:80
-      - ASPNETCORE_ENVIRONMENT=Docker
-      - ConnectionStrings__DefaultConnection=Host=database;Port=5432;Database=meu_site_db;Username=admin;Password=sua_senha_segura
+      - ASPNETCORE_URLS=http://+:8080
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ConnectionStrings__DefaultConnection=${DB_CONNECTION_STRING}
+      - EmailSettings__Password=${RESEND_API_KEY}
+      - EmailSettings__Host=smtp.resend.com
+      - EmailSettings__Username=resend
     ports:
-      - "5000:80"
+      - "5000:8080"
     volumes:
-      - ./MeuSitePessoal.Api/wwwroot/uploads:/app/wwwroot/uploads
+      # HC: Matches the upload folder to the named volume
+      - blog_uploads:/app/wwwroot/uploads
     networks:
       - blog-network
 
   # Frontend Service: React Application (Vite + Nginx)
   frontend:
-    build:
-      context: ./meupessoal-web
-      dockerfile: Dockerfile
+    image: henriquecioffi/meu-site-web:latest
     container_name: meu_site_web
     restart: always
     depends_on:
@@ -54,3 +56,8 @@ services:
 networks:
   blog-network:
     driver: bridge
+    
+# HC: Definitions for the persistent volumes
+volumes:
+  postgres_production_data:
+  blog_uploads:
