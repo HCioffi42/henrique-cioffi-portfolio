@@ -88,7 +88,7 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, RegisterR
 
         // Render and send the verification email using Razor templates.
         var subject = "Welcome to hcioffi.dev | Verify your email";
-        var body = await _templateService.RenderTemplateAsync("ConfirmAccount", new ConfirmAccountViewModel
+        var body = await _templateService.RenderTemplateAsync("Email/ConfirmAccount", new ConfirmAccountViewModel
         { 
             UserName = user.UserName!, 
             ConfirmLink = callbackUrl 

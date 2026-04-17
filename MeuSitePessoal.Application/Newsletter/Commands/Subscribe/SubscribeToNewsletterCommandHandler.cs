@@ -90,10 +90,14 @@ public class SubscribeToNewsletterCommandHandler : IRequestHandler<SubscribeToNe
     private async Task SendVerificationEmail(string email, string token, CancellationToken ct)
     {
         var baseUrl = _configuration["ClientSettings:BaseUrl"] ?? "https://hcioffi.dev";
+        if (string.IsNullOrEmpty(baseUrl))
+            // HC: Throws a descriptive exception to avoid cryptic 500 errors in logs.
+            throw new InvalidOperationException("ClientSettings:BaseUrl is missing from configuration.");
+        
         var verificationUrl = $"{baseUrl}/newsletter/confirm?email={email}&token={token}";
 
         var subject = "Confirm your subscription to hcioffi.dev Newsletter";
-        var body = await _templateService.RenderTemplateAsync("NewsletterVerification", new NewsletterVerificationViewModel
+        var body = await _templateService.RenderTemplateAsync("Email/NewsletterVerification", new NewsletterVerificationViewModel
         { 
             ConfirmLink = verificationUrl 
         });

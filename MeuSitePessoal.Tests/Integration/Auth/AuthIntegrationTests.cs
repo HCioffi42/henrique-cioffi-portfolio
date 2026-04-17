@@ -71,6 +71,12 @@ public class AuthIntegrationTests : BaseIntegrationTest
 
         // 2. Act: Executes the registration.
         var regResponse = await _client.PostAsJsonAsync("/api/auth/register", regRequest);
+        if (!regResponse.IsSuccessStatusCode)
+        {
+            // HC: Captures the actual exception details to avoid guessing the cause of the 500 error.
+            var errorBody = await regResponse.Content.ReadAsStringAsync();
+            throw new Exception($"Integration Test Failed at Register. Body: {errorBody}");
+        }
         regResponse.EnsureSuccessStatusCode();
         
         await ConfirmUserEmailAsync(uniqueName);

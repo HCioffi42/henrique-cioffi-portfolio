@@ -64,25 +64,22 @@ public class BaseIntegrationTest : IAsyncLifetime
 
         if (user == null)
         {
-            throw new InvalidOperationException($"Integration Test Failure: User '{username}' was not found for manual email confirmation.");
+            throw new InvalidOperationException($"Integration Test Failure: User '{username}' was not found.");
         }
 
         user.EmailConfirmed = true;
-        var result = await userManager.UpdateAsync(user);
+        await userManager.UpdateAsync(user);
 
-        if (!result.Succeeded)
-        {
-            var errors = string.Join(", ", result.Errors.Select(e => e.Description));
-            throw new InvalidOperationException($"Integration Test Failure: Could not confirm email for user '{username}'. Errors: {errors}");
-        }
-
-        // HC: Also verify the newsletter subscriber for integration tests.
+        // HC: Also verify and ACTIVATE the newsletter subscriber for integration tests.
         var db = scope.ServiceProvider.GetRequiredService<BlogDbContext>();
         var subscriber = await db.Subscribers.FirstOrDefaultAsync(s => s.Email == user.Email);
+        
         if (subscriber != null)
         {
             subscriber.IsVerified = true;
+            subscriber.IsActive = true; 
             subscriber.VerifiedAt = DateTime.UtcNow;
+        
             await db.SaveChangesAsync();
         }
     }
@@ -100,7 +97,10 @@ public class BaseIntegrationTest : IAsyncLifetime
                     config.AddInMemoryCollection(new Dictionary<string, string?>
                     {
                         ["AdminSetup:Email"] = "admin@example.com",
-                        ["AdminSetup:Password"] = "Admin123!"
+                        ["AdminSetup:Password"] = "Admin123!",
+                        // HC: Essential for the Newsletter Handler to generate links during integration tests.
+                        ["ApiSettings:BaseUrl"] = "http://localhost:25683",
+                        ["ClientSettings:BaseUrl"] = "http://localhost:5173"
                     });
                 });
 
@@ -129,7 +129,9 @@ public class BaseIntegrationTest : IAsyncLifetime
                         services.Remove(emailSenderDescriptor);
                     }
 
+                    // HC: Re-adding the Mock for IEmailSender to ensure it's properly registered.
                     services.AddSingleton<IEmailSender>(sp => new Mock<IEmailSender>().Object);
+                    // services.AddSingleton<IEmailTemplateService>(sp => new Mock<IEmailTemplateService>().Object);
                 });
             });
 

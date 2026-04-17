@@ -26,7 +26,7 @@ public class Subscriber
         Id = Guid.NewGuid();
         Email = email;
         SubscribedAt = DateTime.UtcNow;
-        IsActive = true;
+        IsActive = false;
         IsVerified = false;
         
         // Generates secure, hyphen-free tokens for verification and unsubscription.
