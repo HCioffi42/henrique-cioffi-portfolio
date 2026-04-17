@@ -27,6 +27,7 @@ public class UnsubscribeHandlerTests
         // Arrange
         var email = "test@example.com";
         var subscriber = new Subscriber(email);
+        subscriber.IsActive = true;
         var validToken = subscriber.UnsubscribeToken!;
 
         _subscriberRepositoryMock.Setup(x => x.GetByEmailAsync(email))
@@ -67,6 +68,7 @@ public class UnsubscribeHandlerTests
         // Arrange
         var email = "test@example.com";
         var subscriber = new Subscriber(email);
+        subscriber.IsActive = true;
         var wrongToken = "this-token-does-not-match";
 
         _subscriberRepositoryMock.Setup(x => x.GetByEmailAsync(email))

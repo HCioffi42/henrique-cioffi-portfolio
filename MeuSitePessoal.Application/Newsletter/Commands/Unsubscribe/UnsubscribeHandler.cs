@@ -34,7 +34,7 @@ public class UnsubscribeHandler : IRequestHandler<UnsubscribeCommand, Result<boo
         if (subscriber.UnsubscribeToken != request.Token)
         {
             _logger.LogWarning("Invalid unsubscribe token for email: {Email}", request.Email);
-            return Result.Failure<bool>("Invalid unsubscribe token.", ErrorType.Failure);
+            return Result.Failure<bool>("Invalid unsubscribe token.");
         }
 
         if (!subscriber.IsActive)
