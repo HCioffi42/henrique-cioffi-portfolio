@@ -1,0 +1,20 @@
+{
+  "nav": {
+    "home": "Home",
+    "blog": "Blog",
+    "projects": "Projects",
+    "login": "Login",
+    "logout": "Logout",
+    "dashboard": "Dashboard",
+    "newPost": "New Post",
+    "hello": "Hello"
+  },
+  "footer": {
+    "copy": "Henrique Cioffi - Built with .NET & React"
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "success": "Success"
+  }
+}
