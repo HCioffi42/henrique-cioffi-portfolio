@@ -1,3 +1,4 @@
+using MeuSitePessoal.Domain.Entities;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using MeuSitePessoal.Api;
@@ -59,7 +60,7 @@ public class BaseIntegrationTest : IAsyncLifetime
     protected async Task ConfirmUserEmailAsync(string username)
     {
         using var scope = _factory.Services.CreateScope();
-        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<IdentityUser>>();
+        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
         var user = await userManager.FindByNameAsync(username);
 
         if (user == null)
@@ -142,7 +143,7 @@ public class BaseIntegrationTest : IAsyncLifetime
         
         using var scope = _factory.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<BlogDbContext>();
-        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<IdentityUser>>();
+        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
         var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
         var configuration = scope.ServiceProvider.GetRequiredService<Microsoft.Extensions.Configuration.IConfiguration>();
         var logger = scope.ServiceProvider.GetRequiredService<Microsoft.Extensions.Logging.ILogger<BaseIntegrationTest>>();

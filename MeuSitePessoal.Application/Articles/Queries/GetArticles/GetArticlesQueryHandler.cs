@@ -9,20 +9,23 @@ namespace MeuSitePessoal.Application.Articles.Queries.GetArticles;
 
 /// <summary>
 /// Handles the retrieval of paginated article summaries and applies multi-tag filtering if requested.
+/// Integrated with ILanguageProvider for localized content.
 /// </summary>
 public class GetArticlesQueryHandler : IRequestHandler<GetArticlesQuery, PagedResult<ArticleSummaryDto>>
 {
     private readonly IBlogDbContext _context;
     private readonly IMemoryCache _cache;
+    private readonly ILanguageProvider _languageProvider;
     private const string ArticlesCacheKeyPrefix = "Articles_";
 
     /// <summary>
-    /// Initializes a new instance of the handler with the injected database context and memory cache.
+    /// Initializes a new instance of the handler with the injected database context, memory cache, and language provider.
     /// </summary>
-    public GetArticlesQueryHandler(IBlogDbContext context, IMemoryCache cache)
+    public GetArticlesQueryHandler(IBlogDbContext context, IMemoryCache cache, ILanguageProvider languageProvider)
     {
         _context = context;
         _cache = cache;
+        _languageProvider = languageProvider;
     }
 
     /// <summary>
@@ -30,9 +33,11 @@ public class GetArticlesQueryHandler : IRequestHandler<GetArticlesQuery, PagedRe
     /// </summary>
     public async Task<PagedResult<ArticleSummaryDto>> Handle(GetArticlesQuery request, CancellationToken cancellationToken)
     {
+        var language = _languageProvider.GetCurrentLanguage();
+        
         // Get the current cache version to ensure data consistency after invalidation.
         var cacheVersion = _cache.GetOrCreate<Guid>("Articles_CacheVersion", _ => Guid.NewGuid());
-        var cacheKey = GenerateCacheKey(request, cacheVersion);
+        var cacheKey = GenerateCacheKey(request, cacheVersion, language);
 
         if (_cache.TryGetValue(cacheKey, out PagedResult<ArticleSummaryDto>? cachedResult))
         {
@@ -67,8 +72,8 @@ public class GetArticlesQueryHandler : IRequestHandler<GetArticlesQuery, PagedRe
             .Select(a => new ArticleSummaryDto
             {
                 Id = a.Id,
-                Title = a.Title,
-                Summary = a.Summary,
+                Title = language.StartsWith("pt") ? a.TitlePt : a.TitleEn,
+                Summary = language.StartsWith("pt") ? a.SummaryPt : a.SummaryEn,
                 CreatedAt = a.CreatedAt,
                 Tags = a.Tags,
                 Category = a.Category
@@ -85,9 +90,9 @@ public class GetArticlesQueryHandler : IRequestHandler<GetArticlesQuery, PagedRe
         return result;
     }
 
-    private string GenerateCacheKey(GetArticlesQuery query, object version)
+    private string GenerateCacheKey(GetArticlesQuery query, object version, string language)
     {
         var tagsPart = query.Tags != null ? string.Join(",", query.Tags.OrderBy(t => t)) : "none";
-        return $"{ArticlesCacheKeyPrefix}v{version}_p{query.PageNumber}_s{query.PageSize}_c{query.Category ?? 0}_t{tagsPart}";
+        return $"{ArticlesCacheKeyPrefix}v{version}_l{language}_p{query.PageNumber}_s{query.PageSize}_c{query.Category ?? 0}_t{tagsPart}";
     }
 }

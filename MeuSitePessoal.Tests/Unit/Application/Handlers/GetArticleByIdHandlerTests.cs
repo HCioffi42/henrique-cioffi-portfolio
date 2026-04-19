@@ -1,8 +1,7 @@
 using MeuSitePessoal.Application.Articles.Queries.GetArticleById;
 using Moq;
-using MeuSitePessoal.Domain;
 using MeuSitePessoal.Domain.Interfaces;
-using MeuSitePessoal.Application.Articles.Queries;
+using MeuSitePessoal.Application.Common.Interfaces;
 using MeuSitePessoal.Domain.Entities;
 using Xunit;
 
@@ -16,7 +15,9 @@ public class GetArticleByIdHandlerTests
     public GetArticleByIdHandlerTests()
     {
         _repositoryMock = new Mock<IArticleRepository>();
-        _handler = new GetArticleByIdHandler(_repositoryMock.Object);
+        var languageProviderMock = new Mock<ILanguageProvider>();
+        languageProviderMock.Setup(x => x.GetCurrentLanguage()).Returns("en");
+        _handler = new GetArticleByIdHandler(_repositoryMock.Object, languageProviderMock.Object);
     }
 
     [Fact]

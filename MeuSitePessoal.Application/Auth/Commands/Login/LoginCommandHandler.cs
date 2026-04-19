@@ -1,3 +1,4 @@
+using MeuSitePessoal.Domain.Entities;
 using MediatR;
 using MeuSitePessoal.Application.Common.Interfaces;
 using Microsoft.AspNetCore.Identity;
@@ -12,8 +13,8 @@ namespace MeuSitePessoal.Application.Auth.Commands.Login;
 /// </summary>
 public class LoginCommandHandler : IRequestHandler<LoginCommand, LoginResult>
 {
-    private readonly UserManager<IdentityUser> _userManager;
-    private readonly SignInManager<IdentityUser> _signInManager; // "Cannot resolve symbol 'SignInManager'"
+    private readonly UserManager<ApplicationUser> _userManager;
+    private readonly SignInManager<ApplicationUser> _signInManager; // "Cannot resolve symbol 'SignInManager'"
     private readonly ITokenService _tokenService;
     private readonly IFeatureToggleService _featureToggle;
     private readonly ILogger<LoginCommandHandler> _logger;
@@ -22,8 +23,8 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, LoginResult>
     /// Initializes a new instance of <see cref="LoginCommandHandler"/>.
     /// </summary>
     public LoginCommandHandler(
-        UserManager<IdentityUser> userManager,
-        SignInManager<IdentityUser> signInManager, // "Cannot resolve symbol 'SignInManager'"
+        UserManager<ApplicationUser> userManager,
+        SignInManager<ApplicationUser> signInManager, // "Cannot resolve symbol 'SignInManager'"
         ITokenService tokenService,
         IFeatureToggleService featureToggle,
         ILogger<LoginCommandHandler> logger)
@@ -81,3 +82,4 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, LoginResult>
         return new LoginResult(token, user.UserName, RequiresTwoFactor: false);
     }
 }
+

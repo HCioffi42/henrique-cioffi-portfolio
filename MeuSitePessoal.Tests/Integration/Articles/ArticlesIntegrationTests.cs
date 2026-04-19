@@ -12,11 +12,12 @@ namespace MeuSitePessoal.Tests.Integration.Articles;
 /// </summary>
 public class ArticlesIntegrationTests : BaseIntegrationTest
 {
-    public record ArticleResponse(Guid Id, string Title, string Content, string Summary, List<string> Tags, ArticleCategory Category);
-    public record PagedArtigoResponse(List<ArticleResponse> Items, int CurrentPage, int TotalPages, int TotalCount);
+    // HC: Updated local record to match the real ArticleResponse from Application layer, including Category.
+    public record ArticleResponse(Guid Id, string Title, string Content, string Summary, DateTime CreatedAt, List<string> Tags, ArticleCategory Category);
+    public record PagedArticleResponse(List<ArticleResponse> Items, int CurrentPage, int TotalPages, int TotalCount);
 
     [Fact]
-    public async Task PostArtigo_WithValidData_ShouldPersistInDatabase()
+    public async Task PostArticle_WithValidData_ShouldPersistInDatabase()
     {
         // Arrange: Authenticates and prepares valid article data.
         await AuthenticateAsync();
@@ -40,20 +41,20 @@ public class ArticlesIntegrationTests : BaseIntegrationTest
         var getResponse = await _client.GetAsync(location);
         getResponse.EnsureSuccessStatusCode();
         
-        var persistedArtigo = await getResponse.Content.ReadFromJsonAsync<ArticleResponse>();
-        Assert.NotNull(persistedArtigo);
-        Assert.Equal("Integration Test Title", persistedArtigo.Title);
-        Assert.Equal(ArticleCategory.Technology, persistedArtigo.Category);
+        var persistedArticle = await getResponse.Content.ReadFromJsonAsync<ArticleResponse>();
+        Assert.NotNull(persistedArticle);
+        Assert.Equal("Integration Test Title", persistedArticle.Title);
+        Assert.Equal(ArticleCategory.Technology, persistedArticle.Category);
     }
 
     [Fact]
-    public async Task ListarArtigos_ComPaginacao_DeveRetornarMetadadosECountCorreto()
+    public async Task ListArticles_WithPagination_ShouldReturnMetadataAndCorrectCount()
     {
         // Arrange: Seed database with articles. Requires authentication for setup.
         await AuthenticateAsync();
         for (int i = 1; i <= 3; i++)
         {
-            var command = new CreateArticleCommand($"Article {i}", $"Cont {i}", $"Res {i}", ArticleCategory.Technology, new List<string>());
+            var command = new CreateArticleCommand($"Article {i}", $"Content {i}", $"Summary {i}", ArticleCategory.Technology, new List<string>());
             await _client.PostAsJsonAsync("/api/articles", command);
         }
 
@@ -63,7 +64,7 @@ public class ArticlesIntegrationTests : BaseIntegrationTest
 
         // Assert: Verifies pagination logic and anonymous visibility.
         response.EnsureSuccessStatusCode();
-        var pagedResult = await response.Content.ReadFromJsonAsync<PagedArtigoResponse>();
+        var pagedResult = await response.Content.ReadFromJsonAsync<PagedArticleResponse>();
         
         Assert.NotNull(pagedResult);
         Assert.Equal(2, pagedResult.Items.Count);
@@ -72,11 +73,11 @@ public class ArticlesIntegrationTests : BaseIntegrationTest
     }
     
     [Fact]
-    public async Task ObterPorId_ComIdExistente_DeveRetornarArtigo()
+    public async Task GetById_WithExistingId_ShouldReturnArticle()
     {
         // Arrange: Seeds an article.
         await AuthenticateAsync();
-        var command = new CreateArticleCommand("Busca por ID", "Content", "Summary", ArticleCategory.Technology, new List<string>());
+        var command = new CreateArticleCommand("Search by ID", "Content", "Summary", ArticleCategory.Technology, new List<string>());
         var createResponse = await _client.PostAsJsonAsync("/api/articles", command);
         var id = await createResponse.Content.ReadFromJsonAsync<Guid>();
 
@@ -86,13 +87,13 @@ public class ArticlesIntegrationTests : BaseIntegrationTest
 
         // Assert: Verifies retrieval and anonymous visibility.
         response.EnsureSuccessStatusCode();
-        var artigo = await response.Content.ReadFromJsonAsync<ArticleResponse>();
-        Assert.NotNull(artigo);
-        Assert.Equal("Busca por ID", artigo.Title);
+        var article = await response.Content.ReadFromJsonAsync<ArticleResponse>();
+        Assert.NotNull(article);
+        Assert.Equal("Search by ID", article.Title);
     }
     
     [Fact]
-    public async Task Atualizar_ComDadosValidos_DeveAlterarArtigoNoBanco()
+    public async Task Update_WithValidData_ShouldModifyArticleInDatabase()
     {
         // Arrange: Seeds an article and prepares update data.
         await AuthenticateAsync();
@@ -100,7 +101,7 @@ public class ArticlesIntegrationTests : BaseIntegrationTest
         var createResponse = await _client.PostAsJsonAsync("/api/articles", createCommand);
         var id = await createResponse.Content.ReadFromJsonAsync<Guid>();
 
-        var updateCommand = new UpdateArticleCommand(id, "Title Atualizado", "Novo Content", "Novo Summary", ArticleCategory.Tutorial, new List<string> { "atualizado" });
+        var updateCommand = new UpdateArticleCommand(id, "Updated Title", "New Content", "New Summary", ArticleCategory.Tutorial, new List<string> { "updated" });
 
         // Act: Updates the article.
         var response = await _client.PutAsJsonAsync($"/api/articles/{id}", updateCommand);
@@ -109,17 +110,17 @@ public class ArticlesIntegrationTests : BaseIntegrationTest
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
 
         var getResponse = await _client.GetAsync($"/api/articles/{id}");
-        var artigoAtualizado = await getResponse.Content.ReadFromJsonAsync<ArticleResponse>();
-        Assert.Equal("Title Atualizado", artigoAtualizado?.Title);
-        Assert.Equal(ArticleCategory.Tutorial, artigoAtualizado?.Category);
+        var updatedArticle = await getResponse.Content.ReadFromJsonAsync<ArticleResponse>();
+        Assert.Equal("Updated Title", updatedArticle?.Title);
+        Assert.Equal(ArticleCategory.Tutorial, updatedArticle?.Category);
     }
 
     [Fact]
-    public async Task Excluir_ComIdExistente_DeveRemoverArtigoDoBanco()
+    public async Task Delete_WithExistingId_ShouldRemoveArticleFromDatabase()
     {
         // Arrange: Seeds an article for deletion.
         await AuthenticateAsync();
-        var command = new CreateArticleCommand("Para Delete", "Content", "Summary", ArticleCategory.Technology, new List<string>());
+        var command = new CreateArticleCommand("For Deletion", "Content", "Summary", ArticleCategory.Technology, new List<string>());
         var createResponse = await _client.PostAsJsonAsync("/api/articles", command);
         var id = await createResponse.Content.ReadFromJsonAsync<Guid>();
 

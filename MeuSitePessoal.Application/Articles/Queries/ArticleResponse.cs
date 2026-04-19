@@ -9,5 +9,6 @@ public record ArticleResponse(
     string Content, 
     string Summary, 
     DateTime CreatedAt, 
-    List<string> Tags
+    List<string> Tags,
+    Domain.Entities.ArticleCategory Category
     );

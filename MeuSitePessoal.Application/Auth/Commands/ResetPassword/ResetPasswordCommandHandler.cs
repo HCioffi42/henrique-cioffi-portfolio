@@ -1,3 +1,4 @@
+using MeuSitePessoal.Domain.Entities;
 using System.Text;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
@@ -11,7 +12,7 @@ namespace MeuSitePessoal.Application.Auth.Commands.ResetPassword;
 /// </summary>
 public class ResetPasswordCommandHandler : IRequestHandler<ResetPasswordCommand, ResetPasswordResult>
 {
-    private readonly UserManager<IdentityUser> _userManager;
+    private readonly UserManager<ApplicationUser> _userManager;
     private readonly ILogger<ResetPasswordCommandHandler> _logger;
 
     /// <summary>
@@ -19,7 +20,7 @@ public class ResetPasswordCommandHandler : IRequestHandler<ResetPasswordCommand,
     /// </summary>
     /// <param name="userManager">The Identity user manager.</param>
     /// <param name="logger">The logger instance.</param>
-    public ResetPasswordCommandHandler(UserManager<IdentityUser> userManager, ILogger<ResetPasswordCommandHandler> logger)
+    public ResetPasswordCommandHandler(UserManager<ApplicationUser> userManager, ILogger<ResetPasswordCommandHandler> logger)
     {
         _userManager = userManager;
         _logger = logger;
@@ -67,3 +68,4 @@ public class ResetPasswordCommandHandler : IRequestHandler<ResetPasswordCommand,
         }
     }
 }
+

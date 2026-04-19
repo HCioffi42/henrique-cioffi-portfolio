@@ -18,8 +18,8 @@ public static class DbInitializer
     /// Seeds roles, admin user, and initial articles into the database.
     /// </summary>
     public static async Task SeedAsync(
-        BlogDbContext context, 
-        UserManager<IdentityUser> userManager, 
+        BlogDbContext context,
+        UserManager<ApplicationUser> userManager,
         RoleManager<IdentityRole> roleManager,
         IConfiguration configuration,
         ILogger logger)
@@ -52,15 +52,15 @@ public static class DbInitializer
             if (adminUser == null)
             {
                 logger.LogInformation("--> Seed: Admin user {Email} not found. Creating...", adminEmail);
-                adminUser = new IdentityUser 
-                { 
-                    UserName = adminEmail, 
-                    Email = adminEmail, 
-                    EmailConfirmed = true 
+                adminUser = new ApplicationUser
+                {
+                    UserName = adminEmail,
+                    Email = adminEmail,
+                    EmailConfirmed = true,
+                    PreferredLanguage = "en"
                 };
 
-                var result = await userManager.CreateAsync(adminUser, adminPassword);
-                if (result.Succeeded)
+                var result = await userManager.CreateAsync(adminUser, adminPassword);                if (result.Succeeded)
                 {
                     logger.LogInformation("--> Seed: Admin user created successfully.");
                 }

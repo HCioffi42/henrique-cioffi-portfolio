@@ -1,7 +1,7 @@
 using AutoMapper;
 using MediatR;
 using MeuSitePessoal.Application.Articles.Commands.CreateArticle;
-using MeuSitePessoal.Application.Articles.Commands.DeleteArtigo;
+using MeuSitePessoal.Application.Articles.Commands.DeleteArticle;
 using MeuSitePessoal.Application.Articles.Commands.UpdateArticle;
 using MeuSitePessoal.Domain;
 using MeuSitePessoal.Domain.Entities;

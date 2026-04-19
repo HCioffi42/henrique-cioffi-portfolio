@@ -1,3 +1,4 @@
+using MeuSitePessoal.Domain.Entities;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -26,7 +27,7 @@ public class TokenService : ITokenService
     /// <param name="user">The user to generate the token for.</param>
     /// <param name="roles">The roles of the user.</param>
     /// <returns>A JWT token string.</returns>
-    public string GenerateToken(IdentityUser user, IList<string> roles)
+    public string GenerateToken(ApplicationUser user, IList<string> roles)
     {
         // Retrieves JWT settings from the configuration.
         var jwtSettings = _configuration.GetSection("JwtSettings");
@@ -64,3 +65,4 @@ public class TokenService : ITokenService
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
 }
+

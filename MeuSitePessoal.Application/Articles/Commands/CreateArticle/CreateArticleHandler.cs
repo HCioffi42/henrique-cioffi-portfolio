@@ -24,7 +24,7 @@ public class CreateArticleHandler : IRequestHandler<CreateArticleCommand, Guid>
     public async Task<Guid> Handle(CreateArticleCommand request, CancellationToken cancellationToken)
     {
         // Creates a new Article instance with the provided Title, Content, Summary, and Tags.
-        var artigo = new Article(
+        var article = new Article(
             request.Title, 
             request.Content, 
             request.Summary, 
@@ -33,10 +33,10 @@ public class CreateArticleHandler : IRequestHandler<CreateArticleCommand, Guid>
         );
         
         // Persists the article entity into the PostgreSQL database via the infrastructure layer.
-        await _repository.AddAsync(artigo);
+        await _repository.AddAsync(article);
 
         // Notify subscribers through domain event
-        await _mediator.Publish(new Domain.Events.ArticlePublishedEvent(artigo), cancellationToken);
+        await _mediator.Publish(new Domain.Events.ArticlePublishedEvent(article), cancellationToken);
 
         // Invalidate the cache by removing a common key or using a strategy to force refresh.
         // For simplicity in this track, we use a basic approach that would work with prefix-based invalidation if we had it.
@@ -47,6 +47,6 @@ public class CreateArticleHandler : IRequestHandler<CreateArticleCommand, Guid>
         _cache.Remove("Articles_CacheVersion");
         
         // Returns the unique identifier assigned to the newly created article.
-        return artigo.Id;
+        return article.Id;
     }
 }

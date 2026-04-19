@@ -15,13 +15,13 @@ namespace MeuSitePessoal.Tests.Unit.Comments;
 public class CreateCommentCommandHandlerTests
 {
     private readonly Mock<ICurrentUserService> _currentUserServiceMock;
-    private readonly Mock<UserManager<IdentityUser>> _userManagerMock;
+    private readonly Mock<UserManager<ApplicationUser>> _userManagerMock;
 
     public CreateCommentCommandHandlerTests()
     {
         _currentUserServiceMock = new Mock<ICurrentUserService>();
-        _userManagerMock = new Mock<UserManager<IdentityUser>>(
-            new Mock<IUserStore<IdentityUser>>().Object, null!, null!, null!, null!, null!, null!, null!, null!);
+        _userManagerMock = new Mock<UserManager<ApplicationUser>>(
+            new Mock<IUserStore<ApplicationUser>>().Object, null!, null!, null!, null!, null!, null!, null!, null!);
     }
 
     private BlogDbContext GetMemoryContext()
@@ -44,7 +44,7 @@ public class CreateCommentCommandHandlerTests
         var userId = "user-123";
         _currentUserServiceMock.Setup(x => x.IsAuthenticated).Returns(true);
         _currentUserServiceMock.Setup(x => x.UserId).Returns(userId);
-        _userManagerMock.Setup(x => x.FindByIdAsync(userId)).ReturnsAsync(new IdentityUser { UserName = "Tester" });
+        _userManagerMock.Setup(x => x.FindByIdAsync(userId)).ReturnsAsync(new ApplicationUser { UserName = "Tester" });
 
         var handler = new CreateCommentCommandHandler(context, _currentUserServiceMock.Object, _userManagerMock.Object);
         var command = new CreateCommentCommand(article.Id, "Valid Comment");
@@ -88,7 +88,7 @@ public class CreateCommentCommandHandlerTests
         var userId = "user-123";
         _currentUserServiceMock.Setup(x => x.IsAuthenticated).Returns(true);
         _currentUserServiceMock.Setup(x => x.UserId).Returns(userId);
-        _userManagerMock.Setup(x => x.FindByIdAsync(userId)).ReturnsAsync(new IdentityUser { UserName = "Tester" });
+        _userManagerMock.Setup(x => x.FindByIdAsync(userId)).ReturnsAsync(new ApplicationUser { UserName = "Tester" });
 
         var handler = new CreateCommentCommandHandler(context, _currentUserServiceMock.Object, _userManagerMock.Object);
         var command = new CreateCommentCommand(Guid.NewGuid(), "Comment");
@@ -116,7 +116,7 @@ public class CreateCommentCommandHandlerTests
         var userId = "user-123";
         _currentUserServiceMock.Setup(x => x.IsAuthenticated).Returns(true);
         _currentUserServiceMock.Setup(x => x.UserId).Returns(userId);
-        _userManagerMock.Setup(x => x.FindByIdAsync(userId)).ReturnsAsync(new IdentityUser { UserName = "Tester" });
+        _userManagerMock.Setup(x => x.FindByIdAsync(userId)).ReturnsAsync(new ApplicationUser { UserName = "Tester" });
 
         var handler = new CreateCommentCommandHandler(context, _currentUserServiceMock.Object, _userManagerMock.Object);
         var command = new CreateCommentCommand(article.Id, "Reply", parentComment.Id);
@@ -146,7 +146,7 @@ public class CreateCommentCommandHandlerTests
         var userId = "user-123";
         _currentUserServiceMock.Setup(x => x.IsAuthenticated).Returns(true);
         _currentUserServiceMock.Setup(x => x.UserId).Returns(userId);
-        _userManagerMock.Setup(x => x.FindByIdAsync(userId)).ReturnsAsync(new IdentityUser { UserName = "Tester" });
+        _userManagerMock.Setup(x => x.FindByIdAsync(userId)).ReturnsAsync(new ApplicationUser { UserName = "Tester" });
 
         var handler = new CreateCommentCommandHandler(context, _currentUserServiceMock.Object, _userManagerMock.Object);
         var command = new CreateCommentCommand(article2.Id, "Reply", parentComment.Id);
@@ -159,3 +159,4 @@ public class CreateCommentCommandHandlerTests
         Assert.Equal(ErrorType.Conflict, result.Type);
     }
 }
+

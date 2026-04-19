@@ -15,7 +15,7 @@ public class CreateCommentCommandHandler : IRequestHandler<CreateCommentCommand,
 {
     private readonly IBlogDbContext _dbContext;
     private readonly ICurrentUserService _currentUserService;
-    private readonly UserManager<IdentityUser> _userManager;
+    private readonly UserManager<ApplicationUser> _userManager;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="CreateCommentCommandHandler"/> class.
@@ -23,7 +23,7 @@ public class CreateCommentCommandHandler : IRequestHandler<CreateCommentCommand,
     public CreateCommentCommandHandler(
         IBlogDbContext dbContext, 
         ICurrentUserService currentUserService,
-        UserManager<IdentityUser> userManager)
+        UserManager<ApplicationUser> userManager)
     {
         _dbContext = dbContext;
         _currentUserService = currentUserService;
@@ -96,3 +96,4 @@ public class CreateCommentCommandHandler : IRequestHandler<CreateCommentCommand,
         return Result.Success(comment.Id);
     }
 }
+

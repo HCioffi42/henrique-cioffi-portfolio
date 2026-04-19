@@ -2,7 +2,7 @@ using MediatR;
 using MeuSitePessoal.Domain.Interfaces;
 using Microsoft.Extensions.Caching.Memory;
 
-namespace MeuSitePessoal.Application.Articles.Commands.DeleteArtigo;
+namespace MeuSitePessoal.Application.Articles.Commands.DeleteArticle;
 
 /**
  * Handles the removal of an article and invalidates the cache.

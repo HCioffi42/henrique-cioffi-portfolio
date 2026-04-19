@@ -1,3 +1,4 @@
+using MeuSitePessoal.Domain.Entities;
 using MediatR;
 using MeuSitePessoal.Application.Common.Interfaces;
 using MeuSitePessoal.Domain.Interfaces;
@@ -12,7 +13,7 @@ namespace MeuSitePessoal.Application.Auth.Commands.VerifyTwoFactor;
 /// </summary>
 public class VerifyTwoFactorCommandHandler : IRequestHandler<VerifyTwoFactorCommand, VerifyTwoFactorResult>
 {
-    private readonly UserManager<IdentityUser> _userManager;
+    private readonly UserManager<ApplicationUser> _userManager;
     private readonly ITokenService _tokenService;
     private readonly ILogger<VerifyTwoFactorCommandHandler> _logger;
 
@@ -20,7 +21,7 @@ public class VerifyTwoFactorCommandHandler : IRequestHandler<VerifyTwoFactorComm
     /// Initializes a new instance of <see cref="VerifyTwoFactorCommandHandler"/>.
     /// </summary>
     public VerifyTwoFactorCommandHandler(
-        UserManager<IdentityUser> userManager,
+        UserManager<ApplicationUser> userManager,
         ITokenService tokenService,
         ILogger<VerifyTwoFactorCommandHandler> logger)
     {
@@ -63,3 +64,4 @@ public class VerifyTwoFactorCommandHandler : IRequestHandler<VerifyTwoFactorComm
         return new VerifyTwoFactorResult(token, true);
     }
 }
+
