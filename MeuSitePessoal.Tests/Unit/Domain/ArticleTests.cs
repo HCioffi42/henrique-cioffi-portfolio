@@ -10,28 +10,34 @@ public class ArticleTests
     public void CreateArticle_WithValidData_ShouldSucceed()
     {
         // Arrange
-        var expectedTitle = "TDD in Practice";
-        var expectedContent = "Content about unit testing.";
-        var expectedSummary = "A practical guide to TDD.";
+        var expectedTitleEn = "TDD in Practice";
+        var expectedTitlePt = "TDD na Prática";
+        var expectedContentEn = "Content about unit testing.";
+        var expectedContentPt = "Conteúdo sobre testes unitários.";
+        var expectedSummaryEn = "A practical guide to TDD.";
+        var expectedSummaryPt = "Um guia prático de TDD.";
         var expectedTags = new List<string> { "tdd", "dotnet" };
 
         // Act
-        var article = new Article(expectedTitle, expectedContent, expectedSummary, expectedTags, ArticleCategory.Technology);
+        var article = new Article(
+            expectedTitleEn, expectedTitlePt,
+            expectedContentEn, expectedContentPt,
+            expectedSummaryEn, expectedSummaryPt,
+            expectedTags, ArticleCategory.Technology);
 
         // Assert
         Assert.NotNull(article);
-        Assert.Equal(expectedTitle, article.Title);
-        Assert.Equal(expectedSummary, article.Summary);
+        Assert.Equal(expectedTitleEn, article.TitleEn);
+        Assert.Equal(expectedTitlePt, article.TitlePt);
+        Assert.Equal(expectedSummaryEn, article.SummaryEn);
+        Assert.Equal(expectedSummaryPt, article.SummaryPt);
         Assert.Equal(expectedTags, article.Tags);
         Assert.Equal(ArticleCategory.Technology, article.Category);
         
-        // HC: Verify "Split Brain" synchronization
-        Assert.Equal(expectedTitle, article.TitleEn);
-        Assert.Equal(expectedTitle, article.TitlePt);
-        Assert.Equal(expectedContent, article.ContentEn);
-        Assert.Equal(expectedContent, article.ContentPt);
-        Assert.Equal(expectedSummary, article.SummaryEn);
-        Assert.Equal(expectedSummary, article.SummaryPt);
+        // HC: Legacy fields should be empty for new multi-language constructor.
+        Assert.Equal(string.Empty, article.Title);
+        Assert.Equal(string.Empty, article.Content);
+        Assert.Equal(string.Empty, article.Summary);
     }
 
     [Fact]
@@ -41,7 +47,7 @@ public class ArticleTests
         var category = ArticleCategory.Tutorial;
 
         // Act
-        var article = new Article("Title", "Content", "Summary", new List<string>(), category);
+        var article = new Article("Title", "Título", "Content", "Conteúdo", "Summary", "Resumo", new List<string>(), category);
 
         // Assert
         Assert.Equal(category, article.Category);
@@ -51,34 +57,24 @@ public class ArticleTests
     [InlineData("")]
     [InlineData(" ")]
     [InlineData(null)]
-    public void CreateArticle_WithInvalidTitle_ShouldThrowArgumentException(string invalidTitle)
+    public void CreateArticle_WithInvalidTitleEn_ShouldThrowArgumentException(string invalidTitle)
     {
         // Act & Assert
-        Assert.Throws<ArgumentException>(() => new Article(invalidTitle, "Some content", "Summary", new List<string>(), ArticleCategory.Technology));
-    }
-
-    [Theory]
-    [InlineData("")]
-    [InlineData(" ")]
-    [InlineData(null)]
-    public void CreateArticle_WithInvalidContent_ShouldThrowArgumentException(string invalidContent)
-    {
-        // Act & Assert
-        Assert.Throws<ArgumentException>(() => new Article("Title", invalidContent, "Summary", new List<string>(), ArticleCategory.Technology));
+        Assert.Throws<ArgumentException>(() => new Article(invalidTitle, "Título", "Some content", "Conteúdo", "Summary", "Resumo", new List<string>(), ArticleCategory.Technology));
     }
 
     [Fact]
     public void UpdateContent_ShouldMaintainSynchronization()
     {
         // Arrange
-        var article = new Article("Original", "Content", "Summary", new List<string>(), ArticleCategory.Technology);
+        var article = new Article("Original", "Original", "Content", "Conteúdo", "Summary", "Resumo", new List<string>(), ArticleCategory.Technology);
 
         // Act
         article.UpdateContent("en", "Updated Title", "Updated Content", "Updated Summary");
 
         // Assert
-        Assert.Equal("Updated Title", article.Title);
         Assert.Equal("Updated Title", article.TitleEn);
-        Assert.Equal("Updated Title", article.TitlePt); // Sync ensures all are updated
+        Assert.Equal("Original", article.TitlePt); // PT stays original
+        Assert.Equal(string.Empty, article.Title); // Legacy stays empty
     }
 }

@@ -39,9 +39,12 @@ public class ArticleAuthorizationTests : BaseIntegrationTest
         await AuthenticateAsReaderAsync();
         var request = new
         {
-            Title = "Forbidden Article",
-            Content = "Content",
-            Summary = "Summary",
+            TitleEn = "Forbidden Article",
+            TitlePt = "Artigo Proibido",
+            ContentEn = "Content",
+            ContentPt = "Conteúdo",
+            SummaryEn = "Summary",
+            SummaryPt = "Resumo",
             Tags = new List<string>(),
             Category = ArticleCategory.Technology
         };
@@ -61,13 +64,17 @@ public class ArticleAuthorizationTests : BaseIntegrationTest
         await AuthenticateAsync();
         var createRequest = new
         {
-            Title = "Admin Article",
-            Content = "Content",
-            Summary = "Summary",
+            TitleEn = "Admin Article",
+            TitlePt = "Artigo Admin",
+            ContentEn = "Content",
+            ContentPt = "Conteúdo",
+            SummaryEn = "Summary",
+            SummaryPt = "Resumo",
             Tags = new List<string>(),
             Category = ArticleCategory.Technology
         };
         var createResponse = await _client.PostAsJsonAsync("/api/articles", createRequest);
+        createResponse.EnsureSuccessStatusCode();
         var articleId = await createResponse.Content.ReadFromJsonAsync<Guid>();
 
         // 2. Reader attempts to update
@@ -75,9 +82,12 @@ public class ArticleAuthorizationTests : BaseIntegrationTest
         var updateRequest = new
         {
             Id = articleId,
-            Title = "Updated by Reader",
-            Content = "Updated Content",
-            Summary = "Summary",
+            TitleEn = "Updated by Reader",
+            TitlePt = "Atualizado pelo Leitor",
+            ContentEn = "Updated Content",
+            ContentPt = "Conteúdo Atualizado",
+            SummaryEn = "Summary",
+            SummaryPt = "Resumo",
             Tags = new List<string>(),
             Category = ArticleCategory.Technology
         };
@@ -97,13 +107,17 @@ public class ArticleAuthorizationTests : BaseIntegrationTest
         await AuthenticateAsync();
         var createRequest = new
         {
-            Title = "Admin Article",
-            Content = "Content",
-            Summary = "Summary",
+            TitleEn = "Admin Article",
+            TitlePt = "Artigo Admin",
+            ContentEn = "Content",
+            ContentPt = "Conteúdo",
+            SummaryEn = "Summary",
+            SummaryPt = "Resumo",
             Tags = new List<string>(),
             Category = ArticleCategory.Technology
         };
         var createResponse = await _client.PostAsJsonAsync("/api/articles", createRequest);
+        createResponse.EnsureSuccessStatusCode();
         var articleId = await createResponse.Content.ReadFromJsonAsync<Guid>();
 
         // 2. Reader attempts to delete

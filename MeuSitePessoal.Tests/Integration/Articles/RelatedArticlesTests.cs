@@ -19,16 +19,16 @@ public class RelatedArticlesTests : BaseIntegrationTest
         await AuthenticateAsync();
         
         // Base article
-        var baseCmd = new CreateArticleCommand("Base", "Content", "Sum", ArticleCategory.Technology, new List<string> { "dotnet", "csharp" });
+        var baseCmd = new CreateArticleCommand("Base", "Base", "Content", "Conteúdo", "Sum", "Resumo", ArticleCategory.Technology, new List<string> { "dotnet", "csharp" });
         var baseResp = await _client.PostAsJsonAsync("/api/articles", baseCmd);
         var baseId = await baseResp.Content.ReadFromJsonAsync<Guid>();
 
         // Related article (shares 'dotnet')
-        var relatedCmd = new CreateArticleCommand("Related", "Content", "Sum", ArticleCategory.Technology, new List<string> { "dotnet", "testing" });
+        var relatedCmd = new CreateArticleCommand("Related", "Relacionado", "Content", "Conteúdo", "Sum", "Resumo", ArticleCategory.Technology, new List<string> { "dotnet", "testing" });
         await _client.PostAsJsonAsync("/api/articles", relatedCmd);
 
         // Unrelated article (shares nothing)
-        var unrelatedCmd = new CreateArticleCommand("Unrelated", "Content", "Sum", ArticleCategory.Technology, new List<string> { "java", "spring" });
+        var unrelatedCmd = new CreateArticleCommand("Unrelated", "Não Relacionado", "Content", "Conteúdo", "Sum", "Resumo", ArticleCategory.Technology, new List<string> { "java", "spring" });
         await _client.PostAsJsonAsync("/api/articles", unrelatedCmd);
 
         // Act
@@ -51,16 +51,16 @@ public class RelatedArticlesTests : BaseIntegrationTest
         // Arrange
         await AuthenticateAsync();
         
-        var baseCmd = new CreateArticleCommand("Base", "Content", "Sum", ArticleCategory.Technology, new List<string> { "tag1", "tag2", "tag3" });
+        var baseCmd = new CreateArticleCommand("Base", "Base", "Content", "Conteúdo", "Sum", "Resumo", ArticleCategory.Technology, new List<string> { "tag1", "tag2", "tag3" });
         var baseResp = await _client.PostAsJsonAsync("/api/articles", baseCmd);
         var baseId = await baseResp.Content.ReadFromJsonAsync<Guid>();
 
         // High relevance (2 tags)
-        var highRelCmd = new CreateArticleCommand("High", "Content", "Sum", ArticleCategory.Technology, new List<string> { "tag1", "tag2" });
+        var highRelCmd = new CreateArticleCommand("High", "Alto", "Content", "Conteúdo", "Sum", "Resumo", ArticleCategory.Technology, new List<string> { "tag1", "tag2" });
         await _client.PostAsJsonAsync("/api/articles", highRelCmd);
 
         // Low relevance (1 tag)
-        var lowRelCmd = new CreateArticleCommand("Low", "Content", "Sum", ArticleCategory.Technology, new List<string> { "tag1" });
+        var lowRelCmd = new CreateArticleCommand("Low", "Baixo", "Content", "Conteúdo", "Sum", "Resumo", ArticleCategory.Technology, new List<string> { "tag1" });
         await _client.PostAsJsonAsync("/api/articles", lowRelCmd);
 
         // Act

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Reply, User, Calendar, Edit2, Trash2, X, Check } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import type { Comment } from '../models/Comment';
 import { CommentForm } from './CommentForm';
 import { PermissionGate } from './PermissionGate';
@@ -24,6 +25,7 @@ export const CommentItem: React.FC<CommentItemProps> = ({
     onCommentCreated, 
     level = 0 
 }) => {
+    const { t } = useTranslation();
     const [isReplying, setIsReplying] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [editContent, setEditContent] = useState(comment.content);
@@ -46,27 +48,27 @@ export const CommentItem: React.FC<CommentItemProps> = ({
         setIsSubmitting(true);
         try {
             await commentService.updateComment(comment.id, editContent.trim());
-            toast.success('Comment updated');
+            toast.success(t('article.commentUpdated'));
             setIsEditing(false);
             onCommentCreated(); // Refresh comments
         } catch (error) {
             console.error('Failed to update comment:', error);
-            toast.error('Failed to update comment');
+            toast.error(t('article.commentUpdateFailed'));
         } finally {
             setIsSubmitting(false);
         }
     };
 
     const handleDelete = async () => {
-        if (!window.confirm('Are you sure you want to delete this comment?')) return;
+        if (!window.confirm(t('common.confirmDelete'))) return;
 
         try {
             await commentService.deleteComment(comment.id);
-            toast.success('Comment deleted');
+            toast.success(t('article.commentDeleted'));
             onCommentCreated(); // Refresh comments
         } catch (error) {
             console.error('Failed to delete comment:', error);
-            toast.error('Failed to delete comment');
+            toast.error(t('article.commentDeleteFailed'));
         }
     };
 
@@ -96,14 +98,14 @@ export const CommentItem: React.FC<CommentItemProps> = ({
                                 <button 
                                     onClick={() => setIsEditing(true)}
                                     className="p-1 text-zinc-400 hover:text-indigo-600 transition-colors"
-                                    title="Edit"
+                                    title={t('article.edit')}
                                 >
                                     <Edit2 className="w-3 h-3" />
                                 </button>
                                 <button 
                                     onClick={handleDelete}
                                     className="p-1 text-zinc-400 hover:text-red-600 transition-colors"
-                                    title="Delete"
+                                    title={t('common.delete')}
                                 >
                                     <Trash2 className="w-3 h-3" />
                                 </button>
@@ -128,7 +130,7 @@ export const CommentItem: React.FC<CommentItemProps> = ({
                                 className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 text-white text-xs font-bold rounded-lg hover:bg-indigo-700 transition-colors"
                             >
                                 <Check className="w-3 h-3" />
-                                Save
+                                {t('common.save')}
                             </button>
                             <button
                                 onClick={() => {
@@ -139,7 +141,7 @@ export const CommentItem: React.FC<CommentItemProps> = ({
                                 className="flex items-center gap-1.5 px-3 py-1.5 bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 text-xs font-bold rounded-lg hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
                             >
                                 <X className="w-3 h-3" />
-                                Cancel
+                                {t('common.cancel')}
                             </button>
                         </div>
                     </div>
@@ -160,7 +162,7 @@ export const CommentItem: React.FC<CommentItemProps> = ({
                         `}
                     >
                         <Reply className="w-3 h-3" />
-                        {isReplying ? 'Cancel Reply' : 'Reply'}
+                        {isReplying ? t('article.cancelReply') : t('article.reply')}
                     </button>
                 </div>
 

@@ -27,11 +27,18 @@ public class GetArticleByIdHandler : IRequestHandler<GetArticleByIdQuery, Articl
         var language = _languageProvider.GetCurrentLanguage();
 
         // Projects the domain entity to a language-agnostic DTO based on the detected language.
+        // Also includes raw localized fields to support Administrative UI (Edit).
         return new ArticleResponse(
             article.Id,
             language.StartsWith("pt") ? article.TitlePt : article.TitleEn,
+            article.TitleEn,
+            article.TitlePt,
             language.StartsWith("pt") ? article.ContentPt : article.ContentEn,
+            article.ContentEn,
+            article.ContentPt,
             language.StartsWith("pt") ? article.SummaryPt : article.SummaryEn,
+            article.SummaryEn,
+            article.SummaryPt,
             article.CreatedAt,
             article.Tags,
             article.Category

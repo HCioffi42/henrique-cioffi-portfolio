@@ -23,8 +23,11 @@ public class ArticlesIntegrationTests : BaseIntegrationTest
         await AuthenticateAsync();
         var command = new CreateArticleCommand(
             "Integration Test Title",
+            "Título de Teste de Integração",
             "This is a full content for integration testing.",
+            "Conteúdo completo para teste de integração.",
             "Quick summary for testing.",
+            "Resumo rápido para teste.",
             ArticleCategory.Technology,
             new List<string> { "integration", "test", "dotnet" }
         );
@@ -54,7 +57,11 @@ public class ArticlesIntegrationTests : BaseIntegrationTest
         await AuthenticateAsync();
         for (int i = 1; i <= 3; i++)
         {
-            var command = new CreateArticleCommand($"Article {i}", $"Content {i}", $"Summary {i}", ArticleCategory.Technology, new List<string>());
+            var command = new CreateArticleCommand(
+                $"Article {i}", $"Artigo {i}",
+                $"Content {i}", $"Conteúdo {i}",
+                $"Summary {i}", $"Resumo {i}",
+                ArticleCategory.Technology, new List<string>());
             await _client.PostAsJsonAsync("/api/articles", command);
         }
 
@@ -77,7 +84,11 @@ public class ArticlesIntegrationTests : BaseIntegrationTest
     {
         // Arrange: Seeds an article.
         await AuthenticateAsync();
-        var command = new CreateArticleCommand("Search by ID", "Content", "Summary", ArticleCategory.Technology, new List<string>());
+        var command = new CreateArticleCommand(
+            "Search by ID", "Busca por ID",
+            "Content", "Conteúdo",
+            "Summary", "Resumo",
+            ArticleCategory.Technology, new List<string>());
         var createResponse = await _client.PostAsJsonAsync("/api/articles", command);
         var id = await createResponse.Content.ReadFromJsonAsync<Guid>();
 
@@ -97,11 +108,20 @@ public class ArticlesIntegrationTests : BaseIntegrationTest
     {
         // Arrange: Seeds an article and prepares update data.
         await AuthenticateAsync();
-        var createCommand = new CreateArticleCommand("Original", "Content", "Summary", ArticleCategory.Technology, new List<string>());
+        var createCommand = new CreateArticleCommand(
+            "Original", "Original",
+            "Content", "Conteúdo",
+            "Summary", "Resumo",
+            ArticleCategory.Technology, new List<string>());
         var createResponse = await _client.PostAsJsonAsync("/api/articles", createCommand);
         var id = await createResponse.Content.ReadFromJsonAsync<Guid>();
 
-        var updateCommand = new UpdateArticleCommand(id, "Updated Title", "New Content", "New Summary", ArticleCategory.Tutorial, new List<string> { "updated" });
+        var updateCommand = new UpdateArticleCommand(
+            id, 
+            "Updated Title", "Título Atualizado",
+            "New Content", "Novo Conteúdo",
+            "New Summary", "Novo Resumo",
+            ArticleCategory.Tutorial, new List<string> { "updated" });
 
         // Act: Updates the article.
         var response = await _client.PutAsJsonAsync($"/api/articles/{id}", updateCommand);
@@ -120,7 +140,11 @@ public class ArticlesIntegrationTests : BaseIntegrationTest
     {
         // Arrange: Seeds an article for deletion.
         await AuthenticateAsync();
-        var command = new CreateArticleCommand("For Deletion", "Content", "Summary", ArticleCategory.Technology, new List<string>());
+        var command = new CreateArticleCommand(
+            "For Deletion", "Para Deleção",
+            "Content", "Conteúdo",
+            "Summary", "Resumo",
+            ArticleCategory.Technology, new List<string>());
         var createResponse = await _client.PostAsJsonAsync("/api/articles", command);
         var id = await createResponse.Content.ReadFromJsonAsync<Guid>();
 

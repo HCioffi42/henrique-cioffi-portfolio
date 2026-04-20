@@ -20,12 +20,15 @@ public class GetArticlesSearchQueryHandlerTests
 {
     private readonly IMemoryCache _cache;
     private readonly Mock<IArticleSearchService> _searchServiceMock;
+    private readonly Mock<ILanguageProvider> _languageProviderMock;
 
     public GetArticlesSearchQueryHandlerTests()
     {
         // HC: Initializes a real MemoryCache instance to be used across unit tests.
         _cache = new MemoryCache(new MemoryCacheOptions());
         _searchServiceMock = new Mock<IArticleSearchService>();
+        _languageProviderMock = new Mock<ILanguageProvider>();
+        _languageProviderMock.Setup(x => x.GetCurrentLanguage()).Returns("en");
     }
 
     [Fact]
@@ -43,7 +46,7 @@ public class GetArticlesSearchQueryHandlerTests
             .Setup(s => s.SearchAsync(searchTerm, It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(expectedResult);
 
-        var handler = new GetArticlesSearchQueryHandler(_searchServiceMock.Object, _cache);
+        var handler = new GetArticlesSearchQueryHandler(_searchServiceMock.Object, _cache, _languageProviderMock.Object);
         var query = new GetArticlesSearchQuery(SearchTerm: searchTerm);
 
         // Act
@@ -70,7 +73,7 @@ public class GetArticlesSearchQueryHandlerTests
             .Setup(s => s.SearchAsync("", It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(expectedResult);
 
-        var handler = new GetArticlesSearchQueryHandler(_searchServiceMock.Object, _cache);
+        var handler = new GetArticlesSearchQueryHandler(_searchServiceMock.Object, _cache, _languageProviderMock.Object);
         var query = new GetArticlesSearchQuery(SearchTerm: "");
 
         // Act
@@ -96,7 +99,7 @@ public class GetArticlesSearchQueryHandlerTests
             .Setup(s => s.SearchAsync("Match", 2, 2, It.IsAny<CancellationToken>()))
             .ReturnsAsync(expectedResult);
 
-        var handler = new GetArticlesSearchQueryHandler(_searchServiceMock.Object, _cache);
+        var handler = new GetArticlesSearchQueryHandler(_searchServiceMock.Object, _cache, _languageProviderMock.Object);
         var query = new GetArticlesSearchQuery(SearchTerm: "Match", PageNumber: 2, PageSize: 2);
 
         // Act
@@ -120,7 +123,7 @@ public class GetArticlesSearchQueryHandlerTests
             .Setup(s => s.SearchAsync(searchTerm, 1, 10, It.IsAny<CancellationToken>()))
             .ReturnsAsync(expectedResult);
 
-        var handler = new GetArticlesSearchQueryHandler(_searchServiceMock.Object, _cache);
+        var handler = new GetArticlesSearchQueryHandler(_searchServiceMock.Object, _cache, _languageProviderMock.Object);
         var query = new GetArticlesSearchQuery(SearchTerm: searchTerm);
 
         // Act
@@ -141,7 +144,7 @@ public class GetArticlesSearchQueryHandlerTests
             .Setup(s => s.SearchAsync("XYZ", It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(expectedResult);
 
-        var handler = new GetArticlesSearchQueryHandler(_searchServiceMock.Object, _cache);
+        var handler = new GetArticlesSearchQueryHandler(_searchServiceMock.Object, _cache, _languageProviderMock.Object);
         var query = new GetArticlesSearchQuery(SearchTerm: "XYZ");
 
         // Act

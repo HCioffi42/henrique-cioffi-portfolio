@@ -1,4 +1,5 @@
 import { Helmet } from 'react-helmet-async';
+import { useTranslation } from 'react-i18next';
 
 interface SEOProps {
     title?: string;
@@ -29,9 +30,10 @@ export const SEO = ({
     type = 'website',
     articleData
 }: SEOProps) => {
-    const siteTitle = 'MySite';
-    const defaultTitle = 'MySite - Technology, Design, and Engineering';
-    const defaultDescription = 'Exploring the intersection of technology, design, and software engineering. Portfolio and blog by Henrique Cioffi.';
+    const { t } = useTranslation();
+    const siteTitle = 'Henrique Cioffi';
+    const defaultTitle = `Henrique Cioffi - ${t('home.title')}`;
+    const defaultDescription = t('home.seoDescription');
     const defaultKeywords = 'software engineering, react, dotnet, technology, design, programming';
     const siteUrl = window.location.origin;
     const currentUrl = url || window.location.href;

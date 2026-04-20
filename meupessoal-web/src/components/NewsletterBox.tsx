@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { newsletterService } from '../services/newsletterService';
 import axios from 'axios';
 
@@ -15,6 +16,7 @@ interface NewsletterBoxProps {
  * Supports a 'default' wide card variant and a 'sidebar' compact variant.
  */
 export const NewsletterBox: React.FC<NewsletterBoxProps> = ({ variant = 'default' }) => {
+    const { t } = useTranslation();
     const [email, setEmail] = useState('');
     const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
     const [message, setMessage] = useState('');
@@ -32,7 +34,7 @@ export const NewsletterBox: React.FC<NewsletterBoxProps> = ({ variant = 'default
         try {
             await newsletterService.subscribe({ email });
             setStatus('success');
-            setMessage('Thank you for subscribing!');
+            setMessage(t('newsletter.success'));
             setEmail('');
         } catch (error: unknown) {
             setStatus('error');
@@ -44,15 +46,12 @@ export const NewsletterBox: React.FC<NewsletterBoxProps> = ({ variant = 'default
 
                 // HC: This block identifies specific business errors while providing a fallback for server failures.
                 if (error.response?.status === 409) {
-                    setMessage(apiMessage || 'This email is already subscribed.');
-                } else if (error.response?.status === 400) {
-                    setMessage(apiMessage || 'Invalid email format.');
+                    setMessage(apiMessage || t('newsletter.error'));
                 } else {
-                    // HC: It captures the 500 error from RazorLight and displays a readable message.
-                    setMessage(apiMessage || 'A server error occurred. Please try again later.');
+                    setMessage(apiMessage || t('newsletter.error'));
                 }
             } else {
-                setMessage('An unexpected error occurred. Please try again.');
+                setMessage(t('common.error'));
             }
         }
     };
@@ -67,13 +66,13 @@ export const NewsletterBox: React.FC<NewsletterBoxProps> = ({ variant = 'default
                 ${isSidebar ? 'text-sm font-bold uppercase tracking-wider' : 'text-2xl font-bold'} 
                 text-zinc-900 dark:text-white mb-2
             `}>
-                Newsletter
+                {t('newsletter.title')}
             </h3>
             <p className={`
                 ${isSidebar ? 'text-[11px] leading-relaxed' : 'text-base'} 
                 text-zinc-500 dark:text-zinc-400 mb-6
             `}>
-                Get the latest articles delivered directly to your inbox.
+                {t('newsletter.subtitle')}
             </p>
             
             <form onSubmit={handleSubmit} className={`flex ${isSidebar ? 'flex-col' : 'flex-col sm:flex-row'} gap-3`}>
@@ -81,7 +80,7 @@ export const NewsletterBox: React.FC<NewsletterBoxProps> = ({ variant = 'default
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="Email address"
+                    placeholder={t('newsletter.placeholder')}
                     required
                     disabled={status === 'loading'}
                     className={`
@@ -97,7 +96,7 @@ export const NewsletterBox: React.FC<NewsletterBoxProps> = ({ variant = 'default
                         bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl shadow-md shadow-indigo-500/20 disabled:opacity-50 transition-all active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-indigo-500/20
                     `}
                 >
-                    {status === 'loading' ? '...' : 'Subscribe'}
+                    {status === 'loading' ? '...' : t('newsletter.button')}
                 </button>
             </form>
             

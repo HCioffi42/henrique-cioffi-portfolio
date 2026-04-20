@@ -4,8 +4,14 @@ import { ArticleCategory } from './ArticleCategory';
 export interface Article {
     id: string;
     title: string;
+    titleEn: string;
+    titlePt: string;
     content: string;
+    contentEn: string;
+    contentPt: string;
     summary: string;
+    summaryEn: string;
+    summaryPt: string;
     tags: string[];
     category: ArticleCategory;
     createdAt: string;

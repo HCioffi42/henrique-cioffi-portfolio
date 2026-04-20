@@ -81,7 +81,7 @@ export const Layout = ({ children }: LayoutProps) => {
                             <button
                                 onClick={toggleLanguage}
                                 className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-xs font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors uppercase cursor-pointer"
-                                aria-label="Switch Language"
+                                aria-label={t('nav.switchLanguage')}
                             >
                                 <Languages className="w-4 h-4" />
                                 <span className="hidden sm:inline">{i18n.language.startsWith('pt') ? 'EN' : 'PT'}</span>

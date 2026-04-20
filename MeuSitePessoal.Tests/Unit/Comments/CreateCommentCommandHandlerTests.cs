@@ -37,7 +37,7 @@ public class CreateCommentCommandHandlerTests
     {
         // Arrange
         using var context = GetMemoryContext();
-        var article = new Article("Title", "Content", "Summary", new List<string>(), ArticleCategory.Technology);
+        var article = new Article("Title", "Title", "Content", "Content", "Summary", "Summary", new List<string>(), ArticleCategory.Technology);
         context.Articles.Add(article);
         await context.SaveChangesAsync();
 
@@ -106,7 +106,7 @@ public class CreateCommentCommandHandlerTests
     {
         // Arrange
         using var context = GetMemoryContext();
-        var article = new Article("Title", "Content", "Summary", new List<string>(), ArticleCategory.Technology);
+        var article = new Article("Title", "Title", "Content", "Content", "Summary", "Summary", new List<string>(), ArticleCategory.Technology);
         context.Articles.Add(article);
         
         var parentComment = new Comment(article.Id, "Parent", "Author");
@@ -135,8 +135,8 @@ public class CreateCommentCommandHandlerTests
     {
         // Arrange
         using var context = GetMemoryContext();
-        var article1 = new Article("Title 1", "Content", "Summary", new List<string>(), ArticleCategory.Technology);
-        var article2 = new Article("Title 2", "Content", "Summary", new List<string>(), ArticleCategory.Technology);
+        var article1 = new Article("Title 1", "Title 1", "Content", "Content", "Summary", "Summary", new List<string>(), ArticleCategory.Technology);
+        var article2 = new Article("Title 2", "Title 2", "Content", "Content", "Summary", "Summary", new List<string>(), ArticleCategory.Technology);
         context.Articles.AddRange(article1, article2);
         
         var parentComment = new Comment(article1.Id, "Parent", "Author");

@@ -44,7 +44,7 @@ public class GetArticlesQueryHandlerTests
         {
             for (int i = 1; i <= 10; i++)
             {
-                context.Articles.Add(new Article($"Title {i}", "Content", "Summary", new List<string>(), ArticleCategory.Technology));
+                context.Articles.Add(new Article($"Title {i}", $"Título {i}", "Content", "Conteúdo", "Summary", "Resumo", new List<string>(), ArticleCategory.Technology));
             }
             await context.SaveChangesAsync();
         }
@@ -105,9 +105,9 @@ public class GetArticlesQueryHandlerTests
         // Arrange
         using (var context = new BlogDbContext(_options))
         {
-            context.Articles.Add(new Article("Match", "Content", "Summary", new List<string> { "dotnet", "csharp" }, ArticleCategory.Technology));
-            context.Articles.Add(new Article("Partial", "Content", "Summary", new List<string> { "dotnet" }, ArticleCategory.Technology));
-            context.Articles.Add(new Article("None", "Content", "Summary", new List<string> { "react" }, ArticleCategory.Technology));
+            context.Articles.Add(new Article("Match", "Correspondência", "Content", "Conteúdo", "Summary", "Resumo", new List<string> { "dotnet", "csharp" }, ArticleCategory.Technology));
+            context.Articles.Add(new Article("Partial", "Parcial", "Content", "Conteúdo", "Summary", "Resumo", new List<string> { "dotnet" }, ArticleCategory.Technology));
+            context.Articles.Add(new Article("None", "Nenhum", "Content", "Conteúdo", "Summary", "Resumo", new List<string> { "react" }, ArticleCategory.Technology));
             await context.SaveChangesAsync();
         }
 
@@ -137,8 +137,8 @@ public class GetArticlesQueryHandlerTests
         // Arrange
         using (var context = new BlogDbContext(_options))
         {
-            context.Articles.Add(new Article("Tech Article", "Content", "Summary", new List<string>(), ArticleCategory.Technology));
-            context.Articles.Add(new Article("News Article", "Content", "Summary", new List<string>(), ArticleCategory.News));
+            context.Articles.Add(new Article("Tech Article", "Artigo Tech", "Content", "Conteúdo", "Summary", "Resumo", new List<string>(), ArticleCategory.Technology));
+            context.Articles.Add(new Article("News Article", "Artigo News", "Content", "Conteúdo", "Summary", "Resumo", new List<string>(), ArticleCategory.News));
             await context.SaveChangesAsync();
         }
 

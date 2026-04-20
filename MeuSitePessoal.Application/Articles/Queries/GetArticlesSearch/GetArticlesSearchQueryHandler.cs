@@ -13,14 +13,16 @@ public class GetArticlesSearchQueryHandler : IRequestHandler<GetArticlesSearchQu
 {
     private readonly IArticleSearchService _searchService;
     private readonly IMemoryCache _cache;
+    private readonly ILanguageProvider _languageProvider;
 
     /// <summary>
     /// Initializes a new instance of the handler with the injected database context.
     /// </summary>
-    public GetArticlesSearchQueryHandler(IArticleSearchService searchService, IMemoryCache cache)
+    public GetArticlesSearchQueryHandler(IArticleSearchService searchService, IMemoryCache cache, ILanguageProvider languageProvider)
     {
         _searchService = searchService;
         _cache = cache;
+        _languageProvider = languageProvider;
     }
 
     /// <summary>
@@ -28,8 +30,9 @@ public class GetArticlesSearchQueryHandler : IRequestHandler<GetArticlesSearchQu
     /// </summary>
     public async Task<PagedResult<ArticleSummaryDto>> Handle(GetArticlesSearchQuery request, CancellationToken cancellationToken)
     {
+        var language = _languageProvider.GetCurrentLanguage();
         var cacheVersion = _cache.GetOrCreate<Guid>("Articles_CacheVersion", _ => Guid.NewGuid());
-        var cacheKey = GenerateCacheKey(request, cacheVersion);
+        var cacheKey = GenerateCacheKey(request, cacheVersion, language);
 
         if (_cache.TryGetValue(cacheKey, out PagedResult<ArticleSummaryDto>? cachedResult))
         {
@@ -48,10 +51,10 @@ public class GetArticlesSearchQueryHandler : IRequestHandler<GetArticlesSearchQu
         return result;
     }
     
-    private string GenerateCacheKey(GetArticlesSearchQuery query, Guid version)
+    private string GenerateCacheKey(GetArticlesSearchQuery query, Guid version, string language)
     {
         // HC: Normalizes the search term to ensure cache consistency.
         var term = query.SearchTerm?.Trim().ToLower() ?? "empty";
-        return $"Search_{term}_p{query.PageNumber}_s{query.PageSize}_v{version}";
+        return $"Search_{term}_p{query.PageNumber}_s{query.PageSize}_l{language}_v{version}";
     }
 }

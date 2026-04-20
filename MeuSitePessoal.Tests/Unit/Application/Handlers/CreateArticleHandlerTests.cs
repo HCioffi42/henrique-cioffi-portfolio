@@ -30,9 +30,12 @@ public class CreateArticleHandlerTests
     {
         // Arrange
         var command = new CreateArticleCommand(
-            "Título do Article",
-            "Conteúdo completo do article.",
-            "Summary do article.",
+            "English Title",
+            "Portuguese Title",
+            "English Content",
+            "Portuguese Content",
+            "English Summary",
+            "Portuguese Summary",
             ArticleCategory.Technology,
             new List<string> { "tag1", "tag2" }
         );
@@ -44,9 +47,12 @@ public class CreateArticleHandlerTests
         Assert.NotEqual(Guid.Empty, result);
         _mediatorMock.Verify(m => m.Publish(It.IsAny<MeuSitePessoal.Domain.Events.ArticlePublishedEvent>(), It.IsAny<CancellationToken>()), Times.Once);
         _repositoryMock.Verify(r => r.AddAsync(It.Is<Article>(a => 
-            a.Title == command.Title && 
-            a.Content == command.Content &&
-            a.Summary == command.Summary &&
+            a.TitleEn == command.TitleEn && 
+            a.TitlePt == command.TitlePt &&
+            a.ContentEn == command.ContentEn &&
+            a.ContentPt == command.ContentPt &&
+            a.SummaryEn == command.SummaryEn &&
+            a.SummaryPt == command.SummaryPt &&
             a.Category == command.Category &&
             a.Tags.SequenceEqual(command.Tags)
         )), Times.Once);

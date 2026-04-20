@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 
 interface SearchBarProps {
   onSearch: (searchTerm: string) => void;
@@ -6,6 +7,7 @@ interface SearchBarProps {
 }
 
 export const SearchBar = ({ onSearch, initialValue = '' }: SearchBarProps) => {
+  const { t } = useTranslation();
   const [isExpanded, setIsExpanded] = useState(!!initialValue);
   const [inputValue, setInputValue] = useState(initialValue);
   // HC: Tracks the previous prop value to sync state without useEffect
@@ -14,7 +16,6 @@ export const SearchBar = ({ onSearch, initialValue = '' }: SearchBarProps) => {
 
   /**
    * HC: Adjusts state while rendering. 
-   * This is the recommended pattern to sync state with props without cascading renders.
    */
   if (initialValue !== prevInitialValue) {
     setPrevInitialValue(initialValue);
@@ -49,7 +50,7 @@ export const SearchBar = ({ onSearch, initialValue = '' }: SearchBarProps) => {
           <button 
               onClick={triggerSearch}
               className="w-9 h-9 flex items-center justify-center flex-shrink-0 text-gray-500 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors focus:outline-none"
-              aria-label="Search">
+              aria-label={t('common.search')}>
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
@@ -62,7 +63,7 @@ export const SearchBar = ({ onSearch, initialValue = '' }: SearchBarProps) => {
           onChange={(e) => setInputValue(e.target.value)}
           onKeyDown={handleKeyDown}
           onFocus={() => setIsExpanded(true)}
-          placeholder="Search articles..."
+          placeholder={t('common.search')}
           className={`
             bg-transparent border-none focus:ring-0 text-sm transition-all duration-300 placeholder-gray-400 dark:placeholder-gray-500 text-gray-900 dark:text-slate-100
             ${isExpanded ? 'w-full pr-4 opacity-100' : 'w-0 opacity-0 pointer-events-none'}

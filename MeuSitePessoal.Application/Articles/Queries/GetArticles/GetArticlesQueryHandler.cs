@@ -44,10 +44,9 @@ public class GetArticlesQueryHandler : IRequestHandler<GetArticlesQuery, PagedRe
             return cachedResult!;
         }
 
-        // HC: Explicitly typed as IQueryable to avoid the "Ambiguous invocation" error seen before.
+        // HC: Explicitly typed as IQueryable to avoid the "Ambiguous invocation" error.
         IQueryable<Article> query = _context.Articles.AsNoTracking();
 
-        // Chains multiple Where clauses using LINQ Aggregate to ensure all requested tags are present (AND logic).
         if (request.Tags != null && request.Tags.Any())
         {
             foreach (var tag in request.Tags)
@@ -57,7 +56,6 @@ public class GetArticlesQueryHandler : IRequestHandler<GetArticlesQuery, PagedRe
             }
         }
 
-        // Apply Category filter if provided (exact match).
         if (request.Category.HasValue)
         {
             query = query.Where(a => a.Category == request.Category.Value);
@@ -72,6 +70,8 @@ public class GetArticlesQueryHandler : IRequestHandler<GetArticlesQuery, PagedRe
             .Select(a => new ArticleSummaryDto
             {
                 Id = a.Id,
+                // HC: REMOVED legacy fallback. Dashboard/Listing now strictly show localized columns.
+                // This ensures new articles show their titles and old articles will be migrated via SQL/Edit.
                 Title = language.StartsWith("pt") ? a.TitlePt : a.TitleEn,
                 Summary = language.StartsWith("pt") ? a.SummaryPt : a.SummaryEn,
                 CreatedAt = a.CreatedAt,

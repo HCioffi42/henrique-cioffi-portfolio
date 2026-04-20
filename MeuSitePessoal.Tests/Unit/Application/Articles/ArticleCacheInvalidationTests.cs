@@ -3,7 +3,6 @@ using MediatR;
 using MeuSitePessoal.Application.Articles.Commands.CreateArticle;
 using MeuSitePessoal.Application.Articles.Commands.DeleteArticle;
 using MeuSitePessoal.Application.Articles.Commands.UpdateArticle;
-using MeuSitePessoal.Domain;
 using MeuSitePessoal.Domain.Entities;
 using MeuSitePessoal.Domain.Interfaces;
 using Microsoft.Extensions.Caching.Memory;
@@ -34,7 +33,7 @@ public class ArticleCacheInvalidationTests
     public async Task CreateArticle_ShouldInvalidateCache()
     {
         // Arrange
-        var command = new CreateArticleCommand("Title", "Content", "Summary", ArticleCategory.Technology, new List<string>());
+        var command = new CreateArticleCommand("Title", "Título", "Content", "Conteúdo", "Summary", "Resumo", ArticleCategory.Technology, new List<string>());
         var handler = new CreateArticleHandler(_repositoryMock.Object, _cacheMock.Object, _mediatorMock.Object);
 
         // Act
@@ -50,8 +49,8 @@ public class ArticleCacheInvalidationTests
     {
         // Arrange
         var articleId = Guid.NewGuid();
-        var command = new UpdateArticleCommand(articleId, "New Title", "New Content", "New Summary", ArticleCategory.Technology, new List<string>());
-        var article = new Article("Old", "Old", "Old", new List<string>(), ArticleCategory.Technology);
+        var command = new UpdateArticleCommand(articleId, "New Title", "Novo Título", "New Content", "Novo Conteúdo", "New Summary", "Novo Resumo", ArticleCategory.Technology, new List<string>());
+        var article = new Article("Old", "Old", "Old", "Old", "Old", "Old", new List<string>(), ArticleCategory.Technology);
         
         _repositoryMock.Setup(x => x.GetByIdAsync(articleId)).ReturnsAsync(article);
         _repositoryMock.Setup(x => x.UpdateAsync(article)).ReturnsAsync(true);

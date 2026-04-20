@@ -24,7 +24,7 @@ public class GetArticleByIdHandlerTests
     public async Task Handle_QuandoArtigoExiste_DeveRetornarArtigo()
     {
         // Arrange
-        var artigo = new Article("Title", "Content", "Summary", new List<string>(), ArticleCategory.Technology);
+        var artigo = new Article("Title", "Title", "Content", "Content", "Summary", "Summary", new List<string>(), ArticleCategory.Technology);
         var id = artigo.Id;
         _repositoryMock.Setup(r => r.GetByIdAsync(id)).ReturnsAsync(artigo);
 

@@ -39,7 +39,7 @@ public class GetCommentsByArticleIdQueryHandlerTests
     {
         // Arrange
         using var context = GetMemoryContext();
-        var article = new Article("Title", "Content", "Summary", new List<string>(), ArticleCategory.Technology);
+        var article = new Article("Title", "Title", "Content", "Content", "Summary", "Summary", new List<string>(), ArticleCategory.Technology);
         context.Articles.Add(article);
         await context.SaveChangesAsync();
 
@@ -59,7 +59,7 @@ public class GetCommentsByArticleIdQueryHandlerTests
     {
         // Arrange
         using var context = GetMemoryContext();
-        var article = new Article("Title", "Content", "Summary", new List<string>(), ArticleCategory.Technology);
+        var article = new Article("Title", "Title", "Content", "Content", "Summary", "Summary", new List<string>(), ArticleCategory.Technology);
         context.Articles.Add(article);
         await context.SaveChangesAsync();
 

@@ -1,18 +1,23 @@
-﻿import api from './api';
+import api from './api';
 import type { Article, PagedArticles } from '../models/Article';
 import type { ArticleSummary } from '../models/ArticleSummary';
 import type { PagedResult } from '../models/PagedResult';
 import { ArticleCategory } from '../models/ArticleCategory';
 
 export interface CreateArticleCommand {
-  title: string;
-  summary: string;
-  content: string;
+  titleEn: string;
+  titlePt: string;
+  summaryEn: string;
+  summaryPt: string;
+  contentEn: string;
+  contentPt: string;
   tags: string[];
   category: ArticleCategory;
 }
 
-export type UpdateArticleCommand = CreateArticleCommand;
+export interface UpdateArticleCommand extends CreateArticleCommand {
+    id: string;
+}
 
 /**
  * Retrieves a paginated list of all articles.

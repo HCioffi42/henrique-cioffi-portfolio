@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { MessageSquare, AlertCircle } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import type { Comment } from '../models/Comment';
 import { commentService } from '../services/commentService';
 import { CommentItem } from './CommentItem';
@@ -14,6 +15,7 @@ interface CommentSectionProps {
  * Handles fetching, reloading, and rendering the comment tree.
  */
 export const CommentSection: React.FC<CommentSectionProps> = ({ articleId }) => {
+    const { t } = useTranslation();
     const [comments, setComments] = useState<Comment[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -27,11 +29,11 @@ export const CommentSection: React.FC<CommentSectionProps> = ({ articleId }) => 
             setComments(data);
         } catch (err: unknown) {
             console.error('Failed to load comments:', err);
-            setError('Comments are temporarily unavailable.');
+            setError(t('common.error'));
         } finally {
             setIsLoading(false);
         }
-    }, [articleId]);
+    }, [articleId, t]);
 
     useEffect(() => {
         void loadComments();
@@ -42,16 +44,16 @@ export const CommentSection: React.FC<CommentSectionProps> = ({ articleId }) => 
             <div className="flex items-center justify-between mb-8">
                 <h2 className="text-2xl font-bold text-zinc-900 dark:text-white flex items-center gap-3">
                     <MessageSquare className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
-                    Discussion
+                    {t('article.discussion')}
                 </h2>
                 <div className="text-xs font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest bg-zinc-50 dark:bg-zinc-900 px-3 py-1 rounded-full border border-zinc-100 dark:border-zinc-800">
-                    {comments.length} Thoughts
+                    {comments.length} {t('article.thoughts')}
                 </div>
             </div>
 
             {/* HC: Top-level Comment Form for new threads. */}
             <div className="mb-12 bg-zinc-50/50 dark:bg-zinc-900/50 p-6 rounded-3xl border border-zinc-100/50 dark:border-zinc-800/50">
-                <h3 className="text-sm font-bold text-zinc-900 dark:text-white mb-4 uppercase tracking-tight">Leave a thought</h3>
+                <h3 className="text-sm font-bold text-zinc-900 dark:text-white mb-4 uppercase tracking-tight">{t('article.leaveThought')}</h3>
                 <CommentForm articleId={articleId} onCommentCreated={loadComments} />
             </div>
 
@@ -59,7 +61,7 @@ export const CommentSection: React.FC<CommentSectionProps> = ({ articleId }) => 
             {isLoading && comments.length === 0 ? (
                 <div className="py-12 flex flex-col items-center justify-center gap-3 opacity-50">
                     <div className="animate-spin rounded-full h-8 w-8 border-2 border-indigo-600 border-t-transparent"></div>
-                    <span className="text-sm font-medium text-zinc-500">Loading comments...</span>
+                    <span className="text-sm font-medium text-zinc-500">{t('common.loading')}</span>
                 </div>
             ) : error ? (
                 <div className="py-12 flex flex-col items-center justify-center gap-3 text-red-500">
@@ -72,8 +74,8 @@ export const CommentSection: React.FC<CommentSectionProps> = ({ articleId }) => 
                         <MessageSquare className="w-8 h-8" />
                     </div>
                     <div className="space-y-1">
-                        <p className="text-zinc-900 dark:text-white font-bold">No comments yet</p>
-                        <p className="text-zinc-500 dark:text-zinc-400 text-sm">Be the first to share your perspective on this article.</p>
+                        <p className="text-zinc-900 dark:text-white font-bold">{t('article.noComments')}</p>
+                        <p className="text-zinc-500 dark:text-zinc-400 text-sm">{t('article.noCommentsDesc')}</p>
                     </div>
                 </div>
             ) : (

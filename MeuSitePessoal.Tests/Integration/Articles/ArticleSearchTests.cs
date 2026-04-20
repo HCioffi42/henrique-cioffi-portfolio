@@ -21,8 +21,8 @@ public class ArticleSearchTests : BaseIntegrationTest
         // Arrange
         // Seeds the database with known articles to ensure predictable search results.
         await AuthenticateAsync();
-        var command1 = new CreateArticleCommand("Unique Search Title", "Content", "Summary", ArticleCategory.Technology, new List<string>());
-        var command2 = new CreateArticleCommand("Another Article", "Content", "Summary", ArticleCategory.Technology, new List<string>());
+        var command1 = new CreateArticleCommand("Unique Search Title", "Título de Busca Único", "Content", "Conteúdo", "Summary", "Resumo", ArticleCategory.Technology, new List<string>());
+        var command2 = new CreateArticleCommand("Another Article", "Outro Artigo", "Content", "Conteúdo", "Summary", "Resumo", ArticleCategory.Technology, new List<string>());
         await _client.PostAsJsonAsync("/api/articles", command1);
         await _client.PostAsJsonAsync("/api/articles", command2);
 
@@ -45,7 +45,7 @@ public class ArticleSearchTests : BaseIntegrationTest
     {
         // Arrange
         await AuthenticateAsync();
-        var command = new CreateArticleCommand("Title", "Content", "SecretKeyword in summary", ArticleCategory.Technology, new List<string>());
+        var command = new CreateArticleCommand("Title", "Título", "Content", "Conteúdo", "SecretKeyword in summary", "SecretKeyword no resumo", ArticleCategory.Technology, new List<string>());
         await _client.PostAsJsonAsync("/api/articles", command);
 
         // Act
@@ -65,7 +65,7 @@ public class ArticleSearchTests : BaseIntegrationTest
     {
         // Arrange
         await AuthenticateAsync();
-        var command = new CreateArticleCommand("UPPERCASE TITLE", "Content", "Summary", ArticleCategory.Technology, new List<string>());
+        var command = new CreateArticleCommand("UPPERCASE TITLE", "TÍTULO EM MAIÚSCULO", "Content", "Conteúdo", "Summary", "Resumo", ArticleCategory.Technology, new List<string>());
         await _client.PostAsJsonAsync("/api/articles", command);
 
         // Act
@@ -88,7 +88,7 @@ public class ArticleSearchTests : BaseIntegrationTest
         await AuthenticateAsync();
         for (int i = 1; i <= 5; i++)
         {
-            var command = new CreateArticleCommand($"Paginated Match {i}", "Content", "Summary", ArticleCategory.Technology, new List<string>());
+            var command = new CreateArticleCommand($"Paginated Match {i}", $"Correspondência Paginada {i}", "Content", "Conteúdo", "Summary", "Resumo", ArticleCategory.Technology, new List<string>());
             await _client.PostAsJsonAsync("/api/articles", command);
         }
 
@@ -126,7 +126,7 @@ public class ArticleSearchTests : BaseIntegrationTest
     {
         // Arrange
         await AuthenticateAsync();
-        var command = new CreateArticleCommand("Standard Article", "Content", "Summary", ArticleCategory.Technology, new List<string>());
+        var command = new CreateArticleCommand("Standard Article", "Artigo Padrão", "Content", "Conteúdo", "Summary", "Resumo", ArticleCategory.Technology, new List<string>());
         await _client.PostAsJsonAsync("/api/articles", command);
 
         // Act

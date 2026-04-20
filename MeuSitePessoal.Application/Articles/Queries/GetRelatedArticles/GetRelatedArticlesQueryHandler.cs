@@ -15,11 +15,13 @@ public class GetRelatedArticlesQueryHandler : IRequestHandler<GetRelatedArticles
 {
     private readonly IBlogDbContext _context;
     private readonly IMemoryCache _cache;
+    private readonly ILanguageProvider _languageProvider;
 
-    public GetRelatedArticlesQueryHandler(IBlogDbContext context, IMemoryCache cache)
+    public GetRelatedArticlesQueryHandler(IBlogDbContext context, IMemoryCache cache, ILanguageProvider languageProvider)
     {
         _context = context;
         _cache = cache;
+        _languageProvider = languageProvider;
     }
 
     /// <summary>
@@ -27,8 +29,9 @@ public class GetRelatedArticlesQueryHandler : IRequestHandler<GetRelatedArticles
     /// </summary>
     public async Task<List<ArticleSummaryDto>> Handle(GetRelatedArticlesQuery request, CancellationToken cancellationToken)
     {
+        var language = _languageProvider.GetCurrentLanguage();
         var cacheVersion = _cache.GetOrCreate<Guid>("Articles_CacheVersion", _ => Guid.NewGuid());
-        var cacheKey = $"Related_{request.ArticleId}_l{request.Limit}_v{cacheVersion}";
+        var cacheKey = $"Related_{request.ArticleId}_l{request.Limit}_l{language}_v{cacheVersion}";
         
         if (_cache.TryGetValue(cacheKey, out List<ArticleSummaryDto>? cachedList))
         {
@@ -46,8 +49,7 @@ public class GetRelatedArticlesQueryHandler : IRequestHandler<GetRelatedArticles
 
         var baseTags = baseArticle.Tags.Select(t => t.ToLower()).ToList();
 
-        // 2. Fetch all other articles and calculate the intersection in memory (EF Core limitation with complex array logic).
-        // Since the blog dataset is relatively small, this is acceptable. For larger datasets, a more direct SQL approach or FTS would be needed.
+        // 2. Fetch all other articles and calculate the intersection in memory.
         var otherArticles = await _context.Articles
             .AsNoTracking()
             .Where(a => a.Id != request.ArticleId)
@@ -66,8 +68,9 @@ public class GetRelatedArticlesQueryHandler : IRequestHandler<GetRelatedArticles
             .Select(x => new ArticleSummaryDto
             {
                 Id = x.Article.Id,
-                Title = x.Article.Title,
-                Summary = x.Article.Summary,
+                // HC: REMOVED legacy fallback for related.
+                Title = language.StartsWith("pt") ? x.Article.TitlePt : x.Article.TitleEn,
+                Summary = language.StartsWith("pt") ? x.Article.SummaryPt : x.Article.SummaryEn,
                 CreatedAt = x.Article.CreatedAt,
                 Tags = x.Article.Tags,
                 Category = x.Article.Category

@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { storage } from '../util/storage';
+import i18n from '../i18n/config';
 
 // HC: Logic to determine the API base URL based on the environment mode.
 const isDev = import.meta.env.MODE === 'development';
@@ -23,14 +24,18 @@ const api = axios.create({
 });
 
 /**
- * Request interceptor injects the JWT token from storage into the Authorization header.
- * This ensures every outgoing request to the API is authenticated if a session exists.
+ * Request interceptor injects the JWT token and current language preference.
+ * This ensures every outgoing request is authenticated and localized.
  */
 api.interceptors.request.use((config) => {
     const token = storage.getToken();
     if (token) {
         config.headers.Authorization = `Bearer ${token}`;
     }
+
+    // Inject the current language for content projection on the backend
+    config.headers['Accept-Language'] = i18n.language || 'en';
+    
     return config;
 });
 

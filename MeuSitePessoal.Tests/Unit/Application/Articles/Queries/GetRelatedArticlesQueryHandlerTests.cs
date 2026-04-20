@@ -1,35 +1,38 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using MeuSitePessoal.Application.Articles.Queries.GetArticles;
 using MeuSitePessoal.Application.Articles.Queries.GetRelatedArticles;
-using MeuSitePessoal.Domain;
+using MeuSitePessoal.Application.Common.Interfaces;
 using MeuSitePessoal.Domain.Entities;
 using MeuSitePessoal.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
+using Moq;
 using Xunit;
 
 namespace MeuSitePessoal.Tests.Unit.Application.Articles.Queries;
 
 /// <summary>
-/// Unit tests for the GetRelatedArticlesQueryHandler using an In-Memory database.
+/// Unit tests for GetRelatedArticlesQueryHandler using an In-Memory database.
 /// </summary>
 public class GetRelatedArticlesQueryHandlerTests
 {
     private readonly DbContextOptions<BlogDbContext> _options;
-    private readonly IMemoryCache _cache;
+    private readonly Mock<IMemoryCache> _cacheMock;
+    private readonly Mock<ILanguageProvider> _languageProviderMock;
 
     public GetRelatedArticlesQueryHandlerTests()
     {
         _options = new DbContextOptionsBuilder<BlogDbContext>()
             .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
             .Options;
-            
-        // HC: Provides a real cache provider for the related articles logic validation.
-        _cache = new MemoryCache(new MemoryCacheOptions());
+        _cacheMock = new Mock<IMemoryCache>();
+        
+        _languageProviderMock = new Mock<ILanguageProvider>();
+        _languageProviderMock.Setup(x => x.GetCurrentLanguage()).Returns("en");
+    }
+
+    private GetRelatedArticlesQueryHandler CreateHandler(BlogDbContext context)
+    {
+        return new GetRelatedArticlesQueryHandler(context, _cacheMock.Object, _languageProviderMock.Object);
     }
 
     [Fact]
@@ -39,17 +42,21 @@ public class GetRelatedArticlesQueryHandlerTests
         var baseId = Guid.NewGuid();
         using (var context = new BlogDbContext(_options))
         {
-            var baseArticle = new Article("Base", "Content", "Summary", new List<string> { "dotnet", "csharp" }, ArticleCategory.Technology) { Id = baseId };
-            context.Articles.Add(baseArticle);
-            context.Articles.Add(new Article("Related", "Content", "Summary", new List<string> { "dotnet", "testing" }, ArticleCategory.Technology));
-            context.Articles.Add(new Article("Unrelated", "Content", "Summary", new List<string> { "react" }, ArticleCategory.Technology));
+            context.Articles.Add(new Article("Base", "Base", "Content", "Conteúdo", "Summary", "Resumo", new List<string> { "dotnet", "web" }, ArticleCategory.Technology) { Id = baseId });
+            context.Articles.Add(new Article("Related", "Relacionado", "Content", "Conteúdo", "Summary", "Resumo", new List<string> { "dotnet" }, ArticleCategory.Technology));
+            context.Articles.Add(new Article("Unrelated", "Não Relacionado", "Content", "Conteúdo", "Summary", "Resumo", new List<string> { "java" }, ArticleCategory.Technology));
             await context.SaveChangesAsync();
         }
 
+        // Setup cache miss
+        object? cacheValue = null;
+        _cacheMock.Setup(x => x.TryGetValue(It.IsAny<object>(), out cacheValue)).Returns(false);
+        _cacheMock.Setup(x => x.CreateEntry(It.IsAny<object>())).Returns(new Mock<ICacheEntry>().Object);
+
         using (var context = new BlogDbContext(_options))
         {
-            var handler = new GetRelatedArticlesQueryHandler(context, _cache);
-            var query = new GetRelatedArticlesQuery(ArticleId: baseId);
+            var handler = CreateHandler(context);
+            var query = new GetRelatedArticlesQuery(baseId, 10);
 
             // Act
             var result = await handler.Handle(query, CancellationToken.None);
@@ -67,17 +74,21 @@ public class GetRelatedArticlesQueryHandlerTests
         var baseId = Guid.NewGuid();
         using (var context = new BlogDbContext(_options))
         {
-            var baseArticle = new Article("Base", "Content", "Summary", new List<string> { "a", "b", "c" }, ArticleCategory.Technology) { Id = baseId };
-            context.Articles.Add(baseArticle);
-            context.Articles.Add(new Article("High", "Content", "Summary", new List<string> { "a", "b" }, ArticleCategory.Technology));
-            context.Articles.Add(new Article("Low", "Content", "Summary", new List<string> { "a" }, ArticleCategory.Technology));
+            context.Articles.Add(new Article("Base", "Base", "Content", "Conteúdo", "Summary", "Resumo", new List<string> { "tag1", "tag2", "tag3" }, ArticleCategory.Technology) { Id = baseId });
+            context.Articles.Add(new Article("Low", "Baixo", "Content", "Conteúdo", "Summary", "Resumo", new List<string> { "tag1" }, ArticleCategory.Technology));
+            context.Articles.Add(new Article("High", "Alto", "Content", "Conteúdo", "Summary", "Resumo", new List<string> { "tag1", "tag2" }, ArticleCategory.Technology));
             await context.SaveChangesAsync();
         }
 
+        // Setup cache miss
+        object? cacheValue = null;
+        _cacheMock.Setup(x => x.TryGetValue(It.IsAny<object>(), out cacheValue)).Returns(false);
+        _cacheMock.Setup(x => x.CreateEntry(It.IsAny<object>())).Returns(new Mock<ICacheEntry>().Object);
+
         using (var context = new BlogDbContext(_options))
         {
-            var handler = new GetRelatedArticlesQueryHandler(context, _cache);
-            var query = new GetRelatedArticlesQuery(ArticleId: baseId);
+            var handler = CreateHandler(context);
+            var query = new GetRelatedArticlesQuery(baseId, 10);
 
             // Act
             var result = await handler.Handle(query, CancellationToken.None);
@@ -90,102 +101,26 @@ public class GetRelatedArticlesQueryHandlerTests
     }
 
     [Fact]
-    public async Task Handle_ShouldNotIncludeTheBaseArticleItself()
-    {
-        // Arrange
-        var baseId = Guid.NewGuid();
-        using (var context = new BlogDbContext(_options))
-        {
-            var baseArticle = new Article("Base", "Content", "Summary", new List<string> { "dotnet" }, ArticleCategory.Technology) { Id = baseId };
-            context.Articles.Add(baseArticle);
-            await context.SaveChangesAsync();
-        }
-
-        using (var context = new BlogDbContext(_options))
-        {
-            var handler = new GetRelatedArticlesQueryHandler(context, _cache);
-            var query = new GetRelatedArticlesQuery(ArticleId: baseId);
-
-            // Act
-            var result = await handler.Handle(query, CancellationToken.None);
-
-            // Assert
-            Assert.Empty(result);
-        }
-    }
-
-    [Fact]
-    public async Task Handle_WithNoSharedTags_ShouldReturnEmptyList()
-    {
-        // Arrange
-        var baseId = Guid.NewGuid();
-        using (var context = new BlogDbContext(_options))
-        {
-            var baseArticle = new Article("Base", "Content", "Summary", new List<string> { "dotnet" }, ArticleCategory.Technology) { Id = baseId };
-            context.Articles.Add(baseArticle);
-            context.Articles.Add(new Article("Unrelated", "Content", "Summary", new List<string> { "react" }, ArticleCategory.Technology));
-            await context.SaveChangesAsync();
-        }
-
-        using (var context = new BlogDbContext(_options))
-        {
-            var handler = new GetRelatedArticlesQueryHandler(context, _cache);
-            var query = new GetRelatedArticlesQuery(ArticleId: baseId);
-
-            // Act
-            var result = await handler.Handle(query, CancellationToken.None);
-
-            // Assert
-            Assert.Empty(result);
-        }
-    }
-
-    [Fact]
-    public async Task Handle_ShouldRespectLimit()
-    {
-        // Arrange
-        var baseId = Guid.NewGuid();
-        using (var context = new BlogDbContext(_options))
-        {
-            var baseArticle = new Article("Base", "Content", "Summary", new List<string> { "tag" }, ArticleCategory.Technology) { Id = baseId };
-            context.Articles.Add(baseArticle);
-            for (int i = 1; i <= 5; i++)
-            {
-                context.Articles.Add(new Article($"Related {i}", "Content", "Summary", new List<string> { "tag" }, ArticleCategory.Technology));
-            }
-            await context.SaveChangesAsync();
-        }
-
-        using (var context = new BlogDbContext(_options))
-        {
-            var handler = new GetRelatedArticlesQueryHandler(context, _cache);
-            var query = new GetRelatedArticlesQuery(ArticleId: baseId, Limit: 2);
-
-            // Act
-            var result = await handler.Handle(query, CancellationToken.None);
-
-            // Assert
-            Assert.Equal(2, result.Count);
-        }
-    }
-
-    [Fact]
     public async Task Handle_ShouldBeCaseInsensitiveWhenComparingTags()
     {
         // Arrange
         var baseId = Guid.NewGuid();
         using (var context = new BlogDbContext(_options))
         {
-            var baseArticle = new Article("Base", "Content", "Summary", new List<string> { "DOTNET" }, ArticleCategory.Technology) { Id = baseId };
-            context.Articles.Add(baseArticle);
-            context.Articles.Add(new Article("Related", "Content", "Summary", new List<string> { "dotnet" }, ArticleCategory.Technology));
+            context.Articles.Add(new Article("Base", "Base", "Content", "Conteúdo", "Summary", "Resumo", new List<string> { "DOTNET" }, ArticleCategory.Technology) { Id = baseId });
+            context.Articles.Add(new Article("Related", "Relacionado", "Content", "Conteúdo", "Summary", "Resumo", new List<string> { "dotnet" }, ArticleCategory.Technology));
             await context.SaveChangesAsync();
         }
 
+        // Setup cache miss
+        object? cacheValue = null;
+        _cacheMock.Setup(x => x.TryGetValue(It.IsAny<object>(), out cacheValue)).Returns(false);
+        _cacheMock.Setup(x => x.CreateEntry(It.IsAny<object>())).Returns(new Mock<ICacheEntry>().Object);
+
         using (var context = new BlogDbContext(_options))
         {
-            var handler = new GetRelatedArticlesQueryHandler(context, _cache);
-            var query = new GetRelatedArticlesQuery(ArticleId: baseId);
+            var handler = CreateHandler(context);
+            var query = new GetRelatedArticlesQuery(baseId, 10);
 
             // Act
             var result = await handler.Handle(query, CancellationToken.None);

@@ -26,7 +26,6 @@ public class UpdateArticleCommandHandler : IRequestHandler<UpdateArticleCommand,
     /// </summary>
     public async Task<bool> Handle(UpdateArticleCommand request, CancellationToken cancellationToken)
     {
-        // Fetches the existing entity from the repository using the new naming.
         var article = await _repository.GetByIdAsync(request.Id);
 
         if (article == null)
@@ -35,14 +34,17 @@ public class UpdateArticleCommandHandler : IRequestHandler<UpdateArticleCommand,
         }
 
         // Maps the command to the existing entity.
+        // AutoMapper will handle the mapping of localized fields (TitleEn, TitlePt, etc.).
         _mapper.Map(request, article);
 
-        // Persists changes through the updated repository method.
+        // HC: STOPPED mirroring to legacy columns for new/updated records as requested.
+        // We keep the legacy columns in the database for now, but we don't write to them anymore.
+        // This ensures the "clean transition" where new data only exists in the new columns.
+
         var success = await _repository.UpdateAsync(article);
         
         if (success)
         {
-            // Invalidate the article listing cache.
             _cache.Remove("Articles_CacheVersion");
         }
         else
