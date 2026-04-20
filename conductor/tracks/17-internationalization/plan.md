@@ -22,3 +22,8 @@
 - [x] Verify language detection on first load.
 - [x] Verify language persistence in `localStorage`.
 - [x] Verify responsive behavior of the toggle button.
+
+## Phase 5: Multi-language Schema
+- [x] Update Domain Entities (Article, Category) to support localized fields.
+- [x] Migrate database to support multi-language content columns.
+- [x] Implement translation service for dynamic database content.

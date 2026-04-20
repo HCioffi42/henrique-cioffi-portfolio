@@ -3,7 +3,7 @@
   "name": "Internationalization (i18n)",
   "status": "completed",
   "date_started": "2026-04-18",
-  "date_completed": "2026-04-18",
+  "date_completed": "2026-04-20",
   "related_files": [
     "meupessoal-web/src/i18n/config.ts",
     "meupessoal-web/src/main.tsx",

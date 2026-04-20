@@ -1,7 +1,7 @@
 # Project Roadmap: MeuSitePessoal
 
-**Current Milestone**: Phase 4: Scalability & Engagement
-**Global Progress**: [██████████████████░░] 93%
+**Current Milestone**: Phase 5: SDET Excellence (Quality Engineering)
+**Global Progress**: [███████████████████░] 95%
 
 ---
 
@@ -116,7 +116,8 @@
 ### [✓] Track 17: Internationalization
 - [x] **17.1 - i18next Setup**: Configure the translation framework with lazy loading and browser detection.
 - [x] **17.2 - Language Toggle**: Add a responsive EN/PT selector to the header with persistence.
-- [ ] **17.3 - Multi-language Schema**: Adjust the PostgreSQL schema to handle translated content (titles, summaries, and tags).
+- [x] **17.3 - Multi-language Schema**: Adjust the PostgreSQL schema to handle translated content (titles, summaries, and tags).
+- [x] **17.4 - Dashboard & UI localization**: Side-by-side editing and static string translation across the platform.
 
 ---
 

@@ -1,7 +1,7 @@
 # Specification - Track 17: Internationalization (i18n)
 
 ## 1. Problem Statement
-The portfolio needs to support multiple languages to reach a wider audience, specifically English (EN) and Portuguese (PT). The implementation must be efficient (lazy loading) and persist user preferences.
+The portfolio needs to support multiple languages to reach a wider audience, specifically English (EN) and Portuguese (PT). The implementation must be efficient (lazy loading) and persist user preferences. Additionally, dynamic content (Articles, Categories) must support localization.
 
 ## 2. Requirements
 - Support for English (default) and Portuguese.
@@ -10,6 +10,7 @@ The portfolio needs to support multiple languages to reach a wider audience, spe
 - Persistence of the chosen language in `localStorage`.
 - Language toggle UI in the Header.
 - Integration with existing Tailwind CSS styling.
+- Localization of dynamic database content (titles, summaries, tags).
 
 ## 3. Technical Architecture
 
@@ -23,9 +24,10 @@ The portfolio needs to support multiple languages to reach a wider audience, spe
 - Configuration file located at `src/i18n/config.ts`.
 - Translation files served from `public/locales/{{lng}}/translation.json`.
 - Main application wrapped in `React.Suspense` to handle asynchronous loading.
+- Database: Extend entities to store localized content (e.g., using JSONB or dedicated translation tables).
 
 ### 3.3 Data Models (JSON Structure)
-Translations follow a nested JSON structure:
+UI Translations follow a nested JSON structure:
 - `nav`: Navigation links.
 - `footer`: Footer content.
 - `common`: Reusable strings (Loading, Error, etc.).
