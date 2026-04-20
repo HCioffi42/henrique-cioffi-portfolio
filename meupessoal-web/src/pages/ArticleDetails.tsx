@@ -10,6 +10,7 @@ import { SEO } from '../components/SEO';
 import { ArticleCard } from '../components/ArticleCard';
 import { CommentSection } from '../components/CommentSection';
 import { PermissionGate } from '../components/PermissionGate';
+import { getCategoryKey } from '../util/categoryMapping';
 
 /**
  * Custom hook to handle article data fetching logic and related articles.
@@ -121,9 +122,7 @@ export const ArticleDetails = () => {
                 articleData={{
                     publishedTime: article.createdAt,
                     tags: article.tags,
-                    section: t(`categories.${Object.keys({
-                        technology: 1, tutorial: 2, life: 3, news: 4, opinion: 5, projects: 6
-                    }).find(key => (({technology: 1, tutorial: 2, life: 3, news: 4, opinion: 5, projects: 6}) as any)[key] === article.category) || 'technology'}`)
+                    section: t(`categories.${getCategoryKey(article.category)}`)
                 }}
             />
 

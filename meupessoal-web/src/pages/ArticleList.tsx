@@ -60,16 +60,14 @@ const ArticleList = () => {
 
     const { seoTitle, seoDescription } = useMemo(() => {
         let title = t('home.title');
-        let description = t('home.seoDescription');
+        const description = t('home.seoDescription');
 
         if (searchTerm) {
             title = t('home.searchResults', { term: searchTerm });
         } else if (currentTags.length > 0) {
             title = `Articles tagged #${currentTags.join(', #')}`;
         } else if (category !== undefined) {
-            const catKey = Object.keys({ technology: 1, tutorial: 2, life: 3, news: 4, opinion: 5, projects: 6 })
-                .find(key => (({ technology: 1, tutorial: 2, life: 3, news: 4, opinion: 5, projects: 6 }) as any)[key] === category) || 'technology';
-            title = t('home.browsingCategory', { category: t(`categories.${catKey}`) });
+            title = t('home.browsingCategory', { category: t(`categories.${getCategoryKey(category)}`) });
         }
 
         return { seoTitle: title, seoDescription: description };
@@ -132,7 +130,7 @@ const ArticleList = () => {
                             ? t('home.filteringBy', { count: currentTags.length })
                             : category !== undefined
                                 ? t('home.browsingCategory', { 
-                                    category: t(`categories.${Object.keys({ technology: 1, tutorial: 2, life: 3, news: 4, opinion: 5, projects: 6 }).find(k => (({technology: 1, tutorial: 2, life: 3, news: 4, opinion: 5, projects: 6}) as any)[k] === category)}`) 
+                                    category: t(`categories.${getCategoryKey(category)}`) 
                                   })
                                 : t('home.title')}
                 </h1>
@@ -143,7 +141,7 @@ const ArticleList = () => {
                             ? t('home.discoveringTags', { tags: currentTags.join(' and ') })
                             : category !== undefined
                                 ? t('home.allInCategory', { 
-                                    category: t(`categories.${Object.keys({ technology: 1, tutorial: 2, life: 3, news: 4, opinion: 5, projects: 6 }).find(k => (({technology: 1, tutorial: 2, life: 3, news: 4, opinion: 5, projects: 6}) as any)[k] === category)}`) 
+                                    category: t(`categories.${getCategoryKey(category)}`) 
                                   })
                                 : t('home.subtitle')}
                 </p>
@@ -171,7 +169,7 @@ const ArticleList = () => {
                             <div className="inline-flex items-center gap-2 bg-amber-50 dark:bg-amber-950/30 border border-amber-100 dark:border-amber-900/50 px-4 py-1.5 rounded-full shadow-sm">
                                 <span className="text-sm text-amber-800 dark:text-amber-500 font-bold tracking-wide">
                                     {t('home.categoryFilter', { 
-                                        category: t(`categories.${Object.keys({ technology: 1, tutorial: 2, life: 3, news: 4, opinion: 5, projects: 6 }).find(k => (({technology: 1, tutorial: 2, life: 3, news: 4, opinion: 5, projects: 6}) as any)[k] === category)}`) 
+                                        category: t(`categories.${getCategoryKey(category)}`) 
                                     })}
                                 </span>
                                 <button onClick={removeCategoryFilter} className="text-amber-400 hover:text-red-500 rounded-full p-0.5 transition-colors cursor-pointer">

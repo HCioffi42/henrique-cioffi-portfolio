@@ -7,6 +7,7 @@ import { MarkdownToolbar } from '../components/MarkdownToolbar';
 import { MarkdownRenderer } from '../components/MarkdownRenderer';
 import { ArticleCategory, ArticleCategoryOptions } from '../models/ArticleCategory';
 import notificationService from '../services/notificationService';
+import { getCategoryKey } from '../util/categoryMapping';
 
 /**
  * Page component for creating a new article with side-by-side localized inputs (EN/PT).
@@ -257,7 +258,7 @@ export const CreateArticle = () => {
                             >
                                 {ArticleCategoryOptions.map(option => (
                                     <option key={option.value} value={option.value} className="bg-white dark:bg-slate-900">
-                                        {t(`categories.${Object.keys({technology:1, tutorial:2, life:3, news:4, opinion:5, projects:6}).find(k => (({technology:1, tutorial:2, life:3, news:4, opinion:5, projects:6}) as any)[k] === option.value)}`)}
+                                        {t(`categories.${getCategoryKey(option.value)}`)}
                                     </option>
                                 ))}
                             </select>

@@ -8,6 +8,7 @@ import { MarkdownRenderer } from '../components/MarkdownRenderer';
 import { ArticleCategory, ArticleCategoryOptions } from '../models/ArticleCategory';
 import notificationService from '../services/notificationService';
 import { updateArticle } from '../services/articleService';
+import { getCategoryKey } from '../util/categoryMapping';
 
 /**
  * Page component for editing an existing article with side-by-side localized inputs (EN/PT).
@@ -299,7 +300,7 @@ export const EditArticle = () => {
                             >
                                 {ArticleCategoryOptions.map(option => (
                                     <option key={option.value} value={option.value} className="bg-white dark:bg-slate-900">
-                                        {t(`categories.${Object.keys({technology:1, tutorial:2, life:3, news:4, opinion:5, projects:6}).find(k => (({technology:1, tutorial:2, life:3, news:4, opinion:5, projects:6}) as any)[k] === option.value)}`)}
+                                        {t(`categories.${getCategoryKey(option.value)}`)}
                                     </option>
                                 ))}
                             </select>
