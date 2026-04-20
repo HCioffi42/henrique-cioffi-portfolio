@@ -7,6 +7,7 @@ import { ArticleCard } from '../components/ArticleCard';
 import Pagination from '../components/Pagination';
 import { ArticleCategory } from '../models/ArticleCategory';
 import { SEO } from '../components/SEO';
+import { getCategoryKey } from '../util/categoryMapping';
 
 const PAGE_SIZE = 6;
 

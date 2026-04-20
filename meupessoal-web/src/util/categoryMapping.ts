@@ -8,13 +8,13 @@ export enum ArticleCategory {
 }
 
 export const getCategoryKey = (value: number): string => {
-  const mapping: Record<number, string> = {
-    [ArticleCategory.Technology]: 'technology',
-    [ArticleCategory.Tutorial]: 'tutorial',
-    [ArticleCategory.Life]: 'life',
-    [ArticleCategory.News]: 'news',
-    [ArticleCategory.Opinion]: 'opinion',
-    [ArticleCategory.Projects]: 'projects',
+  const mapping: { [key: number]: string } = {
+    1: 'technology',
+    2: 'tutorial',
+    3: 'life',
+    4: 'news',
+    5: 'opinion',
+    6: 'projects',
   };
   return mapping[value] || 'technology';
 };

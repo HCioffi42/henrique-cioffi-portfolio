@@ -1,5 +1,5 @@
 import React from 'react';
-import { useTranslation, Trans } from 'react-i18next';
+import { useTranslation } from 'react-i18next';
 
 interface DeleteModalProps {
     isOpen: boolean;
@@ -21,10 +21,7 @@ export const DeleteModal: React.FC<DeleteModalProps> = ({ isOpen, title, onConfi
             <div className="bg-white dark:bg-slate-900 rounded-xl shadow-xl max-w-md w-full p-6 animate-in zoom-in duration-200 border border-gray-100 dark:border-slate-800">
                 <h3 className="text-xl font-bold text-gray-900 dark:text-slate-100 mb-2">{t('common.confirmDeleteTitle')}</h3>
                 <p className="text-gray-600 dark:text-slate-400 mb-6 leading-relaxed">
-                    <Trans i18nKey="common.confirmDeleteDesc" values={{ title }}>
-                        Are you sure you want to delete <span className="font-semibold text-gray-800 dark:text-slate-200">"{{title}}"</span>? 
-                        This action cannot be undone.
-                    </Trans>
+                    {t('common.confirmDeleteDesc', { title })}
                 </p>
                 
                 <div className="flex justify-end gap-3 font-bold">

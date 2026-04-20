@@ -152,8 +152,8 @@ const Login: React.FC = () => {
         {view === 'twoFactor' && (
           <form className="mt-8 space-y-4" onSubmit={handleTotpSubmit}>
             <div className="rounded-md bg-indigo-50 dark:bg-indigo-950/30 p-4 text-sm text-indigo-700 dark:text-indigo-300 border border-indigo-100 dark:border-indigo-900/50">
-              <Trans i18nKey="auth.login.twoFactorDesc" values={{ username: pendingUsername }}>
-                Open your authenticator app and enter the 6-digit code for <span className="font-semibold">{{username: pendingUsername}}</span>.
+              <Trans i18nKey="auth.login.twoFactorDesc">
+                Open your authenticator app and enter the 6-digit code.
               </Trans>
             </div>
             <div>
