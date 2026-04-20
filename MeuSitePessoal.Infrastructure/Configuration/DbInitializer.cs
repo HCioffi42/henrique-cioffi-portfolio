@@ -18,8 +18,8 @@ public static class DbInitializer
     /// Seeds roles, admin user, and initial articles into the database.
     /// </summary>
     public static async Task SeedAsync(
-        BlogDbContext context, 
-        UserManager<IdentityUser> userManager, 
+        BlogDbContext context,
+        UserManager<ApplicationUser> userManager,
         RoleManager<IdentityRole> roleManager,
         IConfiguration configuration,
         ILogger logger)
@@ -52,11 +52,12 @@ public static class DbInitializer
             if (adminUser == null)
             {
                 logger.LogInformation("--> Seed: Admin user {Email} not found. Creating...", adminEmail);
-                adminUser = new IdentityUser 
-                { 
-                    UserName = adminEmail, 
-                    Email = adminEmail, 
-                    EmailConfirmed = true 
+                adminUser = new ApplicationUser
+                {
+                    UserName = adminEmail,
+                    Email = adminEmail,
+                    EmailConfirmed = true,
+                    PreferredLanguage = "en"
                 };
 
                 var result = await userManager.CreateAsync(adminUser, adminPassword);
@@ -93,29 +94,41 @@ public static class DbInitializer
         {
             new Article(
                 "Getting started with .NET 8 and C#", 
+                "Iniciando com .NET 8 e C#",
                 "This is the content of my first technical article about the .NET platform.", 
+                "Este é o conteúdo do meu primeiro artigo técnico sobre a plataforma .NET.",
                 "An introductory guide to the modern .NET ecosystem.", 
+                "Um guia introdutório ao ecossistema .NET moderno.",
                 new List<string> { ".net", "csharp", "backend" },
                 ArticleCategory.Technology),
             
             new Article(
                 "PostgreSQL on Docker", 
+                "PostgreSQL no Docker",
                 "Learn how to quickly spin up a Postgres container for your tests.", 
+                "Aprenda como subir rapidamente um container Postgres para seus testes.",
                 "Quick database environment setup.", 
+                "Configuração rápida de ambiente de banco de dados.",
                 new List<string> { "docker", "database", "postgres" },
                 ArticleCategory.Technology),
             
             new Article(
                 "Clean Architecture in Practice", 
+                "Clean Architecture na Prática",
                 "How to organize your layers to maintain sustainable long-term code.", 
+                "Como organizar suas camadas para manter um código sustentável a longo prazo.",
                 "Tips for organizing ASP.NET Core projects.", 
+                "Dicas para organizar projetos ASP.NET Core.",
                 new List<string> { "architecture", "clean-code" },
                 ArticleCategory.Technology),
             
             new Article(
                 "Welcome to my new Blog",
+                "Bem-vindo ao meu novo Blog",
                 "This is the first article after the English refactoring.",
+                "Este é o primeiro artigo após o refactoring para inglês.",
                 "A fresh start with clean code.",
+                "Um novo começo com código limpo.",
                 new List<string> { "dotnet", "clean-code" },
                 ArticleCategory.News)
         };

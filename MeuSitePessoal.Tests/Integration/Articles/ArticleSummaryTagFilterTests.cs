@@ -19,9 +19,9 @@ public class ArticleSummaryTagFilterTests : BaseIntegrationTest
     {
         // Arrange
         await AuthenticateAsync();
-        await _client.PostAsJsonAsync("/api/articles", new CreateArticleCommand("Tech 1", "Content", "Summary", ArticleCategory.Technology, new List<string>()));
-        await _client.PostAsJsonAsync("/api/articles", new CreateArticleCommand("News 1", "Content", "Summary", ArticleCategory.News, new List<string>()));
-        await _client.PostAsJsonAsync("/api/articles", new CreateArticleCommand("Tech 2", "Content", "Summary", ArticleCategory.Technology, new List<string>()));
+        await _client.PostAsJsonAsync("/api/articles", new CreateArticleCommand("Tech 1", "Tecnologia 1", "Content", "Conteúdo", "Summary", "Resumo", ArticleCategory.Technology, new List<string>()));
+        await _client.PostAsJsonAsync("/api/articles", new CreateArticleCommand("News 1", "Notícias 1", "Content", "Conteúdo", "Summary", "Resumo", ArticleCategory.News, new List<string>()));
+        await _client.PostAsJsonAsync("/api/articles", new CreateArticleCommand("Tech 2", "Tecnologia 2", "Content", "Conteúdo", "Summary", "Resumo", ArticleCategory.Technology, new List<string>()));
 
         // Act
         _client.DefaultRequestHeaders.Authorization = null;
@@ -41,9 +41,9 @@ public class ArticleSummaryTagFilterTests : BaseIntegrationTest
     {
         // Arrange
         await AuthenticateAsync();
-        await _client.PostAsJsonAsync("/api/articles", new CreateArticleCommand("Tech Dotnet", "Content", "Summary", ArticleCategory.Technology, new List<string> { "dotnet" }));
-        await _client.PostAsJsonAsync("/api/articles", new CreateArticleCommand("Tech React", "Content", "Summary", ArticleCategory.Technology, new List<string> { "react" }));
-        await _client.PostAsJsonAsync("/api/articles", new CreateArticleCommand("News Dotnet", "Content", "Summary", ArticleCategory.News, new List<string> { "dotnet" }));
+        await _client.PostAsJsonAsync("/api/articles", new CreateArticleCommand("Tech Dotnet", "Tecnologia Dotnet", "Content", "Conteúdo", "Summary", "Resumo", ArticleCategory.Technology, new List<string> { "dotnet" }));
+        await _client.PostAsJsonAsync("/api/articles", new CreateArticleCommand("Tech React", "Tecnologia React", "Content", "Conteúdo", "Summary", "Resumo", ArticleCategory.Technology, new List<string> { "react" }));
+        await _client.PostAsJsonAsync("/api/articles", new CreateArticleCommand("News Dotnet", "Notícias Dotnet", "Content", "Conteúdo", "Summary", "Resumo", ArticleCategory.News, new List<string> { "dotnet" }));
 
         // Act
         _client.DefaultRequestHeaders.Authorization = null;
@@ -65,9 +65,9 @@ public class ArticleSummaryTagFilterTests : BaseIntegrationTest
     {
         // Arrange: Authenticates for setup and seeds data.
         await AuthenticateAsync();
-        await _client.PostAsJsonAsync("/api/articles", new CreateArticleCommand("Title 1", "Content", "Summary", ArticleCategory.Technology, new List<string> { "dotnet", "csharp" }));
-        await _client.PostAsJsonAsync("/api/articles", new CreateArticleCommand("Title 2", "Content", "Summary", ArticleCategory.Technology, new List<string> { "react", "frontend" }));
-        await _client.PostAsJsonAsync("/api/articles", new CreateArticleCommand("Title 3", "Content", "Summary", ArticleCategory.Technology, new List<string> { "dotnet", "backend" }));
+        await _client.PostAsJsonAsync("/api/articles", new CreateArticleCommand("Title 1", "Título 1", "Content", "Conteúdo", "Summary", "Resumo", ArticleCategory.Technology, new List<string> { "dotnet", "csharp" }));
+        await _client.PostAsJsonAsync("/api/articles", new CreateArticleCommand("Title 2", "Título 2", "Content", "Conteúdo", "Summary", "Resumo", ArticleCategory.Technology, new List<string> { "react", "frontend" }));
+        await _client.PostAsJsonAsync("/api/articles", new CreateArticleCommand("Title 3", "Título 3", "Content", "Conteúdo", "Summary", "Resumo", ArticleCategory.Technology, new List<string> { "dotnet", "backend" }));
 
         // Act: Requests filtered summaries (Anonymous access allowed).
         _client.DefaultRequestHeaders.Authorization = null;
@@ -88,9 +88,9 @@ public class ArticleSummaryTagFilterTests : BaseIntegrationTest
     {
         // Arrange: Authenticates and seeds data with overlapping tags.
         await AuthenticateAsync();
-        await _client.PostAsJsonAsync("/api/articles", new CreateArticleCommand("Title 1", "Content", "Summary", ArticleCategory.Technology, new List<string> { "dotnet", "cleancode", "csharp" }));
-        await _client.PostAsJsonAsync("/api/articles", new CreateArticleCommand("Title 2", "Content", "Summary", ArticleCategory.Technology, new List<string> { "dotnet", "csharp" }));
-        await _client.PostAsJsonAsync("/api/articles", new CreateArticleCommand("Title 3", "Content", "Summary", ArticleCategory.Technology, new List<string> { "cleancode" }));
+        await _client.PostAsJsonAsync("/api/articles", new CreateArticleCommand("Title 1", "Título 1", "Content", "Conteúdo", "Summary", "Resumo", ArticleCategory.Technology, new List<string> { "dotnet", "cleancode", "csharp" }));
+        await _client.PostAsJsonAsync("/api/articles", new CreateArticleCommand("Title 2", "Título 2", "Content", "Conteúdo", "Summary", "Resumo", ArticleCategory.Technology, new List<string> { "dotnet", "csharp" }));
+        await _client.PostAsJsonAsync("/api/articles", new CreateArticleCommand("Title 3", "Título 3", "Content", "Conteúdo", "Summary", "Resumo", ArticleCategory.Technology, new List<string> { "cleancode" }));
 
         // Act: Performs multi-tag intersection filtering.
         _client.DefaultRequestHeaders.Authorization = null;

@@ -1,3 +1,4 @@
+using MeuSitePessoal.Domain.Entities;
 using System.Text;
 using FluentAssertions;
 using MeuSitePessoal.Application.Auth.Commands.ForgotPassword;
@@ -17,7 +18,7 @@ namespace MeuSitePessoal.Tests.Unit.Application.Auth.Commands;
 /// </summary>
 public class ForgotPasswordCommandHandlerTests
 {
-    private readonly Mock<UserManager<IdentityUser>> _userManagerMock;
+    private readonly Mock<UserManager<ApplicationUser>> _userManagerMock;
     private readonly Mock<IEmailSender> _emailSenderMock;
     private readonly Mock<IEmailTemplateService> _templateServiceMock;
     private readonly Mock<IConfiguration> _configurationMock;
@@ -26,8 +27,8 @@ public class ForgotPasswordCommandHandlerTests
 
     public ForgotPasswordCommandHandlerTests()
     {
-        var storeMock = new Mock<IUserStore<IdentityUser>>();
-        _userManagerMock = new Mock<UserManager<IdentityUser>>(storeMock.Object, null!, null!, null!, null!, null!, null!, null!, null!);
+        var storeMock = new Mock<IUserStore<ApplicationUser>>();
+        _userManagerMock = new Mock<UserManager<ApplicationUser>>(storeMock.Object, null!, null!, null!, null!, null!, null!, null!, null!);
         _emailSenderMock = new Mock<IEmailSender>();
         _templateServiceMock = new Mock<IEmailTemplateService>();
         _configurationMock = new Mock<IConfiguration>();
@@ -49,7 +50,7 @@ public class ForgotPasswordCommandHandlerTests
     {
         // Arrange
         var command = new ForgotPasswordCommand("nonexistent@test.com");
-        _userManagerMock.Setup(x => x.FindByEmailAsync(command.Email)).ReturnsAsync((IdentityUser?)null);
+        _userManagerMock.Setup(x => x.FindByEmailAsync(command.Email)).ReturnsAsync((ApplicationUser?)null);
 
         // Act
         var result = await _sut.Handle(command, CancellationToken.None);
@@ -70,7 +71,7 @@ public class ForgotPasswordCommandHandlerTests
         // Arrange
         var email = "unconfirmed@test.com";
         var command = new ForgotPasswordCommand(email);
-        var user = new IdentityUser { Email = email };
+        var user = new ApplicationUser { Email = email };
 
         _userManagerMock.Setup(x => x.FindByEmailAsync(email)).ReturnsAsync(user);
         _userManagerMock.Setup(x => x.IsEmailConfirmedAsync(user)).ReturnsAsync(false);
@@ -92,7 +93,7 @@ public class ForgotPasswordCommandHandlerTests
         // Arrange
         var email = "confirmed@test.com";
         var command = new ForgotPasswordCommand(email);
-        var user = new IdentityUser { Email = email, UserName = "User" };
+        var user = new ApplicationUser { Email = email, UserName = "User" };
 
         _userManagerMock.Setup(x => x.FindByEmailAsync(email)).ReturnsAsync(user);
         _userManagerMock.Setup(x => x.IsEmailConfirmedAsync(user)).ReturnsAsync(true);
@@ -111,3 +112,4 @@ public class ForgotPasswordCommandHandlerTests
             It.IsAny<CancellationToken>()), Times.Once);
     }
 }
+

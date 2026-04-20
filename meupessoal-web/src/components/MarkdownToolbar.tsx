@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { 
     Bold, 
     Italic, 
@@ -33,12 +34,10 @@ export const MarkdownToolbar: React.FC<MarkdownToolbarProps> = ({
     isPreviewMode,
     setIsPreviewMode
 }) => {
+    const { t } = useTranslation();
     
     /*
     * Inserts, wraps, or unwraps selection with Markdown markers.
-    * Implements toggle behavior: if the selection is already wrapped in the 
-    * requested markers, they are removed. Otherwise, they are applied.
-    * Handles multi-line selections by toggling formatting for each line.
     */
     const insertMarkdown = (prefix: string, suffix: string = '') => {
         const textarea = textareaRef.current;
@@ -49,7 +48,6 @@ export const MarkdownToolbar: React.FC<MarkdownToolbarProps> = ({
         const text = textarea.value;
         let selection = text.substring(start, end);
 
-        // Extra spaces selection handling (common with double-click selection)
         if (selection.length > 0 && !selection.includes('\n')) {
             while (selection.endsWith(' ')) { selection = selection.substring(0, selection.length - 1); end--; }
             while (selection.startsWith(' ')) { selection = selection.substring(1); start++; }
@@ -58,11 +56,6 @@ export const MarkdownToolbar: React.FC<MarkdownToolbarProps> = ({
         let newSelection = '';
         const isMultiLine = selection.includes('\n');
         
-        /**
-         * Logic to determine if we should wrap or unwrap.
-         * For multi-line, it checks if all non-empty lines are already wrapped.
-         * For single line, it checks the boundaries of the selection.
-         */
         const isWrapped = isMultiLine
             ? selection.split('\n').every(line => 
                 line.trim().length === 0 || (line.trim().startsWith(prefix.trim()) && line.trim().endsWith(suffix.trim()))
@@ -70,7 +63,6 @@ export const MarkdownToolbar: React.FC<MarkdownToolbarProps> = ({
             : selection.startsWith(prefix) && selection.endsWith(suffix);
 
         if (isWrapped && selection.length > 0) {
-            // Unwrap logic
             if (isMultiLine) {
                 newSelection = selection.split('\n').map(line => {
                     if (line.trim().length === 0) return line;
@@ -83,7 +75,6 @@ export const MarkdownToolbar: React.FC<MarkdownToolbarProps> = ({
                 newSelection = selection.substring(prefix.length, selection.length - suffix.length);
             }
         } else {
-            // Wrap logic
             if (isMultiLine) {
                 newSelection = selection.split('\n').map(line => (line.trim().length === 0 ? line : `${prefix}${line}${suffix}`)).join('\n');
             } else {
@@ -109,49 +100,44 @@ export const MarkdownToolbar: React.FC<MarkdownToolbarProps> = ({
         });
     };
 
-    /*
-    * Configuration for all toolbar items.
-    */
     const tools = [
-        { icon: <Bold size={18} />, label: 'Bold', onClick: () => insertMarkdown('**', '**') },
-        { icon: <Italic size={18} />, label: 'Italic', onClick: () => insertMarkdown('_', '_') },
-        { icon: <Heading2 size={18} />, label: 'Heading 2', onClick: () => insertMarkdown('## ') },
-        { icon: <Heading3 size={18} />, label: 'Heading 3', onClick: () => insertMarkdown('### ') },
-        { icon: <LinkIcon size={18} />, label: 'Link', onClick: () => insertMarkdown('[', '](url)') },
-        { icon: <List size={18} />, label: 'Bullet List', onClick: () => insertMarkdown('- ') },
+        { icon: <Bold size={18} />, label: t('editor.bold'), onClick: () => insertMarkdown('**', '**') },
+        { icon: <Italic size={18} />, label: t('editor.italic'), onClick: () => insertMarkdown('_', '_') },
+        { icon: <Heading2 size={18} />, label: t('editor.heading2'), onClick: () => insertMarkdown('## ') },
+        { icon: <Heading3 size={18} />, label: t('editor.heading3'), onClick: () => insertMarkdown('### ') },
+        { icon: <LinkIcon size={18} />, label: t('editor.link'), onClick: () => insertMarkdown('[', '](url)') },
+        { icon: <List size={18} />, label: t('editor.list'), onClick: () => insertMarkdown('- ') },
     ];
 
     return (
-        <div className="flex items-center justify-between p-2 bg-gray-50 dark:bg-slate-900 border-b border-gray-200 dark:border-slate-800 sticky top-[72px] z-20 w-full">
-            {/* Left Side - Toggle Write/Preview */}
-            <div className="flex bg-gray-200 dark:bg-slate-800 p-1 rounded-lg">
+        <div className="flex flex-col sm:flex-row items-center justify-between p-2 bg-gray-50 dark:bg-slate-900 border-b border-gray-200 dark:border-slate-800 sticky top-0 z-20 w-full gap-2 sm:gap-0">
+            <div className="flex bg-gray-200 dark:bg-slate-800 p-1 rounded-lg w-full sm:w-auto">
                 <button
                     type="button"
                     onClick={() => setIsPreviewMode(false)}
-                    className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-bold transition-all cursor-pointer ${
+                    className={`flex-1 sm:flex-none flex items-center justify-center gap-2 px-3 py-1.5 rounded-md text-xs font-bold transition-all cursor-pointer ${
                         !isPreviewMode 
                             ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm' 
                             : 'text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-slate-200'
                     }`}>
                     <Edit3 size={14} /> 
-					Write
+					{t('editor.write')}
                 </button>
                 <button
                     type="button"
                     onClick={() => setIsPreviewMode(true)}
-                    className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-bold transition-all cursor-pointer ${
+                    className={`flex-1 sm:flex-none flex items-center justify-center gap-2 px-3 py-1.5 rounded-md text-xs font-bold transition-all cursor-pointer ${
                         isPreviewMode 
                             ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm' 
                             : 'text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-slate-200'
                     }`}>
                     <Eye size={14} /> 
-					Preview
+					{t('editor.preview')}
                 </button>
             </div>
 
-            {/* Right Side - Formatting Tools (Hidden in preview mode) */}
             {!isPreviewMode && (
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-1 overflow-x-auto w-full sm:w-auto justify-center sm:justify-end">
                     {tools.map((tool, index) => (
                         <button
                             key={index}
@@ -164,12 +150,12 @@ export const MarkdownToolbar: React.FC<MarkdownToolbarProps> = ({
                         </button>
                     ))}
                     
-                    <div className="w-px h-6 bg-gray-200 dark:bg-slate-800 mx-1" />
+                    <div className="w-px h-6 bg-gray-200 dark:bg-slate-800 mx-1 flex-shrink-0" />
                     
-                    <div className="relative">
+                    <div className="relative flex-shrink-0">
                         <input
                             type="file"
-                            id="toolbar-image-upload"
+                            id={`toolbar-image-upload-${textareaRef.current?.id || 'default'}`}
                             className="hidden"
                             accept="image/*"
                             onChange={onImageUpload}
@@ -177,14 +163,14 @@ export const MarkdownToolbar: React.FC<MarkdownToolbarProps> = ({
                         />
                         <button
                             type="button"
-                            onClick={() => document.getElementById('toolbar-image-upload')?.click()}
+                            onClick={() => document.getElementById(`toolbar-image-upload-${textareaRef.current?.id || 'default'}`)?.click()}
                             disabled={isUploading}
                             className={`p-2 rounded transition-colors cursor-pointer ${
                                 isUploading 
                                     ? 'text-gray-400 dark:text-slate-600' 
                                     : 'text-gray-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-white dark:hover:bg-slate-800'
                             }`}
-                            title="Upload Image"
+                            title={t('editor.uploadImage')}
                         >
                             {isUploading ? <Loader2 size={18} className="animate-spin" /> : <ImageIcon size={18} />}
                         </button>

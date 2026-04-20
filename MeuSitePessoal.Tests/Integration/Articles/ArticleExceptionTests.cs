@@ -18,9 +18,13 @@ public class ArticleExceptionTests : BaseIntegrationTest
         await AuthenticateAsync();
         var invalidCommand = new
         {
-            Title = "", 
-            Content = "Valid content",
-            Summary = "Valid summary",
+            TitleEn = "", 
+            TitlePt = "Título",
+            ContentEn = "Valid content",
+            ContentPt = "Conteúdo",
+            SummaryEn = "Valid summary",
+            SummaryPt = "Resumo",
+            Category = 1,
             Tags = new List<string> { "dotnet" }
         };
 
@@ -35,8 +39,8 @@ public class ArticleExceptionTests : BaseIntegrationTest
         Assert.NotNull(problem);
         Assert.Equal("Validation Error", problem.Title);
         Assert.Equal(StatusCodes.Status400BadRequest, problem.Status);
-        Assert.True(problem.Errors.ContainsKey("Title"));
-        Assert.Contains("Title is required.", problem.Errors["Title"]);
+        Assert.True(problem.Errors.ContainsKey("TitleEn"));
+        Assert.Contains("English Title is required.", problem.Errors["TitleEn"]);
     }
 
     [Fact]
@@ -46,9 +50,13 @@ public class ArticleExceptionTests : BaseIntegrationTest
         await AuthenticateAsync();
         var command = new
         {
-            Title = "Valid Title",
-            Content = "", 
-            Summary = "Valid summary",
+            TitleEn = "Valid Title",
+            TitlePt = "Título",
+            ContentEn = "", 
+            ContentPt = "Conteúdo",
+            SummaryEn = "Valid summary",
+            SummaryPt = "Resumo",
+            Category = 1,
             Tags = new List<string> { "test" }
         };
 
@@ -61,8 +69,8 @@ public class ArticleExceptionTests : BaseIntegrationTest
         var problem = await response.Content.ReadFromJsonAsync<ValidationProblemDetails>();
         Assert.NotNull(problem);
         Assert.Equal("Validation Error", problem.Title);
-        Assert.True(problem.Errors.ContainsKey("Content"));
-        Assert.Contains("Content is required.", problem.Errors["Content"]);
+        Assert.True(problem.Errors.ContainsKey("ContentEn"));
+        Assert.Contains("English Content is required.", problem.Errors["ContentEn"]);
     }
 
     [Fact]
@@ -72,9 +80,13 @@ public class ArticleExceptionTests : BaseIntegrationTest
         await AuthenticateAsync();
         var command = new
         {
-            Title = "Valid Title",
-            Content = "Valid content", 
-            Summary = "",
+            TitleEn = "Valid Title",
+            TitlePt = "Título",
+            ContentEn = "Valid content", 
+            ContentPt = "Conteúdo",
+            SummaryEn = "",
+            SummaryPt = "Resumo",
+            Category = 1,
             Tags = new List<string> { "test" }
         };
 
@@ -86,8 +98,8 @@ public class ArticleExceptionTests : BaseIntegrationTest
 
         var problem = await response.Content.ReadFromJsonAsync<ValidationProblemDetails>();
         Assert.NotNull(problem);
-        Assert.True(problem.Errors.ContainsKey("Summary"));
-        Assert.Contains("Summary is required.", problem.Errors["Summary"]);
+        Assert.True(problem.Errors.ContainsKey("SummaryEn"));
+        Assert.Contains("English Summary is required.", problem.Errors["SummaryEn"]);
     }
 
     [Fact]
@@ -97,9 +109,13 @@ public class ArticleExceptionTests : BaseIntegrationTest
         await AuthenticateAsync();
         var command = new
         {
-            Title = new string('a', 101),
-            Content = "Valid content", 
-            Summary = new string('b', 501),
+            TitleEn = new string('a', 101),
+            TitlePt = "Título",
+            ContentEn = "Valid content", 
+            ContentPt = "Conteúdo",
+            SummaryEn = new string('b', 501),
+            SummaryPt = "Resumo",
+            Category = 1,
             Tags = new List<string> { "test" }
         };
 
@@ -111,9 +127,9 @@ public class ArticleExceptionTests : BaseIntegrationTest
 
         var problem = await response.Content.ReadFromJsonAsync<ValidationProblemDetails>();
         Assert.NotNull(problem);
-        Assert.True(problem.Errors.ContainsKey("Title"));
-        Assert.Contains("Title must not exceed 100 characters.", problem.Errors["Title"]);
-        Assert.True(problem.Errors.ContainsKey("Summary"));
-        Assert.Contains("Summary must not exceed 500 characters.", problem.Errors["Summary"]);
+        Assert.True(problem.Errors.ContainsKey("TitleEn"));
+        Assert.Contains("English Title must not exceed 100 characters.", problem.Errors["TitleEn"]);
+        Assert.True(problem.Errors.ContainsKey("SummaryEn"));
+        Assert.Contains("English Summary must not exceed 500 characters.", problem.Errors["SummaryEn"]);
     }
 }

@@ -1,3 +1,4 @@
+using MeuSitePessoal.Domain.Entities;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -42,7 +43,7 @@ public class TokenServiceTests
     public void GenerateToken_ShouldContainExpectedClaims()
     {
         // Arrange: Prepares a test user and a list of roles.
-        var user = new IdentityUser { UserName = "testuser", Email = "test@test.com" };
+        var user = new ApplicationUser { UserName = "testuser", Email = "test@test.com" };
         var roles = new List<string> { "Admin", "Editor" };
 
         // Act: Generates the JWT token string.
@@ -69,7 +70,7 @@ public class TokenServiceTests
         // Arrange: Sets the expiry configuration to null to test the fallback mechanism.
         // Also ensures the user has an email to avoid ArgumentNullException during claim creation.
         _jwtSectionMock.Setup(s => s["ExpiresInMinutes"]).Returns((string)null!);
-        var user = new IdentityUser { UserName = "user", Email = "user@test.com" };
+        var user = new ApplicationUser { UserName = "user", Email = "user@test.com" };
 
         // Act: Generates the token string.
         var tokenString = _sut.GenerateToken(user, new List<string>());
@@ -89,9 +90,9 @@ public class TokenServiceTests
     public void GenerateToken_WhenExpiryConfigIsInvalid_ShouldUseFallbackValue()
     {
         // Arrange: Provides an invalid numeric string. 
-        // The IdentityUser must have an email defined to satisfy the Claim constructor requirements.
+        // The ApplicationUser must have an email defined to satisfy the Claim constructor requirements.
         _jwtSectionMock.Setup(s => s["ExpiresInMinutes"]).Returns("not_a_number");
-        var user = new IdentityUser { UserName = "user", Email = "user@test.com" };
+        var user = new ApplicationUser { UserName = "user", Email = "user@test.com" };
 
         // Act: Generates the token string.
         var tokenString = _sut.GenerateToken(user, new List<string>());
@@ -110,7 +111,7 @@ public class TokenServiceTests
     public void GenerateToken_WhenCalled_ReturnsTokenWithCorrectClaims()
     {
         // Arrange: Prepares a test user and roles.
-        var user = new IdentityUser 
+        var user = new ApplicationUser 
         { 
             Id = "user-guid-123", 
             UserName = "Cioffi", 

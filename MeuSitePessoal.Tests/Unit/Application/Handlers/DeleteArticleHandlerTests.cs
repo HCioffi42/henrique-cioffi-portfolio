@@ -1,4 +1,4 @@
-using MeuSitePessoal.Application.Articles.Commands.DeleteArtigo;
+using MeuSitePessoal.Application.Articles.Commands.DeleteArticle;
 using MeuSitePessoal.Domain.Interfaces;
 using Microsoft.Extensions.Caching.Memory;
 using Moq;

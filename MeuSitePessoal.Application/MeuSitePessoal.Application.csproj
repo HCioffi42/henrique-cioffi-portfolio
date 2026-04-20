@@ -21,8 +21,4 @@
       <ProjectReference Include="..\MeuSitePessoal.Domain\MeuSitePessoal.Domain.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="Artigos\" />
-    </ItemGroup>
-
 </Project>

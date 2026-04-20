@@ -1,31 +1,41 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { createArticle } from '../services/articleService';
 import { imageService } from '../services/imageService';
 import { MarkdownToolbar } from '../components/MarkdownToolbar';
 import { MarkdownRenderer } from '../components/MarkdownRenderer';
 import { ArticleCategory, ArticleCategoryOptions } from '../models/ArticleCategory';
 import notificationService from '../services/notificationService';
+import { getCategoryKey } from '../util/categoryMapping';
 
 /**
- * Page component for creating a new article.
- * Provides a form with validation, a Markdown toolbar, and live preview.
+ * Page component for creating a new article with side-by-side localized inputs (EN/PT).
+ * Provides localized forms, validation, and Markdown editors for both languages.
  */
 export const CreateArticle = () => {
+    const { t } = useTranslation();
     const navigate = useNavigate();
-    const contentRef = useRef<HTMLTextAreaElement>(null);
+    const contentEnRef = useRef<HTMLTextAreaElement>(null);
+    const contentPtRef = useRef<HTMLTextAreaElement>(null);
+
     const [formData, setFormData] = useState({
-        title: '',
-        summary: '',
-        content: '',
+        titleEn: '',
+        titlePt: '',
+        summaryEn: '',
+        summaryPt: '',
+        contentEn: '',
+        contentPt: '',
         tags: '',
         category: ArticleCategory.Technology
     });
     
     // UI States
-    const [isPreviewMode, setIsPreviewMode] = useState(false);
+    const [isPreviewModeEn, setIsPreviewModeEn] = useState(false);
+    const [isPreviewModePt, setIsPreviewModePt] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [isUploading, setIsUploading] = useState(false);
+    const [isUploadingEn, setIsUploadingEn] = useState(false);
+    const [isUploadingPt, setIsUploadingPt] = useState(false);
 
     // Track uploaded images to cleanup if the user cancels
     const [uploadedImages, setUploadedImages] = useState<string[]>([]);
@@ -51,52 +61,50 @@ export const CreateArticle = () => {
      */
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
-        // Convert to number if it's the category field
         const finalValue = name === 'category' ? Number(value) : value;
         setFormData((prev) => ({ ...prev, [name]: finalValue }));
     };
 
     /**
-     * Handles image upload and inserts Markdown syntax into the content.
+     * Handles image upload and inserts Markdown syntax into the specific content field.
      */
-    const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, lang: 'En' | 'Pt') => {
         const file = e.target.files?.[0];
-        const textarea = contentRef.current;
+        const textarea = lang === 'En' ? contentEnRef.current : contentPtRef.current;
         if (!file || !textarea) return;
 
-        // Captures the cursor position BEFORE the upload process starts.
         const start = textarea.selectionStart;
         const end = textarea.selectionEnd;
 
-        setIsUploading(true);
+        if (lang === 'En') setIsUploadingEn(true);
+        else setIsUploadingPt(true);
 
         const uploadPromise = imageService.uploadImage(file);
 
         notificationService.promise(uploadPromise, {
-            loading: 'Uploading image...',
-            success: 'Image uploaded successfully!',
-            error: 'Could not upload image. Please try again.'
+            loading: t('common.loading'),
+            success: t('common.success'),
+            error: t('common.error')
         });
 
         try {
             const url = await uploadPromise;
             setUploadedImages(prev => [...prev, url]);
 
-            // Encodes the URL to handle spaces and special characters.
             const encodedUrl = encodeURI(url);
             const markdownImage = `\n![${file.name}](${encodedUrl})\n`;
             
-            // Splicing logic to insert the image where the cursor was located.
+            const fieldName = `content${lang}` as 'contentEn' | 'contentPt';
+            
             setFormData(prev => {
-                const before = prev.content.substring(0, start);
-                const after = prev.content.substring(end);
+                const before = prev[fieldName].substring(0, start);
+                const after = prev[fieldName].substring(end);
                 return { 
                     ...prev, 
-                    content: before + markdownImage + after 
+                    [fieldName]: before + markdownImage + after 
                 };
             });
 
-            // Restores focus and moves the cursor after the inserted image.
             requestAnimationFrame(() => {
                 textarea.focus({ preventScroll: true });
                 const newPos = start + markdownImage.length;
@@ -106,8 +114,9 @@ export const CreateArticle = () => {
         } catch (err: unknown) {
             console.error('Failed to upload image:', err);
         } finally {
-            setIsUploading(false);
-            e.target.value = ''; // Resets input to allow re-uploading the same file.
+            if (lang === 'En') setIsUploadingEn(false);
+            else setIsUploadingPt(false);
+            e.target.value = ''; 
         }
     };
 
@@ -117,8 +126,9 @@ export const CreateArticle = () => {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        if (!formData.title.trim() || !formData.summary.trim() || !formData.content.trim()) {
-            notificationService.error('Title, Summary, and Content are required fields.');
+        const { titleEn, titlePt, summaryEn, summaryPt, contentEn, contentPt } = formData;
+        if (!titleEn.trim() || !titlePt.trim() || !summaryEn.trim() || !summaryPt.trim() || !contentEn.trim() || !contentPt.trim()) {
+            notificationService.error(t('dashboard.validationError'));
             return;
         }
 
@@ -130,17 +140,14 @@ export const CreateArticle = () => {
                 .filter((tag) => tag !== '');
 
             const createPromise = createArticle({
-                title: formData.title,
-                summary: formData.summary,
-                content: formData.content,
-                tags: tagsArray,
-                category: formData.category
+                ...formData,
+                tags: tagsArray
             });
 
             notificationService.promise(createPromise, {
-                loading: 'Publishing your post...',
-                success: 'Post published successfully!',
-                error: 'An error occurred while saving the article.'
+                loading: t('common.loading'),
+                success: t('article.created'),
+                error: t('common.error')
             });
 
             await createPromise;
@@ -154,45 +161,94 @@ export const CreateArticle = () => {
         }
     };
 
+    const RequiredBadge = () => (
+        <span className="text-red-500 ml-1" title={t('dashboard.required')}>*</span>
+    );
+
     return (
-        <div className="max-w-4xl mx-auto px-6 py-12 transition-colors duration-300">
+        <div className="max-w-7xl mx-auto px-6 py-12 transition-colors duration-300">
             <header className="mb-8">
-                <h1 className="text-3xl font-extrabold text-gray-900 dark:text-slate-100 tracking-tight">Create New Post</h1>
-                <p className="mt-2 text-gray-600 dark:text-slate-400">Share your thoughts and insights with the world.</p>
+                <h1 className="text-3xl font-extrabold text-gray-900 dark:text-slate-100 tracking-tight">
+                    {t('dashboard.createArticle')}
+                </h1>
+                <p className="mt-2 text-gray-600 dark:text-slate-400">
+                    {t('dashboard.createSubtitle')}
+                </p>
             </header>
 
             <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="bg-white dark:bg-slate-900 p-8 rounded-xl shadow-sm border border-gray-100 dark:border-slate-800 space-y-6">
-                    {/* Meta Section */}
+                <div className="bg-white dark:bg-slate-900 p-8 rounded-xl shadow-sm border border-gray-100 dark:border-slate-800 space-y-8">
+                    
+                    {/* Titles Section */}
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div>
+                            <label htmlFor="titleEn" className="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-2">
+                                {t('dashboard.titleEn')} <RequiredBadge />
+                            </label>
+                            <input
+                                type="text"
+                                id="titleEn"
+                                name="titleEn"
+                                value={formData.titleEn}
+                                onChange={handleChange}
+                                className="w-full px-4 py-3 border border-gray-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition-all bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100"
+                                placeholder={t('dashboard.placeholderTitleEn')}
+                            />
+                        </div>
+                        <div>
+                            <label htmlFor="titlePt" className="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-2">
+                                {t('dashboard.titlePt')} <RequiredBadge />
+                            </label>
+                            <input
+                                type="text"
+                                id="titlePt"
+                                name="titlePt"
+                                value={formData.titlePt}
+                                onChange={handleChange}
+                                className="w-full px-4 py-3 border border-gray-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition-all bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100"
+                                placeholder={t('dashboard.placeholderTitlePt')}
+                            />
+                        </div>
+                    </div>
+
+                    {/* Summaries Section */}
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div>
+                            <label htmlFor="summaryEn" className="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-2">
+                                {t('dashboard.summaryEn')} <RequiredBadge />
+                            </label>
+                            <input
+                                type="text"
+                                id="summaryEn"
+                                name="summaryEn"
+                                value={formData.summaryEn}
+                                onChange={handleChange}
+                                className="w-full px-4 py-3 border border-gray-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition-all bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100"
+                                placeholder={t('dashboard.placeholderSummaryEn')}
+                            />
+                        </div>
+                        <div>
+                            <label htmlFor="summaryPt" className="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-2">
+                                {t('dashboard.summaryPt')} <RequiredBadge />
+                            </label>
+                            <input
+                                type="text"
+                                id="summaryPt"
+                                name="summaryPt"
+                                value={formData.summaryPt}
+                                onChange={handleChange}
+                                className="w-full px-4 py-3 border border-gray-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition-all bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100"
+                                placeholder={t('dashboard.placeholderSummaryPt')}
+                            />
+                        </div>
+                    </div>
+
+                    {/* Metadata Section (Category & Tags) */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="md:col-span-2">
-                            <label htmlFor="title" className="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-2">Title</label>
-                            <input
-                                type="text"
-                                id="title"
-                                name="title"
-                                value={formData.title}
-                                onChange={handleChange}
-                                className="w-full px-4 py-3 border border-gray-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition-all bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100"
-                                placeholder="Enter a compelling title"
-                            />
-                        </div>
-
                         <div>
-                            <label htmlFor="summary" className="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-2">Summary</label>
-                            <input
-                                type="text"
-                                id="summary"
-                                name="summary"
-                                value={formData.summary}
-                                onChange={handleChange}
-                                className="w-full px-4 py-3 border border-gray-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition-all bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100"
-                                placeholder="A short summary for the readers"
-                            />
-                        </div>
-
-                        <div>
-                            <label htmlFor="category" className="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-2">Category</label>
+                            <label htmlFor="category" className="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-2">
+                                {t('dashboard.category')}
+                            </label>
                             <select
                                 id="category"
                                 name="category"
@@ -202,64 +258,106 @@ export const CreateArticle = () => {
                             >
                                 {ArticleCategoryOptions.map(option => (
                                     <option key={option.value} value={option.value} className="bg-white dark:bg-slate-900">
-                                        {option.label}
+                                        {t(`categories.${getCategoryKey(option.value)}`)}
                                     </option>
                                 ))}
                             </select>
                         </div>
-                    </div>
-
-                    {/* Integrated Editor Section */}
-                    <div>
-                        <label className="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-2">Content</label>
-                        
-                        <div className="flex flex-col border border-gray-200 dark:border-slate-700 rounded-lg relative transition-all bg-white dark:bg-slate-900">
-                            <MarkdownToolbar 
-                                textareaRef={contentRef}
-                                onContentChange={(newContent) => setFormData(prev => ({ ...prev, content: newContent }))}
-                                onImageUpload={handleImageUpload}
-                                isUploading={isUploading}
-                                isPreviewMode={isPreviewMode}
-                                setIsPreviewMode={setIsPreviewMode}
+                        <div>
+                            <label htmlFor="tags" className="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-2">
+                                {t('dashboard.tags')}
+                            </label>
+                            <input
+                                type="text"
+                                id="tags"
+                                name="tags"
+                                value={formData.tags}
+                                onChange={handleChange}
+                                className="w-full px-4 py-3 border border-gray-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition-all bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100"
+                                placeholder={t('dashboard.placeholderTags')}
                             />
-
-                            <div className="min-h-[400px] bg-white dark:bg-slate-900">
-                                {!isPreviewMode ? (
-                                    <textarea
-                                        id="content"
-                                        name="content"
-                                        ref={contentRef}
-                                        rows={15}
-                                        value={formData.content}
-                                        onChange={handleChange}
-                                        className="w-full h-full p-6 outline-none resize-none font-mono text-gray-800 dark:text-slate-200 bg-white dark:bg-slate-900 leading-relaxed min-h-[400px]"
-                                        placeholder="Write your story using Markdown..."
-                                    />
-                                ) : (
-                                    <div className="p-8 bg-gray-50/30 dark:bg-slate-950/30">
-                                        {formData.content.trim() ? (
-                                            <MarkdownRenderer content={formData.content} />
-                                        ) : (
-                                            <p className="text-gray-400 dark:text-slate-600 italic text-center mt-20">Nothing to preview yet...</p>
-                                        )}
-                                    </div>
-                                )}
-                            </div>
                         </div>
                     </div>
 
-                    {/* Tags Section */}
-                    <div>
-                        <label htmlFor="tags" className="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-2">Tags</label>
-                        <input
-                            type="text"
-                            id="tags"
-                            name="tags"
-                            value={formData.tags}
-                            onChange={handleChange}
-                            className="w-full px-4 py-3 border border-gray-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition-all bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100"
-                            placeholder="e.g., dotnet, react, web-dev"
-                        />
+                    {/* Content Section (Editors) */}
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        {/* English Content */}
+                        <div className="space-y-2">
+                            <label className="block text-sm font-bold text-gray-700 dark:text-slate-300">
+                                {t('dashboard.contentEn')} <RequiredBadge />
+                            </label>
+                            <div className="flex flex-col border border-gray-200 dark:border-slate-700 rounded-lg overflow-hidden transition-all bg-white dark:bg-slate-900">
+                                <MarkdownToolbar 
+                                    textareaRef={contentEnRef}
+                                    onContentChange={(newContent) => setFormData(prev => ({ ...prev, contentEn: newContent }))}
+                                    onImageUpload={(e) => handleImageUpload(e, 'En')}
+                                    isUploading={isUploadingEn}
+                                    isPreviewMode={isPreviewModeEn}
+                                    setIsPreviewMode={setIsPreviewModeEn}
+                                />
+                                <div className="min-h-[400px] bg-white dark:bg-slate-900">
+                                    {!isPreviewModeEn ? (
+                                        <textarea
+                                            id="contentEn"
+                                            name="contentEn"
+                                            ref={contentEnRef}
+                                            rows={15}
+                                            value={formData.contentEn}
+                                            onChange={handleChange}
+                                            className="w-full h-full p-6 outline-none resize-none font-mono text-gray-800 dark:text-slate-200 bg-white dark:bg-slate-900 leading-relaxed min-h-[400px]"
+                                            placeholder={t('editor.placeholderEn')}
+                                        />
+                                    ) : (
+                                        <div className="p-8 bg-gray-50/30 dark:bg-slate-950/30 overflow-y-auto max-h-[500px]">
+                                            {formData.contentEn.trim() ? (
+                                                <MarkdownRenderer content={formData.contentEn} />
+                                            ) : (
+                                                <p className="text-gray-400 dark:text-slate-600 italic text-center mt-20">Nothing to preview...</p>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Portuguese Content */}
+                        <div className="space-y-2">
+                            <label className="block text-sm font-bold text-gray-700 dark:text-slate-300">
+                                {t('dashboard.contentPt')} <RequiredBadge />
+                            </label>
+                            <div className="flex flex-col border border-gray-200 dark:border-slate-700 rounded-lg overflow-hidden transition-all bg-white dark:bg-slate-900">
+                                <MarkdownToolbar 
+                                    textareaRef={contentPtRef}
+                                    onContentChange={(newContent) => setFormData(prev => ({ ...prev, contentPt: newContent }))}
+                                    onImageUpload={(e) => handleImageUpload(e, 'Pt')}
+                                    isUploading={isUploadingPt}
+                                    isPreviewMode={isPreviewModePt}
+                                    setIsPreviewMode={setIsPreviewModePt}
+                                />
+                                <div className="min-h-[400px] bg-white dark:bg-slate-900">
+                                    {!isPreviewModePt ? (
+                                        <textarea
+                                            id="contentPt"
+                                            name="contentPt"
+                                            ref={contentPtRef}
+                                            rows={15}
+                                            value={formData.contentPt}
+                                            onChange={handleChange}
+                                            className="w-full h-full p-6 outline-none resize-none font-mono text-gray-800 dark:text-slate-200 bg-white dark:bg-slate-900 leading-relaxed min-h-[400px]"
+                                            placeholder={t('editor.placeholderPt')}
+                                        />
+                                    ) : (
+                                        <div className="p-8 bg-gray-50/30 dark:bg-slate-950/30 overflow-y-auto max-h-[500px]">
+                                            {formData.contentPt.trim() ? (
+                                                <MarkdownRenderer content={formData.contentPt} />
+                                            ) : (
+                                                <p className="text-gray-400 dark:text-slate-600 italic text-center mt-20">Nada para visualizar...</p>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -270,7 +368,7 @@ export const CreateArticle = () => {
                         onClick={() => navigate('/admin/dashboard')}
                         className="px-6 py-2.5 text-sm font-bold text-gray-600 dark:text-slate-400 hover:text-gray-800 dark:hover:text-slate-200 transition-all cursor-pointer"
                     >
-                        Cancel
+                        {t('common.cancel')}
                     </button>
                     <button
                         type="submit"
@@ -281,7 +379,7 @@ export const CreateArticle = () => {
                                 : 'bg-indigo-600 hover:bg-indigo-700 hover:shadow-lg transform hover:-translate-y-0.5 active:translate-y-0'
                         }`}
                     >
-                        {isSubmitting ? 'Publishing...' : 'Publish Post'}
+                        {isSubmitting ? t('common.loading') : t('dashboard.publishPost')}
                     </button>
                 </div>
             </form>

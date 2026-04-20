@@ -6,8 +6,15 @@
 public record ArticleResponse(
     Guid Id, 
     string Title, 
+    string TitleEn,
+    string TitlePt,
     string Content, 
+    string ContentEn,
+    string ContentPt,
     string Summary, 
+    string SummaryEn,
+    string SummaryPt,
     DateTime CreatedAt, 
-    List<string> Tags
+    List<string> Tags,
+    Domain.Entities.ArticleCategory Category
     );

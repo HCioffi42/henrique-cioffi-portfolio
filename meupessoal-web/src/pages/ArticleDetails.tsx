@@ -1,21 +1,22 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { DeleteModal } from '../components/DeleteModal';
 import { MarkdownRenderer } from '../components/MarkdownRenderer';
 import { deleteArticle, getArticleById, getRelatedArticles } from '../services/articleService';
 import type { Article } from '../models/Article';
 import type { ArticleSummary } from '../models/ArticleSummary';
-import { ArticleCategoryLabels } from '../models/ArticleCategory';
 import { SEO } from '../components/SEO';
 import { ArticleCard } from '../components/ArticleCard';
 import { CommentSection } from '../components/CommentSection';
 import { PermissionGate } from '../components/PermissionGate';
+import { getCategoryKey } from '../util/categoryMapping';
 
 /**
  * Custom hook to handle article data fetching logic and related articles.
- * Isolates the side effect and state management from the component.
  */
 const useArticle = (id: string | undefined) => {
+    const { t } = useTranslation();
     const [article, setArticle] = useState<Article | null>(null);
     const [related, setRelated] = useState<ArticleSummary[]>([]);
     const [loading, setLoading] = useState(true);
@@ -33,15 +34,15 @@ const useArticle = (id: string | undefined) => {
                 setArticle(articleData);
                 setRelated(relatedData);
             } catch (err) {
-                console.error("Error fetching article details or related articles:", err);
-                setError("Article not found.");
+                console.error("Error fetching article details:", err);
+                setError(t('common.error'));
             } finally {
                 setLoading(false);
             }
         };
 
         void fetchArticleData();
-    }, [id]);
+    }, [id, t]);
 
     return { article, related, loading, error };
 };
@@ -49,28 +50,45 @@ const useArticle = (id: string | undefined) => {
 /**
  * Component that renders the article header containing the title and publication date.
  */
-const ArticleHeader = ({ title, createdAt, category }: { title: string; createdAt: string; category: number }) => (
-    <header className="mb-10">
-        <div className="flex items-center gap-3 mb-4">
-            <span className="px-3 py-1 bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-500 text-xs font-bold uppercase tracking-wider rounded-md">
-                {ArticleCategoryLabels[category as keyof typeof ArticleCategoryLabels]}
-            </span>
-            <span className="text-gray-300 dark:text-slate-700">|</span>
-            <p className="text-sm text-gray-500 dark:text-slate-400 font-medium">
-                Published on {new Date(createdAt).toLocaleDateString()}
-            </p>
-        </div>
-        <h1 className="text-4xl font-extrabold text-gray-900 dark:text-slate-100 mb-4 tracking-tight leading-tight">
-            {title}
-        </h1>
-    </header>
-);
+const ArticleHeader = ({ title, createdAt, category }: { title: string; createdAt: string; category: number }) => {
+    const { t, i18n } = useTranslation();
+    
+    // Localized category mapping
+    const getCategoryLabel = (cat: number) => {
+        const categories: Record<number, string> = {
+            1: t('categories.technology'),
+            2: t('categories.tutorial'),
+            3: t('categories.life'),
+            4: t('categories.news'),
+            5: t('categories.opinion'),
+            6: t('categories.projects')
+        };
+        return categories[cat] || t('categories.technology');
+    };
+
+    return (
+        <header className="mb-10">
+            <div className="flex items-center gap-3 mb-4">
+                <span className="px-3 py-1 bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-500 text-xs font-bold uppercase tracking-wider rounded-md">
+                    {getCategoryLabel(category)}
+                </span>
+                <span className="text-gray-300 dark:text-slate-700">|</span>
+                <p className="text-sm text-gray-500 dark:text-slate-400 font-medium">
+                    {new Date(createdAt).toLocaleDateString(i18n.language)}
+                </p>
+            </div>
+            <h1 className="text-4xl font-extrabold text-gray-900 dark:text-slate-100 mb-4 tracking-tight leading-tight">
+                {title}
+            </h1>
+        </header>
+    );
+};
 
 /**
  * Main Page component for Article Details.
- * Orchestrates logic and sub-components.
  */
 export const ArticleDetails = () => {
+    const { t } = useTranslation();
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
     const { article, related, loading, error } = useArticle(id);
@@ -86,11 +104,12 @@ export const ArticleDetails = () => {
         }
     };
 
-    if (loading) return <div className="p-8 text-center text-gray-500">Loading article...</div>;
-    if (error || !article) return <div className="p-8 text-center text-red-500">{error || "Not found"}</div>;
+    if (loading) return <div className="p-8 text-center text-gray-500">{t('common.loading')}</div>;
+    if (error || !article) return <div className="p-8 text-center text-red-500">{error || t('common.error')}</div>;
 
     // SEO specific derived data
-    const description = article.content.substring(0, 160).replace(/[#*`]/g, '').trim() + '...';
+    const content = article.content || '';
+    const description = content.substring(0, 160).replace(/[#*`]/g, '').trim() + '...';
     const keywords = article.tags.join(', ');
 
     return (
@@ -103,29 +122,28 @@ export const ArticleDetails = () => {
                 articleData={{
                     publishedTime: article.createdAt,
                     tags: article.tags,
-                    section: ArticleCategoryLabels[article.category as keyof typeof ArticleCategoryLabels]
+                    section: t(`categories.${getCategoryKey(article.category)}`)
                 }}
             />
 
             <button
                 onClick={() => navigate(-1)}
                 className="mb-8 text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 font-medium
-                            flex items-center gap-2 transition-colors focus:outline-none">
-                &larr; Back to list
+                            flex items-center gap-2 transition-colors focus:outline-none cursor-pointer">
+                &larr; {t('article.backToList')}
             </button>
 
-            {/* HC: Conditional rendering of admin actions restricted to the Admin role. */}
             <PermissionGate requiredRole="Admin">
                 <div className="flex gap-3 mb-6">
                     <Link
                         to={`/admin/articles/edit/${article.id}`}
                         className="bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-500 px-4 py-2 rounded-lg font-bold text-sm hover:bg-amber-100 dark:hover:bg-amber-900/50 transition">
-                        Edit Article
+                        {t('article.edit')}
                     </Link>
                     <button
                         onClick={() => setIsModalOpen(true)}
-                        className="bg-red-50 dark:bg-red-950/30 text-red-700 dark:text-red-500 px-4 py-2 rounded-lg font-bold text-sm hover:bg-red-100 dark:hover:bg-red-900/50 transition">
-                        Delete
+                        className="bg-red-50 dark:bg-red-950/30 text-red-700 dark:text-red-500 px-4 py-2 rounded-lg font-bold text-sm hover:bg-red-100 dark:hover:bg-red-900/50 transition cursor-pointer">
+                        {t('common.delete')}
                     </button>
                 </div>
             </PermissionGate>
@@ -152,14 +170,13 @@ export const ArticleDetails = () => {
                 ))}
             </footer>
 
-            {/* HC: Related articles recommendation section based on tag intersection. */}
             {related.length > 0 && (
                 <section className="mt-20 pt-12 border-t border-gray-100 dark:border-slate-800">
                     <h2 className="text-2xl font-bold text-gray-900 dark:text-slate-100 mb-8 flex items-center gap-3">
                         <svg className="w-6 h-6 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                         </svg>
-                        Related Stories
+                        {t('article.related')}
                     </h2>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                         {related.map(item => (
@@ -169,7 +186,6 @@ export const ArticleDetails = () => {
                 </section>
             )}
 
-            {/* HC: Safe confirmation modal triggered by the admin delete button. */}
             <DeleteModal
                 isOpen={isModalOpen}
                 title={article.title}

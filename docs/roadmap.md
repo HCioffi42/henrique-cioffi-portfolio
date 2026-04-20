@@ -1,7 +1,7 @@
 # Project Roadmap: MeuSitePessoal
 
-**Current Milestone**: Phase 4: Scalability & Engagement
-**Global Progress**: [██████████████████░░] 93%
+**Current Milestone**: Phase 5: SDET Excellence (Quality Engineering)
+**Global Progress**: [███████████████████░] 95%
 
 ---
 
@@ -107,12 +107,17 @@
 	- [x] **16.5.2 - Account Lifecycle Verification**: Email confirmation flows for new registrations and secure password recovery systems.
 	- [x] **16.5.3 - Newsletter Double Opt-in**: Automated subscription verification and legal-compliant unsubscribe mechanisms.
 	- [x] **16.5.4 - Email Templates & Branding**: Development of responsive HTML templates with the blog's visual identity.
-	- [x] **16.5.5 - Confirmation UI**: Frontend implementation of verification pages for account and newsletter flows using Next.js and Tailwind CSS.
+	- [x] **16.5.5 - Confirmation UI**: Frontend implementation of verification pages for account and newsletter flows using React and Tailwind CSS.
+- [x] **16.6 - Post-Registration & Newsletter Automation**:
+    - [x] **16.6.1 - "Check Email" UI**: Seamless feedback after registration.
+    - [x] **16.6.2 - Content Dispatcher**: Automated newsletter emails when new articles are published via Domain Events.
+    - [x] **16.6.3 - Secure Unsubscribe**: Legal-compliant, token-based deactivation mechanism.
 
-### [ ] Track 17: Internationalization
-- [ ] **17.1 - i18next Setup**: Configure the translation framework in the React frontend.
-- [ ] **17.2 - Language Toggle**: Add the PT/EN selector to the header (using a toggle or select component).
-- [ ] **17.3 - Multi-language Schema**: Adjust the PostgreSQL schema to handle translated content (titles, summaries, and tags).
+### [✓] Track 17: Internationalization
+- [x] **17.1 - i18next Setup**: Configure the translation framework with lazy loading and browser detection.
+- [x] **17.2 - Language Toggle**: Add a responsive EN/PT selector to the header with persistence.
+- [x] **17.3 - Multi-language Schema**: Adjust the PostgreSQL schema to handle translated content (titles, summaries, and tags).
+- [x] **17.4 - Dashboard & UI localization**: Side-by-side editing and static string translation across the platform.
 
 ---
 

@@ -22,9 +22,9 @@ public class ArticleCrudTests : BaseIntegrationTest
         var id = await SeedArticleAsync();
         var updateCommand = new UpdateArticleCommand(
             id,
-            "Updated Title",
-            "Updated content for this article.",
-            "Updated summary.",
+            "Updated Title", "Título Atualizado",
+            "Updated content for this article.", "Conteúdo atualizado para este artigo.",
+            "Updated summary.", "Resumo atualizado.",
             ArticleCategory.Technology,
             new List<string> { "updated", "test" }
         );
@@ -49,7 +49,12 @@ public class ArticleCrudTests : BaseIntegrationTest
         // Arrange: Authenticates and generates a non-existent ID.
         await AuthenticateAsync();
         var nonExistentId = Guid.NewGuid();
-        var updateCommand = new UpdateArticleCommand(nonExistentId, "Title", "Content", "Summary", ArticleCategory.Technology, new List<string>());
+        var updateCommand = new UpdateArticleCommand(
+            nonExistentId, 
+            "Title", "Título",
+            "Content", "Conteúdo",
+            "Summary", "Resumo",
+            ArticleCategory.Technology, new List<string>());
 
         // Act: Attempts to update a missing resource.
         var response = await _client.PutAsJsonAsync($"/api/Articles/{nonExistentId}", updateCommand);
@@ -92,7 +97,11 @@ public class ArticleCrudTests : BaseIntegrationTest
     public async Task Create_WhenAnonymous_ShouldReturn401Unauthorized()
     {
         // Arrange: No authentication call is made.
-        var command = new CreateArticleCommand("Title", "Content", "Summary", ArticleCategory.Technology, new List<string>());
+        var command = new CreateArticleCommand(
+            "Title", "Título",
+            "Content", "Conteúdo",
+            "Summary", "Resumo",
+            ArticleCategory.Technology, new List<string>());
 
         // Act: Attempts to create without credentials.
         var response = await _client.PostAsJsonAsync("/api/Articles", command);
@@ -107,9 +116,9 @@ public class ArticleCrudTests : BaseIntegrationTest
     private async Task<Guid> SeedArticleAsync()
     {
         var command = new CreateArticleCommand(
-            "Seeded Title",
-            "Original content for seeding.",
-            "Original summary for seeding.",
+            "Seeded Title", "Título Semeado",
+            "Original content for seeding.", "Conteúdo original para semeadura.",
+            "Original summary for seeding.", "Resumo original para semeadura.",
             ArticleCategory.Technology,
             new List<string> { "seed" }
         );

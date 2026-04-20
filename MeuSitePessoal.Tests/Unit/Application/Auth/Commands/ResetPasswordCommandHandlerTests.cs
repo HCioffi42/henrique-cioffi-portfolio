@@ -1,3 +1,4 @@
+using MeuSitePessoal.Domain.Entities;
 using System.Text;
 using FluentAssertions;
 using MeuSitePessoal.Application.Auth.Commands.ResetPassword;
@@ -14,14 +15,14 @@ namespace MeuSitePessoal.Tests.Unit.Application.Auth.Commands;
 /// </summary>
 public class ResetPasswordCommandHandlerTests
 {
-    private readonly Mock<UserManager<IdentityUser>> _userManagerMock;
+    private readonly Mock<UserManager<ApplicationUser>> _userManagerMock;
     private readonly Mock<ILogger<ResetPasswordCommandHandler>> _loggerMock;
     private readonly ResetPasswordCommandHandler _sut;
 
     public ResetPasswordCommandHandlerTests()
     {
-        var storeMock = new Mock<IUserStore<IdentityUser>>();
-        _userManagerMock = new Mock<UserManager<IdentityUser>>(storeMock.Object, null!, null!, null!, null!, null!, null!, null!, null!);
+        var storeMock = new Mock<IUserStore<ApplicationUser>>();
+        _userManagerMock = new Mock<UserManager<ApplicationUser>>(storeMock.Object, null!, null!, null!, null!, null!, null!, null!, null!);
         _loggerMock = new Mock<ILogger<ResetPasswordCommandHandler>>();
 
         _sut = new ResetPasswordCommandHandler(_userManagerMock.Object, _loggerMock.Object);
@@ -39,7 +40,7 @@ public class ResetPasswordCommandHandlerTests
         var encodedToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(rawToken));
         var newPassword = "NewSecurePassword123!";
         var command = new ResetPasswordCommand(email, encodedToken, newPassword);
-        var user = new IdentityUser { Email = email };
+        var user = new ApplicationUser { Email = email };
 
         _userManagerMock.Setup(x => x.FindByEmailAsync(email)).ReturnsAsync(user);
         _userManagerMock.Setup(x => x.ResetPasswordAsync(user, rawToken, newPassword)).ReturnsAsync(IdentityResult.Success);
@@ -59,7 +60,7 @@ public class ResetPasswordCommandHandlerTests
     {
         // Arrange
         var command = new ResetPasswordCommand("notfound@test.com", "token", "pass");
-        _userManagerMock.Setup(x => x.FindByEmailAsync(It.IsAny<string>())).ReturnsAsync((IdentityUser?)null);
+        _userManagerMock.Setup(x => x.FindByEmailAsync(It.IsAny<string>())).ReturnsAsync((ApplicationUser?)null);
 
         // Act
         var result = await _sut.Handle(command, CancellationToken.None);
@@ -79,7 +80,7 @@ public class ResetPasswordCommandHandlerTests
         var email = "test@test.com";
         var encodedToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes("invalid"));
         var command = new ResetPasswordCommand(email, encodedToken, "NewPass123!");
-        var user = new IdentityUser { Email = email };
+        var user = new ApplicationUser { Email = email };
         var identityError = IdentityResult.Failed(new IdentityError { Description = "Invalid token." });
 
         _userManagerMock.Setup(x => x.FindByEmailAsync(email)).ReturnsAsync(user);
@@ -93,3 +94,4 @@ public class ResetPasswordCommandHandlerTests
         result.Errors.Should().Contain("Invalid token.");
     }
 }
+

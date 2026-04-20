@@ -5,6 +5,7 @@ using MeuSitePessoal.Api.Middleware;
 using MeuSitePessoal.Application.Articles.Commands.CreateArticle;
 using MeuSitePessoal.Application.Common.Behaviors;
 using MeuSitePessoal.Application.Common.Interfaces;
+using MeuSitePessoal.Domain.Entities;
 using MeuSitePessoal.Domain.Interfaces;
 using MeuSitePessoal.Infrastructure;
 using MeuSitePessoal.Infrastructure.Configuration;
@@ -21,6 +22,13 @@ using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// HC: Ensure UserSecrets are loaded even if the environment is not explicitly set to Development
+// This helps during local debugging when DOTNET_ENVIRONMENT might be missing.
+if (builder.Environment.IsDevelopment() || string.IsNullOrEmpty(Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")))
+{
+    builder.Configuration.AddUserSecrets<Program>(optional: true);
+}
+
 // HC: Visual log to confirm environment type during startup
 Console.WriteLine(Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER") == "true"
     ? "Running on Docker!"
@@ -35,7 +43,7 @@ builder.Host.UseSerilog();
 builder.Services.AddInfrastructure(builder.Configuration);
 
 // Register Identity services
-builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
+builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
     {
     options.User.RequireUniqueEmail = true;
     options.Password.RequireDigit = true;
@@ -51,6 +59,7 @@ builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
 
 // Register Services
 builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<ILanguageProvider, HttpContextLanguageProvider>();
 builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 builder.Services.AddScoped<IArticleRepository, ArticleRepository>();
 builder.Services.AddScoped<ISubscriberRepository, SubscriberRepository>();
@@ -234,7 +243,7 @@ if (!app.Environment.IsEnvironment("Testing"))
         }
     }
     
-    var userManager = services.GetRequiredService<UserManager<IdentityUser>>();
+    var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
     var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
     var configuration = services.GetRequiredService<IConfiguration>();
     var logger = services.GetRequiredService<ILogger<Program>>();

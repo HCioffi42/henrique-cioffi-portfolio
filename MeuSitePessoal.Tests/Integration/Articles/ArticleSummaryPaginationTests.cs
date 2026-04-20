@@ -22,7 +22,11 @@ public class ArticleSummaryPaginationTests : BaseIntegrationTest
         // Seeds the database with multiple articles.
         for (int i = 1; i <= 5; i++)
         {
-            var command = new CreateArticleCommand($"Summary Article {i}", "Full content", $"Summary {i}", ArticleCategory.Technology, new List<string> { "tag" });
+            var command = new CreateArticleCommand(
+                $"Summary Article {i}", $"Resumo do Artigo {i}",
+                "Full content", "Conteúdo completo",
+                $"Summary {i}", $"Resumo {i}",
+                ArticleCategory.Technology, new List<string> { "tag" });
             await _client.PostAsJsonAsync("/api/articles", command);
         }
 

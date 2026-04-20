@@ -1,4 +1,5 @@
-﻿using FluentAssertions;
+using MeuSitePessoal.Domain.Entities;
+using FluentAssertions;
 using MeuSitePessoal.Application.Auth.Commands.Login;
 using MeuSitePessoal.Application.Common.Interfaces;
 using MeuSitePessoal.Domain.Interfaces;
@@ -15,8 +16,8 @@ namespace MeuSitePessoal.Tests.Unit.Application.Auth.Commands;
 /// </summary>
 public class LoginCommandHandlerTests
 {
-    private readonly UserManager<IdentityUser> _userManager;
-    private readonly SignInManager<IdentityUser> _signInManager;
+    private readonly UserManager<ApplicationUser> _userManager;
+    private readonly SignInManager<ApplicationUser> _signInManager;
     private readonly ITokenService _tokenService;
     private readonly IFeatureToggleService _featureToggle;
     private readonly LoginCommandHandler _sut;
@@ -24,15 +25,15 @@ public class LoginCommandHandlerTests
     public LoginCommandHandlerTests()
     {
         // Mocks complex Identity dependencies using NSubstitute.
-        var store = Substitute.For<IUserStore<IdentityUser>>();
-        _userManager = Substitute.For<UserManager<IdentityUser>>(store, null, null, null, null, null, null, null, null);
+        var store = Substitute.For<IUserStore<ApplicationUser>>();
+        _userManager = Substitute.For<UserManager<ApplicationUser>>(store, null, null, null, null, null, null, null, null);
         
         var contextAccessor = Substitute.For<IHttpContextAccessor>();
         contextAccessor.HttpContext.Returns(new DefaultHttpContext());
         
-        var claimsFactory = Substitute.For<IUserClaimsPrincipalFactory<IdentityUser>>();
+        var claimsFactory = Substitute.For<IUserClaimsPrincipalFactory<ApplicationUser>>();
         
-        _signInManager = Substitute.For<SignInManager<IdentityUser>>(_userManager, contextAccessor, claimsFactory, null, null, null, null);
+        _signInManager = Substitute.For<SignInManager<ApplicationUser>>(_userManager, contextAccessor, claimsFactory, null, null, null, null);
         
         _tokenService = Substitute.For<ITokenService>();
         _featureToggle = Substitute.For<IFeatureToggleService>();
@@ -55,24 +56,24 @@ public class LoginCommandHandlerTests
     public async Task Handle_WithValidCredentials_ReturnsSuccessfulResult(string identifier)
     {
         // Arrange
-        var user = new IdentityUser { UserName = "Cioffi", Email = "henrique@test.com" };
+        var user = new ApplicationUser { UserName = "Cioffi", Email = "henrique@test.com" };
     
         // This prevents the "await null" exception.
-        _userManager.FindByNameAsync(Arg.Any<string>()).Returns(Task.FromResult<IdentityUser?>(null));
-        _userManager.FindByEmailAsync(Arg.Any<string>()).Returns(Task.FromResult<IdentityUser?>(null));
+        _userManager.FindByNameAsync(Arg.Any<string>()).Returns(Task.FromResult<ApplicationUser?>(null));
+        _userManager.FindByEmailAsync(Arg.Any<string>()).Returns(Task.FromResult<ApplicationUser?>(null));
         
         // Now setup the specific successful matches.
         _userManager.FindByNameAsync("Cioffi").Returns(user);
         _userManager.FindByEmailAsync("henrique@test.com").Returns(user);
     
         // HC: Must mock GetRolesAsync because the handler calls it before generating the token.
-        _userManager.GetRolesAsync(Arg.Any<IdentityUser>()).Returns(new List<string> { "Reader" });
+        _userManager.GetRolesAsync(Arg.Any<ApplicationUser>()).Returns(new List<string> { "Reader" });
     
-        _signInManager.CheckPasswordSignInAsync(Arg.Any<IdentityUser>(), Arg.Any<string>(), false)
+        _signInManager.CheckPasswordSignInAsync(Arg.Any<ApplicationUser>(), Arg.Any<string>(), false)
             .Returns(SignInResult.Success);
     
         _featureToggle.Is2FAEnabled().Returns(false);
-        _tokenService.GenerateToken(Arg.Any<IdentityUser>(), Arg.Any<IList<string>>()).Returns("valid-jwt-token");
+        _tokenService.GenerateToken(Arg.Any<ApplicationUser>(), Arg.Any<IList<string>>()).Returns("valid-jwt-token");
 
         // Act
         var command = new LoginCommand(identifier, "Password123!");
@@ -90,8 +91,8 @@ public class LoginCommandHandlerTests
     public async Task Handle_WhenUserDoesNotExist_ReturnsFailure()
     {
         // Arrange: Mock returns null for both name and email search.
-        _userManager.FindByNameAsync(Arg.Any<string>()).Returns(Task.FromResult<IdentityUser?>(null));
-        _userManager.FindByEmailAsync(Arg.Any<string>()).Returns(Task.FromResult<IdentityUser?>(null));
+        _userManager.FindByNameAsync(Arg.Any<string>()).Returns(Task.FromResult<ApplicationUser?>(null));
+        _userManager.FindByEmailAsync(Arg.Any<string>()).Returns(Task.FromResult<ApplicationUser?>(null));
 
         // Act
         var result = await _sut.Handle(new LoginCommand("ghost_user", "any_pass"), CancellationToken.None);
@@ -108,7 +109,7 @@ public class LoginCommandHandlerTests
     public async Task Handle_WhenPasswordIsWrong_ReturnsFailure()
     {
         // Arrange: User exists but password check fails.
-        var user = new IdentityUser { UserName = "Cioffi" };
+        var user = new ApplicationUser { UserName = "Cioffi" };
         _userManager.FindByNameAsync("Cioffi").Returns(user);
         _signInManager.CheckPasswordSignInAsync(user, "wrong_pass", false)
             .Returns(Microsoft.AspNetCore.Identity.SignInResult.Failed);
@@ -127,7 +128,7 @@ public class LoginCommandHandlerTests
     public async Task Handle_When2FAIsEnabled_ReturnsRequiresTwoFactor()
     {
         // Arrange
-        var user = new IdentityUser { UserName = "Cioffi" };
+        var user = new ApplicationUser { UserName = "Cioffi" };
         _userManager.FindByNameAsync("Cioffi").Returns(user);
         _signInManager.CheckPasswordSignInAsync(user, "pass", false)
             .Returns(Microsoft.AspNetCore.Identity.SignInResult.Success);

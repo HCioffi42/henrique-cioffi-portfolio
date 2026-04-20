@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import api from '../services/api';
 import { DeleteModal } from '../components/DeleteModal';
 import { deleteArticle } from '../services/articleService';
@@ -24,6 +25,7 @@ interface PagedResult {
 const PAGE_SIZE = 10;
 
 const Dashboard: React.FC = () => {
+  const { t, i18n } = useTranslation();
   const [articles, setArticles] = useState<ArticleSummary[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
@@ -47,9 +49,9 @@ const Dashboard: React.FC = () => {
       setTotalCount(response.data.totalCount);
     } catch (error) {
       console.error("Error loading articles from backend:", error);
-      notificationService.error("Failed to load articles. Please refresh the page.");
+      notificationService.error(t('dashboard.loadingFailed'));
     }
-  }, []); 
+  }, [t]); 
 
   /**
    * Synchronizes the UI with the data from the backend.
@@ -77,9 +79,9 @@ const Dashboard: React.FC = () => {
       const deletePromise = deleteArticle(selectedArticle.id);
 
       notificationService.promise(deletePromise, {
-        loading: 'Deleting article...',
-        success: 'Article deleted successfully!',
-        error: 'Failed to delete article. Please try again.'
+        loading: t('dashboard.deleting'),
+        success: t('article.deleted'),
+        error: t('common.error')
       });
 
       await deletePromise;
@@ -95,11 +97,11 @@ const Dashboard: React.FC = () => {
   return (
     <div className="container mx-auto p-6 transition-colors duration-300">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold text-gray-800 dark:text-slate-100">Administrative Dashboard</h1>
+        <h1 className="text-3xl font-bold text-gray-800 dark:text-slate-100">{t('dashboard.title')}</h1>
         <Link 
           to="/admin/new-post" 
           className="bg-indigo-600 dark:bg-indigo-500 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 dark:hover:bg-indigo-600 transition shadow-sm font-bold text-sm">
-          New Article
+          {t('nav.newPost')}
         </Link>
       </div>
 
@@ -108,16 +110,16 @@ const Dashboard: React.FC = () => {
           <thead>
             <tr>
               <th className="px-5 py-4 border-b-2 border-gray-100 dark:border-slate-800 bg-gray-50 dark:bg-slate-800/50 text-left text-xs font-bold text-gray-600 dark:text-slate-400 uppercase tracking-wider">
-                Title
+                {t('dashboard.titleEn')}
               </th>
               <th className="px-5 py-4 border-b-2 border-gray-100 dark:border-slate-800 bg-gray-50 dark:bg-slate-800/50 text-left text-xs font-bold text-gray-600 dark:text-slate-400 uppercase tracking-wider">
-                Date
+                {t('common.date')}
               </th>
               <th className="px-5 py-4 border-b-2 border-gray-100 dark:border-slate-800 bg-gray-50 dark:bg-slate-800/50 text-left text-xs font-bold text-gray-600 dark:text-slate-400 uppercase tracking-wider">
-                Tags
+                {t('common.tags')}
               </th>
               <th className="px-5 py-4 border-b-2 border-gray-100 dark:border-slate-800 bg-gray-50 dark:bg-slate-800/50 text-center text-xs font-bold text-gray-600 dark:text-slate-400 uppercase tracking-wider">
-                Actions
+                {t('common.actions')}
               </th>
             </tr>
           </thead>
@@ -129,7 +131,7 @@ const Dashboard: React.FC = () => {
                 </td>
                 <td className="px-5 py-5 border-b border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 text-sm">
                   <p className="text-gray-900 dark:text-slate-300 whitespace-no-wrap">
-                    {new Date(article.createdAt).toLocaleDateString()}
+                    {new Date(article.createdAt).toLocaleDateString(i18n.language)}
                   </p>
                 </td>
                 <td className="px-5 py-5 border-b border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 text-sm">
@@ -144,13 +146,13 @@ const Dashboard: React.FC = () => {
                 <td className="px-5 py-5 border-b border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 text-sm text-center">
                   <div className="flex justify-center space-x-4">
                     <Link to={`/article/${article.id}`} className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium transition-colors">
-                      View
+                      {t('common.view')}
                     </Link>
                     <Link to={`/admin/articles/edit/${article.id}`} className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 font-medium transition-colors">
-                      Edit
+                      {t('common.edit')}
                     </Link>
                     <button onClick={() => openDeleteModal(article.id, article.title)} className="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 font-medium cursor-pointer transition-colors">
-                      Delete
+                      {t('common.delete')}
                     </button>
                   </div>
                 </td>
@@ -158,7 +160,7 @@ const Dashboard: React.FC = () => {
             )) : (
               <tr>
                 <td colSpan={4} className="px-5 py-10 border-b border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 text-sm text-center text-gray-500 dark:text-slate-500 italic">
-                  No articles found.
+                  {t('common.noResults')}
                 </td>
               </tr>
             )}
@@ -170,7 +172,7 @@ const Dashboard: React.FC = () => {
       {totalCount > PAGE_SIZE && (
         <div className="px-5 py-5 bg-white dark:bg-slate-900 border-t border-gray-100 dark:border-slate-800 flex flex-col xs:flex-row items-center xs:justify-between rounded-b-xl shadow-sm mt-1">
           <span className="text-xs xs:text-sm text-gray-600 dark:text-slate-400">
-            Showing page <span className="font-bold text-gray-900 dark:text-slate-100">{currentPage}</span> of <span className="font-bold text-gray-900 dark:text-slate-100">{Math.ceil(totalCount / PAGE_SIZE)}</span>
+            {t('common.showingPage', { current: currentPage, total: Math.ceil(totalCount / PAGE_SIZE) })}
           </span>
           <div className="inline-flex mt-2 xs:mt-0 space-x-2">
             <button 
@@ -178,14 +180,14 @@ const Dashboard: React.FC = () => {
               disabled={currentPage === 1}
               className="text-sm bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-700 hover:bg-gray-50 dark:hover:bg-slate-700 text-gray-700 dark:text-slate-300 font-semibold py-2 px-4 rounded-lg disabled:opacity-50 transition shadow-sm cursor-pointer"
             >
-              Previous
+              {t('common.previous')}
             </button>
             <button 
               onClick={() => setCurrentPage(prev => prev + 1)}
               disabled={currentPage * PAGE_SIZE >= totalCount}
               className="text-sm bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-700 hover:bg-gray-50 dark:hover:bg-slate-700 text-gray-700 dark:text-slate-300 font-semibold py-2 px-4 rounded-lg disabled:opacity-50 transition shadow-sm cursor-pointer"
             >
-              Next
+              {t('common.next')}
             </button>
           </div>
         </div>

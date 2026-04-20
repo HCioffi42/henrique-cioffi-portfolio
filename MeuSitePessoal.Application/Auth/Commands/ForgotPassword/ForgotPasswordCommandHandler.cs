@@ -1,3 +1,4 @@
+using MeuSitePessoal.Domain.Entities;
 using System.Text;
 using MediatR;
 using MeuSitePessoal.Application.Common.Interfaces;
@@ -15,7 +16,7 @@ namespace MeuSitePessoal.Application.Auth.Commands.ForgotPassword;
 /// </summary>
 public class ForgotPasswordCommandHandler : IRequestHandler<ForgotPasswordCommand, ForgotPasswordResult>
 {
-    private readonly UserManager<IdentityUser> _userManager;
+    private readonly UserManager<ApplicationUser> _userManager;
     private readonly IEmailSender _emailSender;
     private readonly IEmailTemplateService _templateService;
     private readonly IConfiguration _configuration;
@@ -27,7 +28,7 @@ public class ForgotPasswordCommandHandler : IRequestHandler<ForgotPasswordComman
     /// Initializes a new instance of <see cref="ForgotPasswordCommandHandler"/>.
     /// </summary>
     public ForgotPasswordCommandHandler(
-        UserManager<IdentityUser> userManager,
+        UserManager<ApplicationUser> userManager,
         IEmailSender emailSender,
         IEmailTemplateService templateService,
         IConfiguration configuration,
@@ -80,3 +81,4 @@ public class ForgotPasswordCommandHandler : IRequestHandler<ForgotPasswordComman
         return new ForgotPasswordResult(true, GenericSuccessMessage);
     }
 }
+

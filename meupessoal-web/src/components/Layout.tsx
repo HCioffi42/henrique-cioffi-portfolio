@@ -1,7 +1,8 @@
 import type { ReactNode } from 'react';
 import { useCallback, useMemo, useState } from 'react';
 import { Link, useNavigate, useSearchParams, useLocation } from 'react-router-dom';
-import { Menu } from 'lucide-react';
+import { Menu, Languages } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import { SearchBar } from './SearchBar';
 import { ThemeToggle } from './ThemeToggle';
@@ -15,6 +16,7 @@ interface LayoutProps {
 
 export const Layout = ({ children }: LayoutProps) => {
     const { isAuthenticated, logout, user } = useAuth();
+    const { t, i18n } = useTranslation();
     const navigate = useNavigate();
     const location = useLocation();
     const [searchParams, setSearchParams] = useSearchParams();
@@ -28,6 +30,14 @@ export const Layout = ({ children }: LayoutProps) => {
     const handleLogout = () => {
         logout();
         navigate('/');
+    };
+
+    /**
+     * Toggles the current application language between English and Portuguese.
+     */
+    const toggleLanguage = () => {
+        const nextLang = i18n.language.startsWith('pt') ? 'en' : 'pt';
+        i18n.changeLanguage(nextLang);
     };
 
     const handleGlobalSearch = useCallback((searchTerm: string) => {
@@ -59,38 +69,54 @@ export const Layout = ({ children }: LayoutProps) => {
                     
                     <div className="flex items-center gap-3 sm:gap-4">
                         <div className="hidden lg:flex items-center gap-6">
-                            <Link to="/" className="text-sm text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 font-medium transition-colors">Blog</Link>
+                            <Link to="/" className="text-sm text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 font-medium transition-colors">
+                                {t('nav.blog')}
+                            </Link>
                         </div>
 
                         <SearchBar onSearch={handleGlobalSearch} initialValue={currentSearchParam} />
                         
-                        <div className="hidden sm:block">
-                            <ThemeToggle />
+                        <div className="flex items-center gap-1 sm:gap-2">
+                            {/* Language Toggle */}
+                            <button
+                                onClick={toggleLanguage}
+                                className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-xs font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors uppercase cursor-pointer"
+                                aria-label={t('nav.switchLanguage')}
+                            >
+                                <Languages className="w-4 h-4" />
+                                <span className="hidden sm:inline">{i18n.language.startsWith('pt') ? 'EN' : 'PT'}</span>
+                            </button>
+
+                            <div className="hidden sm:block">
+                                <ThemeToggle />
+                            </div>
                         </div>
                         
                         {isAuthenticated ? (
                             <div className="hidden lg:flex items-center gap-4 border-l border-gray-100 dark:border-slate-800 pl-6">
                                 <span className="text-sm text-gray-500 dark:text-gray-400">
-                                    Hello, <span className="font-semibold">{user?.username}</span>
+                                    {t('nav.hello')}, <span className="font-semibold">{user?.username}</span>
                                 </span>
                                 
                                 <PermissionGate requiredRole="Admin">
                                     <Link to="/admin/dashboard" className="text-sm font-semibold text-zinc-600 dark:text-zinc-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
-                                        Dashboard
+                                        {t('nav.dashboard')}
                                     </Link>
                                     <Link to="/admin/new-post" className="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-indigo-700 transition-all">
-                                        New Post
+                                        {t('nav.newPost')}
                                     </Link>
                                 </PermissionGate>
 
                                 <button 
                                     onClick={handleLogout}
                                     className="text-sm font-semibold text-red-600 dark:text-red-400 hover:text-red-500 transition-colors cursor-pointer">
-                                    Logout
+                                    {t('nav.logout')}
                                 </button>
                             </div>
                         ) : (
-                            <Link to="/login" className="hidden lg:block text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 font-medium transition-colors">Login</Link>
+                            <Link to="/login" className="hidden lg:block text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 font-medium transition-colors">
+                                {t('nav.login')}
+                            </Link>
                         )}
 
                         <button 
@@ -125,7 +151,7 @@ export const Layout = ({ children }: LayoutProps) => {
 
             <footer className="fixed bottom-0 left-0 right-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm border-t border-gray-200 dark:border-slate-800 py-3 transition-colors duration-300 z-10">
                 <div className="max-w-5xl mx-auto px-6 text-center text-gray-400 dark:text-slate-500 text-[10px] sm:text-xs">
-                    &copy; {new Date().getFullYear()} Henrique Cioffi - Built with .NET & React
+                    &copy; {new Date().getFullYear()} {t('footer.copy')}
                     {import.meta.env.VITE_APP_VERSION && (
                         <span className="ml-2 border-l border-gray-400 dark:border-slate-700 pl-2">
                             {import.meta.env.VITE_APP_VERSION}

@@ -15,9 +15,12 @@ public class CommentsIntegrationTests : BaseIntegrationTest
         await AuthenticateAsync();
         var request = new
         {
-            Title = "Integration Test Article",
-            Content = "Content for integration test.",
-            Summary = "Summary",
+            TitleEn = "Integration Test Article",
+            TitlePt = "Artigo de Teste de Integração",
+            ContentEn = "Content for integration test.",
+            ContentPt = "Conteúdo para teste de integração.",
+            SummaryEn = "Summary",
+            SummaryPt = "Resumo",
             Tags = new List<string> { "Test" },
             Category = ArticleCategory.Technology
         };

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { commentService } from '../services/commentService';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
@@ -21,6 +22,7 @@ export const CommentForm: React.FC<CommentFormProps> = ({
     onCommentCreated,
     onCancel 
 }) => {
+    const { t } = useTranslation();
     const { user, isAuthenticated } = useAuth();
     const [content, setContent] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -30,12 +32,12 @@ export const CommentForm: React.FC<CommentFormProps> = ({
         e.preventDefault();
         
         if (!isAuthenticated || !user) {
-            setError('You must be logged in to post a comment.');
+            setError(t('article.loginRequired'));
             return;
         }
 
         if (!content.trim()) {
-            setError('Comment content is required.');
+            setError(t('dashboard.required'));
             return;
         }
 
@@ -54,9 +56,9 @@ export const CommentForm: React.FC<CommentFormProps> = ({
         } catch (err: unknown) {
             console.error('Failed to post comment:', err);
             if (axios.isAxiosError(err)) {
-                setError(err.response?.data?.message || 'Failed to post comment. Please try again.');
+                setError(err.response?.data?.message || t('common.error'));
             } else {
-                setError('An unexpected error occurred. Please try again.');
+                setError(t('common.error'));
             }
         } finally {
             setIsSubmitting(false);
@@ -67,13 +69,13 @@ export const CommentForm: React.FC<CommentFormProps> = ({
         return (
             <div className="p-6 bg-zinc-50 dark:bg-zinc-800/50 border border-dashed border-zinc-200 dark:border-zinc-700 rounded-2xl text-center">
                 <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-3">
-                    You must be logged in to participate in the discussion.
+                    {t('article.loginRequired')}
                 </p>
                 <Link 
                     to="/login" 
                     className="inline-flex items-center justify-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold rounded-xl transition-colors"
                 >
-                    Log In to Comment
+                    {t('article.loginToComment')}
                 </Link>
             </div>
         );
@@ -82,14 +84,14 @@ export const CommentForm: React.FC<CommentFormProps> = ({
     return (
         <form onSubmit={handleSubmit} className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
             <div className="flex items-center gap-2 px-1">
-                <span className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Commenting as:</span>
+                <span className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">{t('article.commentingAs')}</span>
                 <span className="text-sm font-bold text-indigo-600 dark:text-indigo-400">{user?.username}</span>
             </div>
             
             <textarea
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
-                placeholder={parentCommentId ? "Write a reply..." : "Write a comment..."}
+                placeholder={parentCommentId ? t('article.replyPlaceholder') : t('article.commentPlaceholder')}
                 required
                 disabled={isSubmitting}
                 rows={3}
@@ -106,7 +108,7 @@ export const CommentForm: React.FC<CommentFormProps> = ({
                     disabled={isSubmitting || !content.trim()}
                     className="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold rounded-xl shadow-sm disabled:opacity-50 transition-all focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-zinc-900"
                 >
-                    {isSubmitting ? 'Posting...' : (parentCommentId ? 'Post Reply' : 'Post Comment')}
+                    {isSubmitting ? t('article.posting') : (parentCommentId ? t('article.postReply') : t('article.postComment'))}
                 </button>
                 
                 {onCancel && (
@@ -116,7 +118,7 @@ export const CommentForm: React.FC<CommentFormProps> = ({
                         disabled={isSubmitting}
                         className="px-4 py-2 text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200 text-sm font-medium transition-colors"
                     >
-                        Cancel
+                        {t('common.cancel')}
                     </button>
                 )}
             </div>

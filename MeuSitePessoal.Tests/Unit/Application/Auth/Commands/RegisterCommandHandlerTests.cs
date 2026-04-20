@@ -19,7 +19,7 @@ namespace MeuSitePessoal.Tests.Unit.Application.Auth.Commands;
 /// </summary>
 public class RegisterCommandHandlerTests
 {
-    private readonly Mock<UserManager<IdentityUser>> _userManagerMock;
+    private readonly Mock<UserManager<ApplicationUser>> _userManagerMock;
     private readonly Mock<IEmailSender> _emailSenderMock;
     private readonly Mock<IEmailTemplateService> _templateServiceMock;
     private readonly Mock<IConfiguration> _configurationMock;
@@ -29,8 +29,8 @@ public class RegisterCommandHandlerTests
 
     public RegisterCommandHandlerTests()
     {
-        var storeMock = new Mock<IUserStore<IdentityUser>>();
-        _userManagerMock = new Mock<UserManager<IdentityUser>>(storeMock.Object, null!, null!, null!, null!, null!, null!, null!, null!);
+        var storeMock = new Mock<IUserStore<ApplicationUser>>();
+        _userManagerMock = new Mock<UserManager<ApplicationUser>>(storeMock.Object, null!, null!, null!, null!, null!, null!, null!, null!);
         _emailSenderMock = new Mock<IEmailSender>();
         _templateServiceMock = new Mock<IEmailTemplateService>();
         _configurationMock = new Mock<IConfiguration>();
@@ -56,13 +56,13 @@ public class RegisterCommandHandlerTests
         // Arrange
         var command = new RegisterCommand("NewUser", "new@test.com", "SecurePass123!");
         
-        _userManagerMock.Setup(x => x.CreateAsync(It.IsAny<IdentityUser>(), command.Password))
+        _userManagerMock.Setup(x => x.CreateAsync(It.IsAny<ApplicationUser>(), command.Password))
             .ReturnsAsync(IdentityResult.Success);
         
-        _userManagerMock.Setup(x => x.AddToRoleAsync(It.IsAny<IdentityUser>(), "Reader"))
+        _userManagerMock.Setup(x => x.AddToRoleAsync(It.IsAny<ApplicationUser>(), "Reader"))
             .ReturnsAsync(IdentityResult.Success);
 
-        _userManagerMock.Setup(x => x.GenerateEmailConfirmationTokenAsync(It.IsAny<IdentityUser>()))
+        _userManagerMock.Setup(x => x.GenerateEmailConfirmationTokenAsync(It.IsAny<ApplicationUser>()))
             .ReturnsAsync("valid-token");
         
         _templateServiceMock.Setup(x => x.RenderTemplateAsync(It.IsAny<string>(), It.IsAny<object>()))
@@ -97,7 +97,7 @@ public class RegisterCommandHandlerTests
         var command = new RegisterCommand("ExistingUser", "test@test.com", "Pass123!");
         var identityError = IdentityResult.Failed(new IdentityError { Description = "Error message" });
 
-        _userManagerMock.Setup(x => x.CreateAsync(It.IsAny<IdentityUser>(), command.Password))
+        _userManagerMock.Setup(x => x.CreateAsync(It.IsAny<ApplicationUser>(), command.Password))
             .ReturnsAsync(identityError);
 
         // Act

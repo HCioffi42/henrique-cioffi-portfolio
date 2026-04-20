@@ -1,3 +1,4 @@
+using MeuSitePessoal.Domain.Entities;
 using System.Security.Claims;
 using MediatR;
 using MeuSitePessoal.Application.Auth.Commands.ConfirmEmail;
@@ -11,6 +12,7 @@ using MeuSitePessoal.Application.Common.Interfaces;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 
 namespace MeuSitePessoal.Api.Controllers;
 
@@ -23,23 +25,48 @@ namespace MeuSitePessoal.Api.Controllers;
 public class AuthController : ControllerBase
 {
     private readonly IMediator _mediator;
-    private readonly SignInManager<IdentityUser> _signInManager;
-    private readonly UserManager<IdentityUser> _userManager;
+    private readonly SignInManager<ApplicationUser> _signInManager;
+    private readonly UserManager<ApplicationUser> _userManager;
     private readonly ITokenService _tokenService;
     private readonly ILogger<AuthController> _logger;
+    private readonly ICurrentUserService _currentUserService;
 
     public AuthController(
         IMediator mediator,
-        SignInManager<IdentityUser> signInManager,
-        UserManager<IdentityUser> userManager,
+        SignInManager<ApplicationUser> signInManager,
+        UserManager<ApplicationUser> userManager,
         ITokenService tokenService,
-        ILogger<AuthController> logger)
+        ILogger<AuthController> logger,
+        ICurrentUserService currentUserService)
     {
         _mediator = mediator;
         _signInManager = signInManager;
         _userManager = userManager;
         _tokenService = tokenService;
         _logger = logger;
+        _currentUserService = currentUserService;
+    }
+
+    /// <summary>
+    /// Updates the preferred language for the current authenticated user.
+    /// </summary>
+    [HttpPut("language")]
+    [Authorize]
+    public async Task<IActionResult> UpdateLanguage([FromBody] UpdateLanguageRequest request)
+    {
+        var userId = _currentUserService.UserId;
+        if (userId == null) return Unauthorized();
+
+        var user = await _userManager.FindByIdAsync(userId);
+        if (user == null) return NotFound("User not found.");
+
+        user.PreferredLanguage = request.Language;
+        var result = await _userManager.UpdateAsync(user);
+
+        if (!result.Succeeded)
+            return BadRequest(new { errors = result.Errors.Select(e => e.Description) });
+
+        return Ok(new { message = "Language preference updated successfully." });
     }
 
     /// <summary>
@@ -179,7 +206,7 @@ public class AuthController : ControllerBase
         var signInResult = await _signInManager.ExternalLoginSignInAsync(
             info.LoginProvider, info.ProviderKey, isPersistent: false);
 
-        IdentityUser? user;
+        ApplicationUser? user;
 
         if (!signInResult.Succeeded)
         {
@@ -204,7 +231,7 @@ public class AuthController : ControllerBase
                     displayName = $"{displayName}_{Guid.NewGuid().ToString().Substring(0, 4)}";
                 }
 
-                user = new IdentityUser { UserName = displayName, Email = email, EmailConfirmed = true };
+                user = new ApplicationUser { UserName = displayName, Email = email, EmailConfirmed = true };
                 var createResult = await _userManager.CreateAsync(user);
 
                 if (!createResult.Succeeded)
@@ -254,5 +281,9 @@ public class AuthController : ControllerBase
 
     /// <summary>The request body for the reset password endpoint.</summary>
     public record ResetPasswordRequest(string Email, string Token, string Password);
+
+    /// <summary>The request body for the language update endpoint.</summary>
+    public record UpdateLanguageRequest(string Language);
 }
+
 

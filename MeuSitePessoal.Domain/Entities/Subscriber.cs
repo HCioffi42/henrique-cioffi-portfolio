@@ -73,6 +73,12 @@ public class Subscriber
     /// Gets or sets the timestamp of verification.
     /// </summary>
     public DateTime? VerifiedAt { get; set; }
+
+    /// <summary>
+    /// Gets or sets the subscriber's preferred language for content and notifications.
+    /// Defaults to 'en' (English).
+    /// </summary>
+    public string PreferredLanguage { get; set; } = "en";
     
     // HC: Domain method to handle the verification logic internally.
     public void ConfirmVerification(string token)

@@ -40,7 +40,7 @@ public class ArticlePublishedEventHandlerTests
     public async Task Handle_WithActiveSubscribers_ShouldSendEmails()
     {
         // Arrange
-        var article = new Article("Title", "Content", "Summary", new List<string>(), ArticleCategory.Technology);
+        var article = new Article("Title", "Título", "Content", "Conteúdo", "Summary", "Resumo", new List<string>(), ArticleCategory.Technology);
         var notification = new ArticlePublishedEvent(article);
         
         // Creates a list of subscribers using the domain constructor to respect encapsulation.
@@ -78,7 +78,7 @@ public class ArticlePublishedEventHandlerTests
     public async Task Handle_WithNoSubscribers_ShouldNotSendEmails()
     {
         // Arrange
-        var article = new Article("Title", "Content", "Summary", new List<string>(), ArticleCategory.Technology);
+        var article = new Article("Title", "Título", "Content", "Conteúdo", "Summary", "Resumo", new List<string>(), ArticleCategory.Technology);
         var notification = new ArticlePublishedEvent(article);
         
         _subscriberRepositoryMock.Setup(x => x.GetActiveSubscribersAsync())

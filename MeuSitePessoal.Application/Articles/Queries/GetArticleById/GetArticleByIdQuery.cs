@@ -4,4 +4,4 @@ using MeuSitePessoal.Domain.Entities;
 
 namespace MeuSitePessoal.Application.Articles.Queries.GetArticleById;
 
-public record GetArticleByIdQuery(Guid Id) : IRequest<Article?>;
+public record GetArticleByIdQuery(Guid Id) : IRequest<ArticleResponse?>;

@@ -38,13 +38,17 @@ public class CommentOwnershipTests : BaseIntegrationTest
         await AuthenticateAsync();
         var request = new
         {
-            Title = "Article for Comments",
-            Content = "Content",
-            Summary = "Summary",
+            TitleEn = "Article for Comments",
+            TitlePt = "Artigo para Comentários",
+            ContentEn = "Content",
+            ContentPt = "Conteúdo",
+            SummaryEn = "Summary",
+            SummaryPt = "Resumo",
             Tags = new List<string>(),
             Category = ArticleCategory.Technology
         };
         var response = await _client.PostAsJsonAsync("/api/articles", request);
+        response.EnsureSuccessStatusCode();
         return await response.Content.ReadFromJsonAsync<Guid>();
     }
 

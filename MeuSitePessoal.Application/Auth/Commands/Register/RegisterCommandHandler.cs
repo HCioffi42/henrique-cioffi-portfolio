@@ -1,3 +1,4 @@
+using MeuSitePessoal.Domain.Entities;
 using System.Text;
 using MediatR;
 using MeuSitePessoal.Application.Common.Interfaces;
@@ -11,12 +12,12 @@ using MeuSitePessoal.Domain.Interfaces;
 namespace MeuSitePessoal.Application.Auth.Commands.Register;
 
 /// <summary>
-/// Handles the <see cref="RegisterCommand"/> by creating a new IdentityUser,
+/// Handles the <see cref="RegisterCommand"/> by creating a new ApplicationUser,
 /// generating an email confirmation token, and sending a welcome email.
 /// </summary>
 public class RegisterCommandHandler : IRequestHandler<RegisterCommand, RegisterResult>
 {
-    private readonly UserManager<IdentityUser> _userManager;
+    private readonly UserManager<ApplicationUser> _userManager;
     private readonly IEmailSender _emailSender;
     private readonly IEmailTemplateService _templateService;
     private readonly IConfiguration _configuration;
@@ -27,7 +28,7 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, RegisterR
     /// Initializes a new instance of <see cref="RegisterCommandHandler"/>.
     /// </summary>
     public RegisterCommandHandler(
-        UserManager<IdentityUser> userManager,
+        UserManager<ApplicationUser> userManager,
         IEmailSender emailSender,
         IEmailTemplateService templateService,
         IConfiguration configuration,
@@ -50,7 +51,7 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, RegisterR
     /// <returns>A <see cref="RegisterResult"/> indicating success or failure with error messages.</returns>
     public async Task<RegisterResult> Handle(RegisterCommand request, CancellationToken cancellationToken)
     {
-        var user = new IdentityUser
+        var user = new ApplicationUser
         {
             UserName = request.UserName,
             Email = request.Email
@@ -99,3 +100,4 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, RegisterR
         return new RegisterResult(true, Enumerable.Empty<string>());
     }
 }
+

@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace MeuSitePessoal.Infrastructure.Data;
 
-public class BlogDbContext : IdentityDbContext, IBlogDbContext
+public class BlogDbContext : IdentityDbContext<ApplicationUser>, IBlogDbContext
 {
     // Defines the context that inherits from IdentityDbContext to manage communication with PostgreSQL and Identity tables.
     public BlogDbContext(DbContextOptions<BlogDbContext> options) : base(options)
@@ -28,9 +28,21 @@ public class BlogDbContext : IdentityDbContext, IBlogDbContext
         {
             builder.ToTable("Articles");
             builder.HasKey(a => a.Id);
+            
+            // Localized Fields
+            builder.Property(a => a.TitleEn).IsRequired().HasMaxLength(200);
+            builder.Property(a => a.SummaryEn).IsRequired().HasMaxLength(500);
+            builder.Property(a => a.ContentEn).IsRequired();
+
+            builder.Property(a => a.TitlePt).IsRequired().HasMaxLength(200);
+            builder.Property(a => a.SummaryPt).IsRequired().HasMaxLength(500);
+            builder.Property(a => a.ContentPt).IsRequired();
+
+            // Legacy fields maintained for migration compatibility
             builder.Property(a => a.Title).IsRequired().HasMaxLength(200);
             builder.Property(a => a.Content).IsRequired();
             builder.Property(a => a.Summary).IsRequired().HasMaxLength(500);
+
             builder.Property(a => a.Tags).IsRequired();
             
             // Stores the enum as a string in the database to prevent data corruption if the enum order changes in code.

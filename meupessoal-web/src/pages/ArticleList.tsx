@@ -1,11 +1,13 @@
 import { useEffect, useState, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { getArticleSummaries, searchArticles } from '../services/articleService';
 import type { ArticleSummary } from '../models/ArticleSummary';
 import { ArticleCard } from '../components/ArticleCard';
 import Pagination from '../components/Pagination';
-import { ArticleCategory, ArticleCategoryLabels } from '../models/ArticleCategory';
+import { ArticleCategory } from '../models/ArticleCategory';
 import { SEO } from '../components/SEO';
+import { getCategoryKey } from '../util/categoryMapping';
 
 const PAGE_SIZE = 6;
 
@@ -14,6 +16,7 @@ const PAGE_SIZE = 6;
  * It fetches paginated summarized data and supports URL-based filtering for tags, categories, and keywords.
  */
 const ArticleList = () => {
+    const { t } = useTranslation();
     const [searchParams, setSearchParams] = useSearchParams();
     const [totalPages, setTotalPages] = useState<number>(0);
     const [articles, setArticles] = useState<ArticleSummary[]>([]);
@@ -37,8 +40,6 @@ const ArticleList = () => {
         const loadArticles = async () => {
             setLoading(true);
             try {
-                // HC: Logic branch: if there is a search term, use the search service. 
-                // Otherwise, use the standard summary listing with tags/category.
                 const data = searchTerm.trim()
                     ? await searchArticles(searchTerm, currentPage, PAGE_SIZE)
                     : await getArticleSummaries(currentPage, PAGE_SIZE, currentTags, category);
@@ -48,7 +49,7 @@ const ArticleList = () => {
                 setError(null);
             } catch (err) {
                 console.error("Failed to load articles:", err);
-                setError("Unable to load articles at this time.");
+                setError(t('common.error'));
             } finally {
                 setLoading(false);
             }
@@ -56,25 +57,22 @@ const ArticleList = () => {
 
         void loadArticles();
         window.scrollTo(0, 0);
-    }, [currentPage, tagsKey, category, searchTerm, currentTags]);
+    }, [currentPage, tagsKey, category, searchTerm, currentTags, t]);
 
     const { seoTitle, seoDescription } = useMemo(() => {
-        let title = 'Insights & Articles';
-        let description = 'Exploring the intersection of technology, design, and software engineering. Portfolio and blog by Henrique Cioffi.';
+        let title = t('home.title');
+        const description = t('home.seoDescription');
 
         if (searchTerm) {
-            title = `Search results for: ${searchTerm}`;
-            description = `Viewing articles matching the search term "${searchTerm}".`;
+            title = t('home.searchResults', { term: searchTerm });
         } else if (currentTags.length > 0) {
             title = `Articles tagged #${currentTags.join(', #')}`;
-            description = `Discovering content related to ${currentTags.join(' and ')}. Articles and insights on software development and design.`;
         } else if (category !== undefined) {
-            title = `Category: ${ArticleCategoryLabels[category]}`;
-            description = `All articles filed under the ${ArticleCategoryLabels[category]} category. Focused insights on technology and engineering.`;
+            title = t('home.browsingCategory', { category: t(`categories.${getCategoryKey(category)}`) });
         }
 
         return { seoTitle: title, seoDescription: description };
-    }, [currentTags, category, searchTerm]);
+    }, [currentTags, category, searchTerm, t]);
 
     const handlePageChange = (newPage: number) => {
         const newParams = new URLSearchParams(searchParams);
@@ -98,7 +96,6 @@ const ArticleList = () => {
         setSearchParams(newParams);
     };
 
-    // HC: New function to clear the search term from the URL.
     const removeSearchFilter = () => {
         const newParams = new URLSearchParams(searchParams);
         newParams.delete('q');
@@ -110,7 +107,7 @@ const ArticleList = () => {
         return (
             <div className="flex justify-center items-center min-h-[400px]">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
-                <span className="ml-4 text-gray-500 font-medium">Loading stories...</span>
+                <span className="ml-4 text-gray-500 font-medium">{t('home.loadingStories')}</span>
             </div>
         );
     }
@@ -129,21 +126,25 @@ const ArticleList = () => {
             <header className="mb-12 text-center">
                 <h1 className="text-4xl font-extrabold text-gray-900 dark:text-slate-100 tracking-tight sm:text-5xl mb-4">
                     {searchTerm
-                        ? `Results for "${searchTerm}"`
+                        ? t('home.searchResults', { term: searchTerm })
                         : currentTags.length > 0
-                            ? `Filtering by ${currentTags.length} tags`
+                            ? t('home.filteringBy', { count: currentTags.length })
                             : category !== undefined
-                                ? `Browsing: ${ArticleCategoryLabels[category]}`
-                                : 'Insights & Articles'}
+                                ? t('home.browsingCategory', { 
+                                    category: t(`categories.${getCategoryKey(category)}`) 
+                                  })
+                                : t('home.title')}
                 </h1>
                 <p className="text-lg text-gray-500 dark:text-slate-400 max-w-2xl mx-auto">
                     {searchTerm
-                        ? `Found ${articles.length} articles that match your search.`
+                        ? t('home.searchFound', { count: articles.length })
                         : currentTags.length > 0
-                            ? `Discovering content related to ${currentTags.join(' and ')}.`
+                            ? t('home.discoveringTags', { tags: currentTags.join(' and ') })
                             : category !== undefined
-                                ? `All articles filed under the ${ArticleCategoryLabels[category]} category.`
-                                : 'Exploring the intersection of technology, design, and software engineering.'}
+                                ? t('home.allInCategory', { 
+                                    category: t(`categories.${getCategoryKey(category)}`) 
+                                  })
+                                : t('home.subtitle')}
                 </p>
                 <div className="mt-8 flex justify-center">
                     <div className="w-24 h-1 bg-indigo-600 rounded-full"></div>
@@ -152,13 +153,12 @@ const ArticleList = () => {
 
             {(currentTags.length > 0 || category !== undefined || searchTerm) && (
                 <div className="mb-8 flex flex-col items-center justify-center gap-3">
-                    <span className="text-sm text-gray-500 dark:text-slate-500 uppercase tracking-widest font-semibold">Active Filters</span>
+                    <span className="text-sm text-gray-500 dark:text-slate-500 uppercase tracking-widest font-semibold">{t('home.activeFilters')}</span>
                     <div className="flex flex-wrap gap-2 justify-center">
-                        {/* HC: Renders the active search filter if present. */}
                         {searchTerm && (
                             <div className="inline-flex items-center gap-2 bg-indigo-600 px-4 py-1.5 rounded-full shadow-sm">
                                 <span className="text-sm text-white font-bold tracking-wide">
-                                    Search: {searchTerm}
+                                    {t('home.searchFilter', { term: searchTerm })}
                                 </span>
                                 <button onClick={removeSearchFilter} className="text-indigo-200 hover:text-white rounded-full p-0.5 transition-colors cursor-pointer">
                                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
@@ -169,7 +169,9 @@ const ArticleList = () => {
                         {category !== undefined && (
                             <div className="inline-flex items-center gap-2 bg-amber-50 dark:bg-amber-950/30 border border-amber-100 dark:border-amber-900/50 px-4 py-1.5 rounded-full shadow-sm">
                                 <span className="text-sm text-amber-800 dark:text-amber-500 font-bold tracking-wide">
-                                    Category: {ArticleCategoryLabels[category]}
+                                    {t('home.categoryFilter', { 
+                                        category: t(`categories.${getCategoryKey(category)}`) 
+                                    })}
                                 </span>
                                 <button onClick={removeCategoryFilter} className="text-amber-400 hover:text-red-500 rounded-full p-0.5 transition-colors cursor-pointer">
                                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
@@ -190,7 +192,7 @@ const ArticleList = () => {
 
             {articles.length === 0 ? (
                 <div className="text-center py-20 bg-gray-50 dark:bg-slate-900/50 rounded-2xl border-2 border-dashed border-gray-200 dark:border-slate-800">
-                    <p className="text-gray-500 dark:text-slate-400 text-lg">No articles match these combined filters.</p>
+                    <p className="text-gray-500 dark:text-slate-400 text-lg">{t('home.noArticles')}</p>
                 </div>
             ) : (
                 <>

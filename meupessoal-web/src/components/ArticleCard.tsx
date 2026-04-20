@@ -1,6 +1,6 @@
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import type { ArticleSummary } from '../models/ArticleSummary';
-import { ArticleCategoryLabels } from '../models/ArticleCategory';
 
 interface ArticleCardProps {
     article: ArticleSummary;
@@ -11,15 +11,29 @@ interface ArticleCardProps {
  * It provides a clean, minimalist layout with navigation to the full article and clickable tags for filtering.
  */
 export const ArticleCard = ({ article }: ArticleCardProps) => {
+    const { t, i18n } = useTranslation();
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
 
     // Formats the ISO date string into a localized, human-readable format.
-    const formattedDate = new Intl.DateTimeFormat('en-US', {
+    const formattedDate = new Intl.DateTimeFormat(i18n.language, {
         year: 'numeric',
         month: 'short',
         day: 'numeric'
     }).format(new Date(article.createdAt));
+
+    // Localized category mapping
+    const getCategoryLabel = (cat: number) => {
+        const categories: Record<number, string> = {
+            1: t('categories.technology'),
+            2: t('categories.tutorial'),
+            3: t('categories.life'),
+            4: t('categories.news'),
+            5: t('categories.opinion'),
+            6: t('categories.projects')
+        };
+        return categories[cat] || t('categories.technology');
+    };
 
     /**
      * Handles tag clicks by appending the new tag to current filters and navigating back to the home list with all parameters.
@@ -50,7 +64,7 @@ export const ArticleCard = ({ article }: ArticleCardProps) => {
                         }}
                         className="px-2 py-0.5 bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-500 rounded-md font-bold uppercase tracking-tighter hover:bg-amber-100 dark:hover:bg-amber-900/50 transition-colors"
                     >
-                        {ArticleCategoryLabels[article.category]}
+                        {getCategoryLabel(article.category)}
                     </button>
                 </div>
                 <h2 className="text-xl font-bold text-gray-900 dark:text-slate-100 leading-tight group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors cursor-pointer"
@@ -83,7 +97,7 @@ export const ArticleCard = ({ article }: ArticleCardProps) => {
                     onClick={() => navigate(`/article/${article.id}`)}
                     className="w-full py-2 px-4 bg-gray-50 dark:bg-slate-800 text-gray-700 dark:text-slate-300 text-sm font-semibold rounded-lg hover:bg-indigo-600 
                             hover:text-white transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
-                    Read More
+                    {t('common.readMore')}
                 </button>
             </footer>
         </article>

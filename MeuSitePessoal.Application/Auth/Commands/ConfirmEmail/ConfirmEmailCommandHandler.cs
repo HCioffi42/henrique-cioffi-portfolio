@@ -1,3 +1,4 @@
+using MeuSitePessoal.Domain.Entities;
 using System.Text;
 using MediatR;
 using MeuSitePessoal.Domain.Interfaces;
@@ -12,7 +13,7 @@ namespace MeuSitePessoal.Application.Auth.Commands.ConfirmEmail;
 /// </summary>
 public class ConfirmEmailCommandHandler : IRequestHandler<ConfirmEmailCommand, ConfirmEmailResult>
 {
-    private readonly UserManager<IdentityUser> _userManager;
+    private readonly UserManager<ApplicationUser> _userManager;
     private readonly ILogger<ConfirmEmailCommandHandler> _logger;
     private readonly ISubscriberRepository _subscriberRepository;
 
@@ -20,7 +21,7 @@ public class ConfirmEmailCommandHandler : IRequestHandler<ConfirmEmailCommand, C
     /// Initializes a new instance of <see cref="ConfirmEmailCommandHandler"/>.
     /// </summary>
     public ConfirmEmailCommandHandler(
-        UserManager<IdentityUser> userManager, 
+        UserManager<ApplicationUser> userManager, 
         ILogger<ConfirmEmailCommandHandler> logger,
         ISubscriberRepository subscriberRepository)
     {
@@ -84,3 +85,4 @@ public class ConfirmEmailCommandHandler : IRequestHandler<ConfirmEmailCommand, C
         }
     }
 }
+

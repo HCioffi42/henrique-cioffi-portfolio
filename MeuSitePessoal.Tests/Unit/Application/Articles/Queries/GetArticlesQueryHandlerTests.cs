@@ -1,11 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using MeuSitePessoal.Application.Articles.Queries.GetArticles;
+using MeuSitePessoal.Application.Common.Interfaces;
 using MeuSitePessoal.Application.Common.Models;
-using MeuSitePessoal.Domain;
 using MeuSitePessoal.Domain.Entities;
 using MeuSitePessoal.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
@@ -22,6 +17,7 @@ public class GetArticlesQueryHandlerTests
 {
     private readonly DbContextOptions<BlogDbContext> _options;
     private readonly Mock<IMemoryCache> _cacheMock;
+    private readonly Mock<ILanguageProvider> _languageProviderMock;
 
     public GetArticlesQueryHandlerTests()
     {
@@ -30,6 +26,14 @@ public class GetArticlesQueryHandlerTests
             .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
             .Options;
         _cacheMock = new Mock<IMemoryCache>();
+        
+        _languageProviderMock = new Mock<ILanguageProvider>();
+        _languageProviderMock.Setup(x => x.GetCurrentLanguage()).Returns("en");
+    }
+    
+    private GetArticlesQueryHandler CreateHandler(BlogDbContext context)
+    {
+        return new GetArticlesQueryHandler(context, _cacheMock.Object, _languageProviderMock.Object);
     }
 
     [Fact]
@@ -40,7 +44,7 @@ public class GetArticlesQueryHandlerTests
         {
             for (int i = 1; i <= 10; i++)
             {
-                context.Articles.Add(new Article($"Title {i}", "Content", "Summary", new List<string>(), ArticleCategory.Technology));
+                context.Articles.Add(new Article($"Title {i}", $"Título {i}", "Content", "Conteúdo", "Summary", "Resumo", new List<string>(), ArticleCategory.Technology));
             }
             await context.SaveChangesAsync();
         }
@@ -52,7 +56,7 @@ public class GetArticlesQueryHandlerTests
 
         using (var context = new BlogDbContext(_options))
         {
-            var handler = new GetArticlesQueryHandler(context, _cacheMock.Object);
+            var handler = CreateHandler(context);
             var query = new GetArticlesQuery(PageNumber: 2, PageSize: 3);
 
             // Act
@@ -83,7 +87,7 @@ public class GetArticlesQueryHandlerTests
 
         using (var context = new BlogDbContext(_options))
         {
-            var handler = new GetArticlesQueryHandler(context, _cacheMock.Object);
+            var handler = CreateHandler(context);
             var query = new GetArticlesQuery(PageNumber: 1, PageSize: 10);
 
             // Act
@@ -101,9 +105,9 @@ public class GetArticlesQueryHandlerTests
         // Arrange
         using (var context = new BlogDbContext(_options))
         {
-            context.Articles.Add(new Article("Match", "Content", "Summary", new List<string> { "dotnet", "csharp" }, ArticleCategory.Technology));
-            context.Articles.Add(new Article("Partial", "Content", "Summary", new List<string> { "dotnet" }, ArticleCategory.Technology));
-            context.Articles.Add(new Article("None", "Content", "Summary", new List<string> { "react" }, ArticleCategory.Technology));
+            context.Articles.Add(new Article("Match", "Correspondência", "Content", "Conteúdo", "Summary", "Resumo", new List<string> { "dotnet", "csharp" }, ArticleCategory.Technology));
+            context.Articles.Add(new Article("Partial", "Parcial", "Content", "Conteúdo", "Summary", "Resumo", new List<string> { "dotnet" }, ArticleCategory.Technology));
+            context.Articles.Add(new Article("None", "Nenhum", "Content", "Conteúdo", "Summary", "Resumo", new List<string> { "react" }, ArticleCategory.Technology));
             await context.SaveChangesAsync();
         }
 
@@ -114,7 +118,7 @@ public class GetArticlesQueryHandlerTests
 
         using (var context = new BlogDbContext(_options))
         {
-            var handler = new GetArticlesQueryHandler(context, _cacheMock.Object);
+            var handler = CreateHandler(context);
             var query = new GetArticlesQuery(PageNumber: 1, PageSize: 10, Tags: new List<string> { "dotnet", "csharp" });
 
             // Act
@@ -133,8 +137,8 @@ public class GetArticlesQueryHandlerTests
         // Arrange
         using (var context = new BlogDbContext(_options))
         {
-            context.Articles.Add(new Article("Tech Article", "Content", "Summary", new List<string>(), ArticleCategory.Technology));
-            context.Articles.Add(new Article("News Article", "Content", "Summary", new List<string>(), ArticleCategory.News));
+            context.Articles.Add(new Article("Tech Article", "Artigo Tech", "Content", "Conteúdo", "Summary", "Resumo", new List<string>(), ArticleCategory.Technology));
+            context.Articles.Add(new Article("News Article", "Artigo News", "Content", "Conteúdo", "Summary", "Resumo", new List<string>(), ArticleCategory.News));
             await context.SaveChangesAsync();
         }
 
@@ -145,7 +149,7 @@ public class GetArticlesQueryHandlerTests
 
         using (var context = new BlogDbContext(_options))
         {
-            var handler = new GetArticlesQueryHandler(context, _cacheMock.Object);
+            var handler = CreateHandler(context);
             var query = new GetArticlesQuery(PageNumber: 1, PageSize: 10, Category: ArticleCategory.News);
 
             // Act

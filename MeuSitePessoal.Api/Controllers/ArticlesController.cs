@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using MediatR;
 using MeuSitePessoal.Application.Articles.Commands.CreateArticle;
 using MeuSitePessoal.Application.Articles.Commands.UpdateArticle;
-using MeuSitePessoal.Application.Articles.Commands.DeleteArtigo;
+using MeuSitePessoal.Application.Articles.Commands.DeleteArticle;
 using MeuSitePessoal.Application.Articles.Queries.GetArticleById;
 using MeuSitePessoal.Application.Articles.Queries.GetAllArticles;
 using MeuSitePessoal.Application.Articles.Queries.GetArticlesSearch;
@@ -58,7 +58,7 @@ public class ArticlesController : ControllerBase
     /// </summary>
     [HttpGet]
     [AllowAnonymous]
-    public async Task<IActionResult> ListarTodos([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
+    public async Task<IActionResult> ListAll([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
     {
         var query = new GetAllArticlesQuery(pageNumber, pageSize);
         var result = await _mediator.Send(query);
@@ -87,10 +87,10 @@ public class ArticlesController : ControllerBase
     /// </summary>
     [HttpPost]
     [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> Criar([FromBody] CreateArticleCommand command)
+    public async Task<IActionResult> Create([FromBody] CreateArticleCommand command)
     {
         var id = await _mediator.Send(command);
-        return CreatedAtAction(nameof(ObterPorId), new { id = id }, id);
+        return CreatedAtAction(nameof(GetById), new { id = id }, id);
     }
     
     /// <summary>
@@ -98,16 +98,16 @@ public class ArticlesController : ControllerBase
     /// </summary>
     [HttpGet("{id}")]
     [AllowAnonymous]
-    public async Task<IActionResult> ObterPorId(Guid id)
+    public async Task<IActionResult> GetById(Guid id)
     {
-        var artigo = await _mediator.Send(new GetArticleByIdQuery(id));
+        var article = await _mediator.Send(new GetArticleByIdQuery(id));
 
-        if (artigo == null)
+        if (article == null)
         {
             return NotFound();
         }
 
-        return Ok(artigo);
+        return Ok(article);
     }
     
     /// <summary>
