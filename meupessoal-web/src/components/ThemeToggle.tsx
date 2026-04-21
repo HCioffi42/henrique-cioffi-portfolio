@@ -25,7 +25,7 @@ export const ThemeToggle = () => {
                 absolute left-3 flex flex-col items-start leading-[0.9] transition-all duration-500
                 ${isDark ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-2 pointer-events-none'}
             `}>
-                <span className="text-[9px] font-black text-slate-500 dark:text-slate-400 tracking-tighter uppercase">Light</span>
+                <span className="text-[9px] font-black text-slate-500 dark:text-slate-400 tracking-tighter uppercase">Dark</span>
                 <span className="text-[9px] font-black text-slate-500 dark:text-slate-400 tracking-tighter uppercase">Mode</span>
             </div>
 
@@ -33,7 +33,7 @@ export const ThemeToggle = () => {
                 absolute right-3 flex flex-col items-end leading-[0.9] transition-all duration-500
                 ${isDark ? 'opacity-0 translate-x-2 pointer-events-none' : 'opacity-100 translate-x-0'}
             `}>
-                <span className="text-[9px] font-black text-slate-400 dark:text-slate-500 tracking-tighter uppercase">Dark</span>
+                <span className="text-[9px] font-black text-slate-400 dark:text-slate-500 tracking-tighter uppercase">Light</span>
                 <span className="text-[9px] font-black text-slate-400 dark:text-slate-500 tracking-tighter uppercase">Mode</span>
             </div>
 
@@ -45,9 +45,9 @@ export const ThemeToggle = () => {
                         : 'translate-x-0 bg-slate-700'}
                 `}>
                 {isDark ? (
-                    <Sun className="w-4 h-4 text-amber-500" />
+                    <Moon className="w-4 h-4 text-indigo-600 fill-indigo-600/20" />
                 ) : (
-                    <Moon className="w-4 h-4 text-indigo-300 fill-indigo-300/20" />
+                    <Sun className="w-4 h-4 text-amber-400" />
                 )}
             </div>
         </button>

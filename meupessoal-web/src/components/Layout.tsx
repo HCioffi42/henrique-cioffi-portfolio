@@ -84,7 +84,7 @@ export const Layout = ({ children }: LayoutProps) => {
                                 aria-label={t('nav.switchLanguage')}
                             >
                                 <Languages className="w-4 h-4" />
-                                <span className="hidden sm:inline">{i18n.language.startsWith('pt') ? 'EN' : 'PT'}</span>
+                                <span className="hidden sm:inline">{i18n.language.startsWith('pt') ? 'PT' : 'EN'}</span>
                             </button>
 
                             <div className="hidden sm:block">
