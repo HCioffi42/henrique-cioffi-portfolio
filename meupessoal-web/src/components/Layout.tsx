@@ -68,11 +68,11 @@ export const Layout = ({ children }: LayoutProps) => {
                     </Link>
                     
                     <div className="flex items-center gap-3 sm:gap-4">
-                        <div className="hidden lg:flex items-center gap-6">
-                            <Link to="/" className="text-sm text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 font-medium transition-colors">
-                                {t('nav.blog')}
-                            </Link>
-                        </div>
+                        {/*<div className="hidden lg:flex items-center gap-6">*/}
+                        {/*    <Link to="/" className="text-sm text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 font-medium transition-colors">*/}
+                        {/*        {t('nav.blog')}*/}
+                        {/*    </Link>*/}
+                        {/*</div>*/}
 
                         <SearchBar onSearch={handleGlobalSearch} initialValue={currentSearchParam} />
                         
