@@ -1,0 +1,13 @@
+{
+  "track_id": "18-api-full-http-suite",
+  "name": "Full API HTTP Suite",
+  "status": "completed",
+  "related_files": [
+    "MeuSitePessoal.Api/UsersApi.http",
+    "MeuSitePessoal.Api/Controllers/ArticlesController.cs",
+    "MeuSitePessoal.Api/Controllers/AuthController.cs",
+    "MeuSitePessoal.Api/Controllers/CommentsController.cs",
+    "MeuSitePessoal.Api/Controllers/ImagesController.cs",
+    "MeuSitePessoal.Api/Controllers/NewsletterController.cs"
+  ]
+}

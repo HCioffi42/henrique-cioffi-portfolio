@@ -1,8 +1,11 @@
-﻿# Variables for the API configuration
-@host = {{host}}
+# Variables for the API configuration
+@host = http://localhost:5107
 @contentType = application/json
 # Tip: Grab a real ID from the database or the "Get Summaries" response and paste it here
 @articleId = 00000000-0000-0000-0000-000000000000
+@commentId = 00000000-0000-0000-0000-000000000000
+@token = placeholder-token
+@email = test@example.com
 
 # ==========================================
 # AUTHENTICATION SECTION
@@ -14,33 +17,157 @@ POST {{host}}/api/auth/login
 Content-Type: {{contentType}}
 
 {
-  "email": "{{email}}",
-  "password": "{{password}}"
+  "username": "admin",
+  "password": "Password123!"
 }
 
 > {%
     // Captured token is saved globally. No manual copy-paste required.
     client.global.set("auth_token", response.body.token);
 %}
-###
+
+### Register a New User
+# Creates a new reader account.
+POST {{host}}/api/auth/register
+Content-Type: {{contentType}}
+
+{
+  "userName": "newuser",
+  "email": "newuser@example.com",
+  "password": "Password123!"
+}
+
+### Confirm Email
+# Verifies the user's email address using a token.
+GET {{host}}/api/auth/confirm-email?userId=user-id-here&token={{token}}
+Accept: application/json
+
+### Forgot Password
+# Requests a password reset link.
+POST {{host}}/api/auth/forgot-password
+Content-Type: {{contentType}}
+
+{
+  "email": "newuser@example.com"
+}
+
+### Reset Password
+# Sets a new password using a reset token.
+POST {{host}}/api/auth/reset-password
+Content-Type: {{contentType}}
+
+{
+  "email": "newuser@example.com",
+  "token": "{{token}}",
+  "password": "NewPassword123!"
+}
+
+### Verify Two-Factor (2FA)
+# Verifies a TOTP code if 2FA is enabled.
+POST {{host}}/api/auth/verify-2fa
+Content-Type: {{contentType}}
+
+{
+  "username": "admin",
+  "code": "123456"
+}
+
+### External Login (Google)
+# Returns a challenge for Google OAuth2.
+GET {{host}}/api/auth/external-login?provider=Google
+
+### Update Preferred Language
+# Updates the language for the authenticated user.
+PUT {{host}}/api/auth/language
+Authorization: Bearer {{auth_token}}
+Content-Type: {{contentType}}
+
+{
+  "language": "pt-BR"
+}
 
 # ==========================================
 # PUBLIC ENDPOINTS (NO TOKEN REQUIRED)
 # ==========================================
 
 ### Get Article Summaries (Paginated)
-# Fetches a list of article summaries for the Home page.
 GET {{host}}/api/articles/summaries?pageNumber=1&pageSize=6
 Accept: application/json
 
 ### Get Article Summaries with Tag Filter
-# Fetches summaries filtered by specific tags.
 GET {{host}}/api/articles/summaries?pageNumber=1&pageSize=6&tags=dotnet&tags=csharp
 Accept: application/json
 
 ### Get Article Details by ID
-# Fetches the full content of a specific article.
 GET {{host}}/api/articles/{{articleId}}
+Accept: application/json
+
+### Search Articles (PostgreSQL FTS)
+GET {{host}}/api/articles/search?searchTerm=dotnet&pageNumber=1&pageSize=6
+Accept: application/json
+
+### Get Related Articles
+GET {{host}}/api/articles/{{articleId}}/related?limit=4
+Accept: application/json
+
+# ==========================================
+# COMMENT SYSTEM
+# ==========================================
+
+### Get Comments for an Article
+# Fetches the nested comment tree for a specific article.
+GET {{host}}/api/articles/{{articleId}}/comments
+Accept: application/json
+
+### Create a New Comment
+# Adds a new comment or reply to an article.
+POST {{host}}/api/comments
+Authorization: Bearer {{auth_token}}
+Content-Type: {{contentType}}
+
+{
+  "articleId": "{{articleId}}",
+  "content": "This is a test comment.",
+  "parentId": null
+}
+
+### Update a Comment
+# Edits an existing comment.
+PUT {{host}}/api/comments/{{commentId}}
+Authorization: Bearer {{auth_token}}
+Content-Type: {{contentType}}
+
+{
+  "id": "{{commentId}}",
+  "content": "Updated comment content."
+}
+
+### Delete a Comment
+# Removes a comment from the article.
+DELETE {{host}}/api/comments/{{commentId}}
+Authorization: Bearer {{auth_token}}
+
+# ==========================================
+# NEWSLETTER SYSTEM
+# ==========================================
+
+### Subscribe to Newsletter
+# Initiates the double opt-in process.
+POST {{host}}/api/newsletter/subscribe
+Content-Type: {{contentType}}
+
+{
+  "email": "subscriber@example.com"
+}
+
+### Confirm Newsletter Subscription
+# Confirms the subscription using a token.
+GET {{host}}/api/newsletter/confirm?email=subscriber@example.com&token={{token}}
+Accept: application/json
+
+### Unsubscribe from Newsletter
+# Removes an email from the newsletter.
+GET {{host}}/api/newsletter/unsubscribe?email=subscriber@example.com&token={{token}}
 Accept: application/json
 
 # ==========================================
@@ -48,7 +175,6 @@ Accept: application/json
 # ==========================================
 
 ### Create a New Article
-# Creates a new article entry in the database.
 POST {{host}}/api/articles
 Authorization: Bearer {{auth_token}}
 Content-Type: {{contentType}}
@@ -61,26 +187,23 @@ Content-Type: {{contentType}}
 }
 
 ### Update an Existing Article
-# Updates all fields of an existing article by its unique identifier.
 PUT {{host}}/api/articles/{{articleId}}
 Authorization: Bearer {{auth_token}}
 Content-Type: {{contentType}}
 
 {
+  "id": "{{articleId}}",
   "title": "Updated Title via Rider",
-  "summary": "Testing the update flow with English nomenclature.",
+  "summary": "Testing the update flow.",
   "content": "Updated markdown content.",
   "tags": ["refactor", "updated"]
 }
 
 ### Delete an Article
-# Permanently removes an article from the database.
 DELETE {{host}}/api/articles/{{articleId}}
 Authorization: Bearer {{auth_token}}
 
 ### Upload an Image
-# Uploads an image file to the storage system and returns its URL.
-# Note: You can pick a local image file to test this in Rider.
 POST {{host}}/api/images/upload
 Authorization: Bearer {{auth_token}}
 Content-Type: multipart/form-data; boundary=WebAppBoundary
@@ -92,31 +215,15 @@ Content-Type: image/png
 < ./wwwroot/uploads/test.png
 --WebAppBoundary--
 
-###
+### Delete an Image
+# Removes an uploaded image by its URL.
+DELETE {{host}}/api/images?url=/uploads/test.png
+Authorization: Bearer {{auth_token}}
 
 # ==========================================
 # OBSERVABILITY & RESILIENCE
 # ==========================================
 
 ### Check API & Database Health
-# Returns "Healthy" if the API and PostgreSQL are properly connected.
 GET {{host}}/health
 Accept: text/plain
-
-###
-
-# ==========================================
-# ADVANCED SEARCH & DISCOVERY
-# ==========================================
-
-### Search Articles (PostgreSQL FTS)
-# Tests the bilingual Full-Text Search. Try terms like "dotnet" or "desenvolvimento".
-GET {{host}}/api/articles/search?searchTerm=dotnet&pageNumber=1&pageSize=6
-Accept: application/json
-
-### Get Related Articles
-# Fetches articles with shared tags to test the intersection logic.
-GET {{host}}/api/articles/{{articleId}}/related?limit=4
-Accept: application/json
-
-###

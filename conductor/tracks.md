@@ -5,6 +5,8 @@ This file tracks all the development tracks for this project.
 ## In Progress
 
 ## Completed Tracks
+- [x] **Track 18: Full API HTTP Suite**
+  *Link: [./tracks/18-api-full-http-suite/index.md](./tracks/18-api-full-http-suite/index.md)*
 - [x] **Track 17: Internationalization (i18n)**
   *Link: [./tracks/17-internationalization/index.md](./tracks/17-internationalization/index.md)*
 - [x] **Track 16.6: Post-Registration & Newsletter Automation**
