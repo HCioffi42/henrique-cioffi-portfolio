@@ -53,6 +53,13 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
     options.Password.RequireNonAlphanumeric = true;
     options.Password.RequiredLength = 8;
     options.SignIn.RequireConfirmedEmail = true;
+
+    // Lockout policy is declared rather than inherited, so the thresholds in force are visible
+    // at the point the policy is read. Whether a given account locks is governed by its own
+    // LockoutEnabled column; the administrative account is exempted during seeding.
+    options.Lockout.MaxFailedAccessAttempts = 5;
+    options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15);
+    options.Lockout.AllowedForNewUsers = true;
 })
 
 .AddEntityFrameworkStores<BlogDbContext>()

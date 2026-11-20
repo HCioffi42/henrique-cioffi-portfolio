@@ -69,7 +69,7 @@ public class LoginCommandHandlerTests
         // HC: Must mock GetRolesAsync because the handler calls it before generating the token.
         _userManager.GetRolesAsync(Arg.Any<ApplicationUser>()).Returns(new List<string> { "Reader" });
     
-        _signInManager.CheckPasswordSignInAsync(Arg.Any<ApplicationUser>(), Arg.Any<string>(), false)
+        _signInManager.CheckPasswordSignInAsync(Arg.Any<ApplicationUser>(), Arg.Any<string>(), true)
             .Returns(SignInResult.Success);
     
         _featureToggle.Is2FAEnabled().Returns(false);
@@ -111,7 +111,7 @@ public class LoginCommandHandlerTests
         // Arrange: User exists but password check fails.
         var user = new ApplicationUser { UserName = "Cioffi" };
         _userManager.FindByNameAsync("Cioffi").Returns(user);
-        _signInManager.CheckPasswordSignInAsync(user, "wrong_pass", false)
+        _signInManager.CheckPasswordSignInAsync(user, "wrong_pass", true)
             .Returns(Microsoft.AspNetCore.Identity.SignInResult.Failed);
 
         // Act
@@ -130,7 +130,7 @@ public class LoginCommandHandlerTests
         // Arrange
         var user = new ApplicationUser { UserName = "Cioffi" };
         _userManager.FindByNameAsync("Cioffi").Returns(user);
-        _signInManager.CheckPasswordSignInAsync(user, "pass", false)
+        _signInManager.CheckPasswordSignInAsync(user, "pass", true)
             .Returns(Microsoft.AspNetCore.Identity.SignInResult.Success);
     
         // HC: Forcing the feature toggle to return true.

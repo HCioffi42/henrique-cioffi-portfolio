@@ -56,12 +56,25 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, LoginResult>
             return new LoginResult(null, null, false);
         }
 
-        // Verifies the provided password against the stored hash.
-        var result = await _signInManager.CheckPasswordSignInAsync(user, request.Password, lockoutOnFailure: false);
+        // Verifies the provided password against the stored hash. Lockout is applied
+        // unconditionally; whether a given account actually locks is governed by its own
+        // LockoutEnabled column, which is Identity's mechanism for the distinction. The
+        // administrative account carries that flag disabled.
+        var result = await _signInManager.CheckPasswordSignInAsync(user, request.Password, lockoutOnFailure: true);
         
         if (!result.Succeeded)
         {
-            _logger.LogWarning("Login failed: incorrect password for user '{Username}'.", user.UserName);
+            // The two cases are separated in the log only. The returned result is identical
+            // for both, so the response never reveals that an account exists and is locked.
+            if (result.IsLockedOut)
+            {
+                _logger.LogWarning("Login failed: account '{Username}' is locked out.", user.UserName);
+            }
+            else
+            {
+                _logger.LogWarning("Login failed: incorrect password for user '{Username}'.", user.UserName);
+            }
+
             return new LoginResult(null, null, false);
         }
 
