@@ -425,7 +425,7 @@ Attaches each policy and proves rejection, selectivity, and partitioning.
 
 **Scope decision, settled:** `verify-2fa` and `reset-password` are in scope, under their own `auth-verify` policy rather than sharing `auth-signin` — a two-factor sign-in calls login and then verification, so a shared budget would charge two permits per successful attempt (spec §5.1).
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 A test class deriving from `BaseIntegrationTest` and overriding `AdditionalConfiguration` with a permit limit of 2 and a window of 60 minutes for every policy. Each test method gets a fresh host, so counters do not carry across tests.
 
@@ -462,26 +462,26 @@ Endpoint_ReturnsTooManyRequests_OnceBudgetIsExhausted(string path)
 [Fact] RejectedResponse_CarriesRetryAfter()
 ```
 
-- [ ] **Step 2: Run tests to verify they fail**
+- [x] **Step 2: Run tests to verify they fail**
 
 Run: `dotnet test --filter "FullyQualifiedName~RateLimitingTests"`
 Expected: FAIL — no endpoint is annotated, so every request succeeds.
 
-- [ ] **Step 3: Annotate the endpoints**
+- [x] **Step 3: Annotate the endpoints**
 
 Add `[EnableRateLimiting(RateLimitPolicies.X)]` to each of the seven actions, using the constants rather than string literals so a typo is a compile error rather than a silently unprotected endpoint.
 
-- [ ] **Step 4: Run tests to verify they pass**
+- [x] **Step 4: Run tests to verify they pass**
 
 Run: `dotnet test --filter "FullyQualifiedName~RateLimitingTests"`
 Expected: PASS.
 
-- [ ] **Step 5: Run the full suite**
+- [x] **Step 5: Run the full suite**
 
 Run: `dotnet test`
 Expected: PASS. This is the step that proves the Testing thresholds from Task 4 are generous enough — `AuthenticateAsync` calls the now-limited login endpoint from many test classes. A 429 surfacing in an unrelated test means the Testing thresholds are too low or the window too short.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add MeuSitePessoal.Api/Controllers/ MeuSitePessoal.Tests/Integration/Api/RateLimitingTests.cs
