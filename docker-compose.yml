@@ -9,8 +9,8 @@ services:
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - POSTGRES_DB=meu_site_db
       - PGDATA=/var/lib/postgresql/data/pgdata
-    ports:
-      - "5432:5432"
+    # HC: No host port is published. The database is reached by service name over the
+    # blog-network bridge; administrative access goes through 'docker exec'.
     volumes:
       # HC: Using the named volume found on the server for better persistence
       - postgres_production_data:/var/lib/postgresql/data
@@ -32,8 +32,9 @@ services:
       - EmailSettings__Password=${RESEND_API_KEY}
       - EmailSettings__Host=smtp.resend.com
       - EmailSettings__Username=resend
-    ports:
-      - "5000:8080"
+      - JwtSettings__Key=${JWT_SIGNING_KEY}
+    # HC: No host port is published. All external traffic reaches the API through the
+    # frontend's Nginx reverse proxy, which is the single ingress.
     volumes:
       # HC: Matches the upload folder to the named volume
       - blog_uploads:/app/wwwroot/uploads
