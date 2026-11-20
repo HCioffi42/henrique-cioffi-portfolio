@@ -6,6 +6,8 @@ using MeuSitePessoal.Application.Comments.Commands.DeleteComment;
 using MeuSitePessoal.Application.Comments.Queries.GetCommentsByArticleId;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
+using MeuSitePessoal.Api.Configuration;
 
 namespace MeuSitePessoal.Api.Controllers;
 
@@ -55,6 +57,7 @@ public class CommentsController : ControllerBase
     /// </summary>
     [HttpPost]
     [Authorize]
+    [EnableRateLimiting(RateLimitPolicies.CommentsWrite)]
     public async Task<IActionResult> Create([FromBody] CreateCommentCommand command)
     {
         var result = await _mediator.Send(command);

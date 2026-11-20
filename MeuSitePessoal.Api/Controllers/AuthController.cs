@@ -13,6 +13,8 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.RateLimiting;
+using MeuSitePessoal.Api.Configuration;
 
 namespace MeuSitePessoal.Api.Controllers;
 
@@ -76,6 +78,7 @@ public class AuthController : ControllerBase
     /// <param name="request">The login request containing username and password.</param>
     /// <returns>A JWT token response or a 2FA challenge indicator.</returns>
     [HttpPost("login")]
+    [EnableRateLimiting(RateLimitPolicies.AuthSignIn)]
     public async Task<IActionResult> Login([FromBody] LoginRequest request)
     {
         var result = await _mediator.Send(new LoginCommand(request.Username, request.Password));
@@ -97,6 +100,7 @@ public class AuthController : ControllerBase
     /// <param name="request">The registration request containing email and password.</param>
     /// <returns>200 OK on success, or 400 Bad Request with error details on failure.</returns>
     [HttpPost("register")]
+    [EnableRateLimiting(RateLimitPolicies.AuthRegister)]
     public async Task<IActionResult> Register([FromBody] RegisterRequest request)
     {
         var result = await _mediator.Send(new RegisterCommand(request.UserName, request.Email, request.Password));
@@ -131,6 +135,7 @@ public class AuthController : ControllerBase
     /// <param name="request">The request containing the user's email.</param>
     /// <returns>A generic success message.</returns>
     [HttpPost("forgot-password")]
+    [EnableRateLimiting(RateLimitPolicies.AuthRecovery)]
     public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequest request)
     {
         var result = await _mediator.Send(new ForgotPasswordCommand(request.Email));
@@ -143,6 +148,7 @@ public class AuthController : ControllerBase
     /// <param name="request">The reset request details.</param>
     /// <returns>200 OK on success, or 400 Bad Request if the token is invalid or expired.</returns>
     [HttpPost("reset-password")]
+    [EnableRateLimiting(RateLimitPolicies.AuthVerify)]
     public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest request)
     {
         var result = await _mediator.Send(new ResetPasswordCommand(request.Email, request.Token, request.Password));
@@ -161,6 +167,7 @@ public class AuthController : ControllerBase
     /// <param name="request">The 2FA verification request.</param>
     /// <returns>A JWT token or 401 Unauthorized if the code is invalid.</returns>
     [HttpPost("verify-2fa")]
+    [EnableRateLimiting(RateLimitPolicies.AuthVerify)]
     public async Task<IActionResult> VerifyTwoFactor([FromBody] VerifyTwoFactorRequest request)
     {
         var result = await _mediator.Send(new VerifyTwoFactorCommand(request.Username, request.Code));
