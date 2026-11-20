@@ -33,8 +33,17 @@ Run the following script to initialize environment variables and local secrets:
     dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Host=localhost;Port=5432;Database=MeuSiteDb;Username=postgres;Password=YOUR_PASSWORD"
     ```
     > **Rider Tip**: The secrets JSON can be edited directly by right-clicking the API project and selecting **Manage \> User Secrets**.
-3.  Apply migrations: `dotnet ef database update`.
-4.  Run the project: `dotnet run`.
+3.  **Set the JWT signing key**: the application reads this from the environment and will not
+    start without it. It is deliberately absent from `appsettings.json`, so every environment
+    supplies its own.
+    ```bash
+    dotnet user-secrets set "JwtSettings:Key" "<a value of at least 32 bytes>"
+    ```
+    Generate one with `openssl rand -base64 48`. Deployed environments supply the same value
+    through the `JwtSettings__Key` environment variable instead. Never commit a key to the
+    repository, and never add one to `appsettings.json` as a fallback.
+4.  Apply migrations: `dotnet ef database update`.
+5.  Run the project: `dotnet run`.
 
 -----
 

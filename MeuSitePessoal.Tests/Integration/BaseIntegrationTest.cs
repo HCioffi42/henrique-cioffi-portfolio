@@ -24,6 +24,23 @@ public class BaseIntegrationTest : IAsyncLifetime
     // Hardcodes the connection string for a local PostgreSQL instance used exclusively for integration tests.
     private const string TestConnectionString = "Host=localhost;Port=5432;Database=meusitepessoal_testdb;Username=postgres;Password=Anah@1418";
 
+    // Signs tokens that are issued and consumed entirely within the test process. This is not a
+    // credential and is deliberately recognisable as a test value.
+    private const string TestSigningKey = "integration-test-signing-key-not-a-production-secret";
+
+    /// <summary>
+    /// Publishes the signing key to the process environment before any host is constructed.
+    /// The key is resolved by startup code that runs while the application builder is being
+    /// configured, which is earlier than the point at which WebApplicationFactory merges its own
+    /// in-memory configuration sources. An environment variable is read by the builder
+    /// immediately, so it is the only source that reaches a build-time read — and it mirrors the
+    /// way deployed environments supply the same value.
+    /// </summary>
+    static BaseIntegrationTest()
+    {
+        Environment.SetEnvironmentVariable("JwtSettings__Key", TestSigningKey);
+    }
+
     /// <summary>
     /// Authenticates the HTTP client using the default admin credentials seeded in the database.
     /// </summary>
@@ -101,7 +118,10 @@ public class BaseIntegrationTest : IAsyncLifetime
                         ["AdminSetup:Password"] = "Admin123!",
                         // HC: Essential for the Newsletter Handler to generate links during integration tests.
                         ["ApiSettings:BaseUrl"] = "http://localhost:25683",
-                        ["ClientSettings:BaseUrl"] = "http://localhost:5173"
+                        ["ClientSettings:BaseUrl"] = "http://localhost:5173",
+                        // Mirrors the environment variable set in the static constructor, so any
+                        // consumer resolving the key after the host is built sees the same value.
+                        ["JwtSettings:Key"] = TestSigningKey
                     });
                 });
 

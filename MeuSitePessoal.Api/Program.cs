@@ -1,6 +1,6 @@
-using System.Text;
 using AspNet.Security.OAuth.GitHub;
 using FluentValidation;
+using MeuSitePessoal.Api.Configuration;
 using MeuSitePessoal.Api.Middleware;
 using MeuSitePessoal.Application.Articles.Commands.CreateArticle;
 using MeuSitePessoal.Application.Common.Behaviors;
@@ -67,9 +67,11 @@ builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IStorageService, LocalStorageService>();
 builder.Services.AddSingleton<IFeatureToggleService, FeatureToggleService>();
 
-// Configure JWT Authentication
+// Configure JWT Authentication.
+// The signing key is resolved through JwtKeyResolver, which fails fast when the environment
+// has not supplied a usable value.
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
-var key = Encoding.UTF8.GetBytes(jwtSettings["Key"]!);
+var key = JwtKeyResolver.Resolve(builder.Configuration);
 
 var authBuilder = builder.Services.AddAuthentication(options =>
 {
