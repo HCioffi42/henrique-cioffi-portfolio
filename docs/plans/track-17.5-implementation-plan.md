@@ -247,9 +247,17 @@ Expected: `rows_at_risk = 0`.
 
 **If the count is non-zero, stop.** Those rows hold text that the drop would destroy. Report the ids and await a decision on backfilling them before continuing.
 
-- [ ] **Step 3: Record the result**
+- [x] **Step 3: Record the result**
 
-Append the backup filename, row count, and audit result to this plan file under Task 4, so the evidence travels with the work.
+**Completed and verified against production on 2026-11-20:**
+
+| Item | Result |
+|---|---|
+| Backup | `C:\Users\henri\backups\MySitePRD\articles-pre-17.5-20261120.sql` (stored outside the repository) |
+| `total_articles` | 4 |
+| `rows_at_risk` | **0** |
+
+All four production rows already carry complete `TitleEn`/`TitlePt`, `SummaryEn`/`SummaryPt`, and `ContentEn`/`ContentPt` values, so dropping the legacy columns destroys no text that exists nowhere else. The gate is satisfied and Task 5 is unblocked.
 
 ---
 

@@ -38,11 +38,6 @@ public class BlogDbContext : IdentityDbContext<ApplicationUser>, IBlogDbContext
             builder.Property(a => a.SummaryPt).IsRequired().HasMaxLength(500);
             builder.Property(a => a.ContentPt).IsRequired();
 
-            // Legacy fields maintained for migration compatibility
-            builder.Property(a => a.Title).IsRequired().HasMaxLength(200);
-            builder.Property(a => a.Content).IsRequired();
-            builder.Property(a => a.Summary).IsRequired().HasMaxLength(500);
-
             builder.Property(a => a.Tags).IsRequired();
             
             // Stores the enum as a string in the database to prevent data corruption if the enum order changes in code.
