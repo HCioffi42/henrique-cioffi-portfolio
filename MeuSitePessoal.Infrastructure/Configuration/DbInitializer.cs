@@ -80,46 +80,52 @@ public static class DbInitializer
                 await userManager.AddToRoleAsync(adminUser, "Admin");
             }
 
-            // Converges the administrative account's lockout exemption on every startup. This sits
-            // outside the role conditional above on purpose: the deployed administrator is already
-            // in the role, so the promotion branch never runs again, while every integration test
-            // creates the account fresh and always takes the creation branch. An exemption attached
-            // to either branch would pass the suite and leave the production account lockable.
-            if (adminUser != null)
-            {
-                var lockoutStateChanged = false;
-
-                if (adminUser.LockoutEnabled)
-                {
-                    adminUser.LockoutEnabled = false;
-                    lockoutStateChanged = true;
-                }
-
-                // AccessFailedAsync writes the two fields below without consulting LockoutEnabled,
-                // so an exempt account accumulates lockout state that reads as a locked row today
-                // and would take effect the moment the exemption were lifted.
-                if (adminUser.LockoutEnd != null)
-                {
-                    adminUser.LockoutEnd = null;
-                    lockoutStateChanged = true;
-                }
-
-                if (adminUser.AccessFailedCount != 0)
-                {
-                    adminUser.AccessFailedCount = 0;
-                    lockoutStateChanged = true;
-                }
-
-                // Written only when something differs, so an ordinary boot performs no write.
-                if (lockoutStateChanged)
-                {
-                    logger.LogInformation(
-                        "--> Seed: Converging lockout exemption for administrator {Email}.", adminEmail);
-                    await userManager.UpdateAsync(adminUser);
-                }
-            }
         }
 
+        // 2b. Converge the lockout exemption for every account holding the Admin role.
+        //
+        // This sits outside the AdminSetup block above, and is keyed on the role rather than on
+        // the configured account, for two reasons. The block above is skipped in full when the
+        // seed credentials are absent, which is the ordinary case for a deployed environment, so
+        // an exemption placed inside it never runs there. And a deployment may hold more than one
+        // administrator, while the seeder knows of at most one; the exemption is a property of
+        // the role, so it is applied to every account that holds it.
+        var administrators = await userManager.GetUsersInRoleAsync("Admin");
+
+        foreach (var administrator in administrators)
+        {
+            var lockoutStateChanged = false;
+
+            if (administrator.LockoutEnabled)
+            {
+                administrator.LockoutEnabled = false;
+                lockoutStateChanged = true;
+            }
+
+            // AccessFailedAsync writes the two fields below without consulting LockoutEnabled, so
+            // an exempt account accumulates lockout state that reads as a locked row today and
+            // would take effect the moment the exemption were lifted.
+            if (administrator.LockoutEnd != null)
+            {
+                administrator.LockoutEnd = null;
+                lockoutStateChanged = true;
+            }
+
+            if (administrator.AccessFailedCount != 0)
+            {
+                administrator.AccessFailedCount = 0;
+                lockoutStateChanged = true;
+            }
+
+            // Written only when something differs, so an ordinary boot performs no write.
+            if (lockoutStateChanged)
+            {
+                logger.LogInformation(
+                    "--> Seed: Converging lockout exemption for administrator {UserName}.",
+                    administrator.UserName);
+                await userManager.UpdateAsync(administrator);
+            }
+        }
         // 3. Seed Articles
         if (await context.Articles.AnyAsync()) 
         {
