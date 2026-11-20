@@ -93,6 +93,10 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
 Console.WriteLine(
     $"--> Forwarded headers: trusting 1 hop from {trustedNetworkAddress}/{trustedNetworkPrefixLength}");
 
+// Registers the per-endpoint request budgets. Thresholds are validated here, so a policy left
+// unconfigured stops the application rather than surfacing on the first request to reach it.
+builder.Services.AddConfiguredRateLimiting(builder.Configuration);
+
 // Configure JWT Authentication.
 // The signing key is resolved through JwtKeyResolver, which fails fast when the environment
 // has not supplied a usable value.
@@ -239,6 +243,13 @@ if (!app.Environment.IsDevelopment() && !app.Environment.IsEnvironment("Docker")
 {
     app.UseHttpsRedirection();
 }
+
+// Routing runs before the limiter so that endpoint-level policy metadata is available to it.
+app.UseRouting();
+
+// Throttling precedes authentication, so a flood of unauthenticated requests is refused before
+// any identity work is performed on it.
+app.UseRateLimiter();
 
 app.UseAuthentication();
 app.UseAuthorization();
