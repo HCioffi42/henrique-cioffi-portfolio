@@ -12,7 +12,7 @@
 
 The codebase demonstrates genuine engineering discipline in several areas — strict TypeScript with zero `any`/`@ts-ignore` escapes, a clean MediatR/CQRS Application layer, parameterized full-text search, consistent RBAC on the highest-risk endpoints, and a real-PostgreSQL integration test strategy. These are production-grade foundations.
 
-However, the audit surfaced **one confirmed live production bug** (newsletter emails have shipped with blank subjects/content since Track 17), **a dead database index** (full-text search silently regressed to a sequential scan), **a hardcoded JWT signing secret that is never overridden in production**, and **no rate limiting or login lockout anywhere in the system** — meaning the login endpoint is brute-forceable today. None of these are edge cases; they sit directly in the platform's critical path (publishing, searching, and authenticating).
+However, the audit surfaced **one confirmed live production bug** (newsletter emails have shipped with blank subjects/content since Track 17), **a dead database index** (full-text search silently regressed to a sequential scan), and **a set of security findings recorded separately** (see §3.3). None of these are edge cases; they sit directly in the platform's critical path (publishing, searching, and authenticating).
 
 The i18n "Flat Schema" migration (Track 17) is the single largest source of debt uncovered: the legacy-column sync strategy was deliberately disabled mid-migration (confirmed via developer comments in the code itself), but the cleanup (dropping legacy columns/indexes, auditing every consumer) was never finished. This left a "half-migrated" state that is actively causing incorrect behavior.
 
