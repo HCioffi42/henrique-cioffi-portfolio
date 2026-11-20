@@ -5,6 +5,8 @@ using MeuSitePessoal.Application.Newsletter.Commands.Subscribe;
 using MeuSitePessoal.Application.Newsletter.Commands.Unsubscribe;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
+using MeuSitePessoal.Api.Configuration;
 
 namespace MeuSitePessoal.Api.Controllers;
 
@@ -31,6 +33,7 @@ public class NewsletterController : ControllerBase
     /// Subscribes an email to the newsletter, initiating a double opt-in flow.
     /// </summary>
     [HttpPost("subscribe")]
+    [EnableRateLimiting(RateLimitPolicies.NewsletterSubscribe)]
     [AllowAnonymous]
     public async Task<IActionResult> Subscribe([FromBody] SubscribeToNewsletterCommand command)
     {

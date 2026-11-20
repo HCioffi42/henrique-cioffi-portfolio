@@ -79,6 +79,45 @@ public static class DbInitializer
                 logger.LogInformation("--> Seed: Promoting user {Email} to Admin role...", adminEmail);
                 await userManager.AddToRoleAsync(adminUser, "Admin");
             }
+
+            // Converges the administrative account's lockout exemption on every startup. This sits
+            // outside the role conditional above on purpose: the deployed administrator is already
+            // in the role, so the promotion branch never runs again, while every integration test
+            // creates the account fresh and always takes the creation branch. An exemption attached
+            // to either branch would pass the suite and leave the production account lockable.
+            if (adminUser != null)
+            {
+                var lockoutStateChanged = false;
+
+                if (adminUser.LockoutEnabled)
+                {
+                    adminUser.LockoutEnabled = false;
+                    lockoutStateChanged = true;
+                }
+
+                // AccessFailedAsync writes the two fields below without consulting LockoutEnabled,
+                // so an exempt account accumulates lockout state that reads as a locked row today
+                // and would take effect the moment the exemption were lifted.
+                if (adminUser.LockoutEnd != null)
+                {
+                    adminUser.LockoutEnd = null;
+                    lockoutStateChanged = true;
+                }
+
+                if (adminUser.AccessFailedCount != 0)
+                {
+                    adminUser.AccessFailedCount = 0;
+                    lockoutStateChanged = true;
+                }
+
+                // Written only when something differs, so an ordinary boot performs no write.
+                if (lockoutStateChanged)
+                {
+                    logger.LogInformation(
+                        "--> Seed: Converging lockout exemption for administrator {Email}.", adminEmail);
+                    await userManager.UpdateAsync(adminUser);
+                }
+            }
         }
 
         // 3. Seed Articles

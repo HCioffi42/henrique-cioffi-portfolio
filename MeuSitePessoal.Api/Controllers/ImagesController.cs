@@ -10,7 +10,9 @@ namespace MeuSitePessoal.Api.Controllers;
 /// </summary>
 [ApiController]
 [Route("api/[controller]")]
-[Authorize]
+// Media management is administrative. The restriction is declared at the controller so it
+// covers every action, including any added later.
+[Authorize(Roles = "Admin")]
 public class ImagesController : ControllerBase
 {
     private readonly IStorageService _storageService;

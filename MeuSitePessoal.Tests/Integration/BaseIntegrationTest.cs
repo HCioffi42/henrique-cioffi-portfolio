@@ -2,6 +2,7 @@ using MeuSitePessoal.Domain.Entities;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using MeuSitePessoal.Api;
+using MeuSitePessoal.Api.Configuration;
 using MeuSitePessoal.Application.Common.Interfaces;
 using MeuSitePessoal.Infrastructure.Configuration;
 using MeuSitePessoal.Infrastructure.Data;
@@ -23,6 +24,54 @@ public class BaseIntegrationTest : IAsyncLifetime
 
     // Hardcodes the connection string for a local PostgreSQL instance used exclusively for integration tests.
     private const string TestConnectionString = "Host=localhost;Port=5432;Database=meusitepessoal_testdb;Username=postgres;Password=Anah@1418";
+
+    /// <summary>
+    /// Publishes the signing key to the process environment before any host is constructed.
+    /// See <see cref="TestHostEnvironment"/> for why the environment is the only source reaching
+    /// the build-time read performed during startup.
+    /// </summary>
+    static BaseIntegrationTest()
+    {
+        TestHostEnvironment.Apply();
+    }
+
+    /// <summary>
+    /// Extra configuration a derived fixture contributes, applied over the defaults below.
+    /// Tests asserting throttling override the thresholds here rather than duplicating the
+    /// database and mail setup in a second fixture.
+    /// </summary>
+    protected virtual IDictionary<string, string?> AdditionalConfiguration
+        => new Dictionary<string, string?>();
+
+    /// <summary>
+    /// Thresholds high enough that no ordinary test reaches them. The limiter stays registered
+    /// and active in every environment so a wiring regression is caught rather than hidden; only
+    /// the numbers differ. The in-memory host resolves no client address, so every request in a
+    /// test shares one partition, and a test authenticating several times would otherwise consume
+    /// a realistic budget.
+    /// </summary>
+    private static Dictionary<string, string?> BuildDefaultConfiguration()
+    {
+        var values = new Dictionary<string, string?>
+        {
+            ["AdminSetup:Email"] = "admin@example.com",
+            ["AdminSetup:Password"] = "Admin123!",
+            // HC: Essential for the Newsletter Handler to generate links during integration tests.
+            ["ApiSettings:BaseUrl"] = "http://localhost:25683",
+            ["ClientSettings:BaseUrl"] = "http://localhost:5173",
+            // Mirrors the environment variable applied by TestHostEnvironment, so any consumer
+            // resolving the key after the host is built sees the same value.
+            ["JwtSettings:Key"] = TestHostEnvironment.SigningKey
+        };
+
+        foreach (var policy in RateLimitPolicies.All)
+        {
+            values[$"RateLimiting:Policies:{policy}:PermitLimit"] = "100000";
+            values[$"RateLimiting:Policies:{policy}:WindowMinutes"] = "60";
+        }
+
+        return values;
+    }
 
     /// <summary>
     /// Authenticates the HTTP client using the default admin credentials seeded in the database.
@@ -95,14 +144,15 @@ public class BaseIntegrationTest : IAsyncLifetime
                 
                 builder.ConfigureAppConfiguration((context, config) =>
                 {
-                    config.AddInMemoryCollection(new Dictionary<string, string?>
+                    var values = BuildDefaultConfiguration();
+
+                    // A derived fixture's contributions take precedence over the defaults.
+                    foreach (var entry in AdditionalConfiguration)
                     {
-                        ["AdminSetup:Email"] = "admin@example.com",
-                        ["AdminSetup:Password"] = "Admin123!",
-                        // HC: Essential for the Newsletter Handler to generate links during integration tests.
-                        ["ApiSettings:BaseUrl"] = "http://localhost:25683",
-                        ["ClientSettings:BaseUrl"] = "http://localhost:5173"
-                    });
+                        values[entry.Key] = entry.Value;
+                    }
+
+                    config.AddInMemoryCollection(values);
                 });
 
                 builder.ConfigureServices(services =>

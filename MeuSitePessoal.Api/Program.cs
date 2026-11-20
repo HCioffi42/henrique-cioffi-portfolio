@@ -1,6 +1,6 @@
-using System.Text;
 using AspNet.Security.OAuth.GitHub;
 using FluentValidation;
+using MeuSitePessoal.Api.Configuration;
 using MeuSitePessoal.Api.Middleware;
 using MeuSitePessoal.Application.Articles.Commands.CreateArticle;
 using MeuSitePessoal.Application.Common.Behaviors;
@@ -13,6 +13,7 @@ using MeuSitePessoal.Infrastructure.Data;
 using MeuSitePessoal.Infrastructure.Logging;
 using MeuSitePessoal.Infrastructure.Repositories;
 using MeuSitePessoal.Infrastructure.Services;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -52,6 +53,13 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
     options.Password.RequireNonAlphanumeric = true;
     options.Password.RequiredLength = 8;
     options.SignIn.RequireConfirmedEmail = true;
+
+    // Lockout policy is declared rather than inherited, so the thresholds in force are visible
+    // at the point the policy is read. Whether a given account locks is governed by its own
+    // LockoutEnabled column; the administrative account is exempted during seeding.
+    options.Lockout.MaxFailedAccessAttempts = 5;
+    options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15);
+    options.Lockout.AllowedForNewUsers = true;
 })
 
 .AddEntityFrameworkStores<BlogDbContext>()
@@ -67,9 +75,40 @@ builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IStorageService, LocalStorageService>();
 builder.Services.AddSingleton<IFeatureToggleService, FeatureToggleService>();
 
-// Configure JWT Authentication
+// Configure forwarded headers so the application attributes requests to the originating client
+// rather than to the reverse proxy. The trusted network is bound from configuration because
+// container addresses are assigned dynamically and the deployed bridge subnet may differ.
+var forwardedHeadersSection = builder.Configuration.GetSection("ForwardedHeaders");
+var trustedNetworkAddress = forwardedHeadersSection["TrustedNetwork"] ?? "172.16.0.0";
+var trustedNetworkPrefixLength = forwardedHeadersSection.GetValue<int?>("TrustedNetworkPrefixLength") ?? 12;
+
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+
+    // Exactly one hop is trusted. The proxy presents a single-entry chain, so any additional
+    // entry originated with the caller and must not be attributed to them.
+    options.ForwardLimit = 1;
+
+    // The defaults cover loopback only, which never matches a container peer on the bridge.
+    options.KnownNetworks.Clear();
+    options.KnownProxies.Clear();
+    options.KnownNetworks.Add(new Microsoft.AspNetCore.HttpOverrides.IPNetwork(
+        System.Net.IPAddress.Parse(trustedNetworkAddress), trustedNetworkPrefixLength));
+});
+
+Console.WriteLine(
+    $"--> Forwarded headers: trusting 1 hop from {trustedNetworkAddress}/{trustedNetworkPrefixLength}");
+
+// Registers the per-endpoint request budgets. Thresholds are validated here, so a policy left
+// unconfigured stops the application rather than surfacing on the first request to reach it.
+builder.Services.AddConfiguredRateLimiting(builder.Configuration);
+
+// Configure JWT Authentication.
+// The signing key is resolved through JwtKeyResolver, which fails fast when the environment
+// has not supplied a usable value.
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
-var key = Encoding.UTF8.GetBytes(jwtSettings["Key"]!);
+var key = JwtKeyResolver.Resolve(builder.Configuration);
 
 var authBuilder = builder.Services.AddAuthentication(options =>
 {
@@ -186,6 +225,11 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
+// Resolves the originating client address before anything observes it. Request logging, and
+// any later consumer such as request throttling, must see the client rather than the proxy,
+// so this runs first.
+app.UseForwardedHeaders();
+
 // Enables the global exception handling middleware at the beginning of the pipeline.
 app.UseExceptionHandler();
 
@@ -206,6 +250,13 @@ if (!app.Environment.IsDevelopment() && !app.Environment.IsEnvironment("Docker")
 {
     app.UseHttpsRedirection();
 }
+
+// Routing runs before the limiter so that endpoint-level policy metadata is available to it.
+app.UseRouting();
+
+// Throttling precedes authentication, so a flood of unauthenticated requests is refused before
+// any identity work is performed on it.
+app.UseRateLimiter();
 
 app.UseAuthentication();
 app.UseAuthorization();
