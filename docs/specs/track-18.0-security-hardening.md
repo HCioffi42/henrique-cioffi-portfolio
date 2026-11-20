@@ -95,6 +95,8 @@ Outcomes that would make this track a failure even if the code compiles and the 
 
 The fixture also keeps a matching in-memory entry so that any consumer resolving the key after the host is built sees the same value.
 
+**The test host must also declare its environment.** `Program.cs:27` loads .NET user secrets whenever the `ASPNETCORE_ENVIRONMENT` process variable is absent, which it is under `dotnet test` — the fixture sets the environment through `UseEnvironment`, which is not the same thing. User secrets rank above environment variables, so a developer with a local `JwtSettings:Key` would have that key validate tokens while the fixture's key signed them, and every authenticated test would fail with 401 on a machine where the documented local setup had been followed. The fixture therefore sets `ASPNETCORE_ENVIRONMENT=Testing` before building any host, which keeps the suite hermetic from local configuration. This is a pre-existing property of the startup sequence that this track's build-time key read makes consequential.
+
 ### 3.2 Startup validation
 
 `Program.cs` validates the key before building the authentication pipeline, and throws a descriptive exception when it is absent or too short:

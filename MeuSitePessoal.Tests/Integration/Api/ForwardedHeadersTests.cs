@@ -24,7 +24,7 @@ public class ForwardedHeadersTests : IDisposable
 
     static ForwardedHeadersTests()
     {
-        TestSigningKey.PublishToEnvironment();
+        TestHostEnvironment.Apply();
     }
 
     public ForwardedHeadersTests()

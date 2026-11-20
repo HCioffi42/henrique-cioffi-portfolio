@@ -26,12 +26,12 @@ public class BaseIntegrationTest : IAsyncLifetime
 
     /// <summary>
     /// Publishes the signing key to the process environment before any host is constructed.
-    /// See <see cref="TestSigningKey"/> for why the environment is the only source that reaches
+    /// See <see cref="TestHostEnvironment"/> for why the environment is the only source reaching
     /// the build-time read performed during startup.
     /// </summary>
     static BaseIntegrationTest()
     {
-        TestSigningKey.PublishToEnvironment();
+        TestHostEnvironment.Apply();
     }
 
     /// <summary>
@@ -114,7 +114,7 @@ public class BaseIntegrationTest : IAsyncLifetime
                         ["ClientSettings:BaseUrl"] = "http://localhost:5173",
                         // Mirrors the environment variable set in the static constructor, so any
                         // consumer resolving the key after the host is built sees the same value.
-                        ["JwtSettings:Key"] = TestSigningKey.Value
+                        ["JwtSettings:Key"] = TestHostEnvironment.SigningKey
                     });
                 });
 
