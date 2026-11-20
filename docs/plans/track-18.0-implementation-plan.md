@@ -1,6 +1,6 @@
 # Track 18.0 — Security Hardening: Implementation Plan
 
-> **Status: complete (2026-11-20).** All nine tasks implemented on `feature/track-18.0-security-hardening` and verified against the full suite on real PostgreSQL. Residual scope was recorded as roadmap items 19.10 and 19.11; the three acceptance criteria a green suite cannot confirm are listed under Verification Summary below and remain out-of-band checks.
+> **Status: complete and verified (2026-11-20).** All nine tasks implemented on `feature/track-18.0-security-hardening`, released as `v2026.11.20.02`, and the three out-of-band acceptance checks carried out against the deployed system — results recorded under Verification Summary. Criterion 11 failed in production and was closed by `v2026.11.20.03`. Residual scope is recorded as roadmap items 19.10 and 19.11.
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
@@ -776,6 +776,20 @@ Acceptance criteria 1-16 in spec §9 map to tasks as follows: 1-2 to Task 1, 3 t
 | 11 (exemption converges) | Every test seeds a freshly created administrator, the one shape that makes a wrong implementation look right | the dedicated test in Task 6 Step 1 constructs the production shape explicitly; also verify the deployed row after release |
 | 14 (conditional header trust) | nginx is not in the test host's path at all | Task 3 Step 5a, by request against the deployed origin |
 
+
+### Out-of-band verification results (2026-11-20, against the deployed system)
+
+All three were carried out after `v2026.11.20.02` deployed. One failed and produced a patch release.
+
+| Criterion | Result | Evidence |
+|---|---|---|
+| 4 (forwarded address) | **Pass** | `blog-network` subnet is `172.18.0.0/16` and the nginx container peer is `172.18.0.4`, inside the configured `172.16.0.0/12` (which spans 172.16.0.0–172.31.255.255). No `ForwardedHeaders` override is set in the deployed environment, so the code default is what applies; the startup line confirms it. |
+| 11 (exemption converges) | **Failed, then fixed** | Both `Admin` rows carried `LockoutEnabled = true`. The convergence step sat inside the block guarded by the `AdminSetup` credentials, which a deployed environment without those credentials skips in full, and it was keyed on the single configured account. Rows were corrected directly, then `v2026.11.20.03` moved the convergence outside that guard and keyed it on the role. |
+| 14 (conditional header trust) | **Pass** | `nginx.conf` sets `X-Forwarded-For $remote_addr` rather than appending, so a supplied chain is replaced. Confirmed by request: once the sign-in budget was exhausted, requests presenting other forged `X-Forwarded-For` values — including a multi-hop chain and no header at all — stayed at 429 rather than receiving a fresh budget. The application logged a single partition equal to the real client address, and none of the forged values ever appeared as a partition key. A forged `CF-Connecting-IP` is rejected at the Cloudflare edge with 403 and never reaches the origin. |
+
+**Note on 11.** The defect was invisible to the suite because every integration test configures `AdminSetup` through the shared fixture, so the guarded block always ran under test. Two tests now construct the missing shapes: a seed run against a configuration declaring no `AdminSetup` section, and a second administrator that configuration never names.
+
+**Note on roadmap 19.10.** The verification clarified its status as defence in depth rather than an open gap. A caller reaching the origin directly does not match `set_real_ip_from`, so `$remote_addr` stays that caller's own address and the forwarded header carries it; no spoofing is available on either path. 19.10 removes the direct-reach path, it does not close a trust gap.
 ## Deployment Notes
 
 Not part of the implementation, but required for the release to land cleanly:

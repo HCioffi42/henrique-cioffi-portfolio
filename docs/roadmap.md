@@ -9,6 +9,8 @@
 >
 > **2026-11-20 — Track 18.0 completed.** The signing key is sourced from the environment with fail-fast startup validation, ingress is narrowed to the web tier, the client address is resolved from the forwarded chain, per-endpoint request throttling is active, Identity lockout is enabled with an administrative exemption, and media management is restricted to administrators. Security findings are now tracked privately rather than enumerated in this repository. Tracks 18.1 and 18.2 are unblocked.
 >
+>
+> **2026-11-20 — Track 18.0 verified against production.** The out-of-band acceptance checks were carried out on the deployed system. The administrative lockout exemption was found not to apply there, because the convergence step sat inside the block guarded by the `AdminSetup` credentials that a deployed environment does not supply; `v2026.11.20.03` moved it outside that guard and keyed it on the `Admin` role. The forwarded-address range and conditional header trust both passed.
 > The `conductor/` agent-outsourcing workflow and `docs/tracks/` per-track spec folder have been retired as of this rewrite (see "Retired Tooling" at the bottom). Going forward, a separate automation-framework repository will own E2E, API, and contract test specs against this repo's surface — this roadmap stays scoped to what ships inside *this* repo.
 
 ---
@@ -152,6 +154,7 @@ Spec: `docs/specs/track-17.5-i18n-and-newsletter.md` · Plan: `docs/plans/track-
 - [x] **18.0.3**: Proxy-aware client address resolution, per-endpoint request rate limiting,
   and Identity lockout with an administrative exemption (audit S3).
 - [x] **18.0.4**: Media upload and deletion restricted to administrators (audit S5).
+- [x] **18.0.5 — Deployed verification**: the three acceptance checks a green suite cannot confirm were carried out against production on 2026-11-20. The forwarded-address range and conditional header trust both passed; the administrative lockout exemption did not apply in the deployed environment and was closed by `v2026.11.20.03`. Results and evidence are recorded in `docs/plans/track-18.0-implementation-plan.md` under Verification Summary.
 
 ### Track 18.1: Test Suite Foundations — **NEW, parallel with E2E build-out**
 - [ ] **18.1.1**: Replace the per-test full DB drop/migrate/reseed cycle with a respawn/transaction-rollback strategy to cut integration suite runtime (audit T2).
