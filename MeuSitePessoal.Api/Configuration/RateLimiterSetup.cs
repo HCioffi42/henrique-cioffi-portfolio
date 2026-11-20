@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.Extensions.Options;
 
 namespace MeuSitePessoal.Api.Configuration;
 
@@ -61,7 +62,16 @@ public static class RateLimiterSetup
         this IServiceCollection services,
         IConfiguration configuration)
     {
-        var options = ReadAndValidate(configuration);
+        // Validated here so a misconfigured policy stops the application rather than surfacing
+        // on the first request to reach the endpoint using it.
+        var validatedAtStartup = ReadAndValidate(configuration);
+
+        // Bound rather than captured. The snapshot above is taken while services are registered,
+        // which is before a host may append further configuration sources; the options binding
+        // is evaluated against the configuration the running application actually resolved, so
+        // the thresholds in force are the ones the final configuration declares.
+        services.Configure<RateLimitingOptions>(
+            configuration.GetSection(RateLimitingOptions.SectionName));
 
         services.AddRateLimiter(limiter =>
         {
@@ -71,10 +81,13 @@ public static class RateLimiterSetup
 
             foreach (var policyName in RateLimitPolicies.All)
             {
-                var policy = options.Policies[policyName];
+                var name = policyName;
 
-                limiter.AddPolicy(policyName, httpContext =>
-                    RateLimitPartition.GetFixedWindowLimiter(
+                limiter.AddPolicy(name, httpContext =>
+                {
+                    var policy = ResolvePolicy(httpContext, name, validatedAtStartup);
+
+                    return RateLimitPartition.GetFixedWindowLimiter(
                         ResolvePartitionKey(httpContext),
                         _ => new FixedWindowRateLimiterOptions
                         {
@@ -84,7 +97,8 @@ public static class RateLimiterSetup
                             QueueLimit = 0,
                             QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
                             AutoReplenishment = true
-                        }));
+                        });
+                });
             }
 
             limiter.OnRejected = async (context, cancellationToken) =>
@@ -113,6 +127,29 @@ public static class RateLimiterSetup
         });
 
         return services;
+    }
+
+    /// <summary>
+    /// Resolves the budget in force for a policy, preferring the bound options and falling back
+    /// to the entry validated at startup when the bound value is absent or unusable.
+    /// </summary>
+    private static RateLimitPolicyOptions ResolvePolicy(
+        HttpContext httpContext,
+        string policyName,
+        RateLimitingOptions validatedAtStartup)
+    {
+        var bound = httpContext.RequestServices
+            .GetRequiredService<IOptionsMonitor<RateLimitingOptions>>()
+            .CurrentValue;
+
+        if (bound.Policies.TryGetValue(policyName, out var policy)
+            && policy.PermitLimit > 0
+            && policy.WindowMinutes > 0)
+        {
+            return policy;
+        }
+
+        return validatedAtStartup.Policies[policyName];
     }
 
     /// <summary>
