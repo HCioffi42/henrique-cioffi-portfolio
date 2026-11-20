@@ -1,5 +1,6 @@
 using MediatR;
 using MeuSitePessoal.Application.Common.Interfaces;
+using MeuSitePessoal.Application.Common.Models.Email;
 using MeuSitePessoal.Domain.Events;
 using MeuSitePessoal.Domain.Interfaces;
 using Microsoft.Extensions.Configuration;
@@ -35,24 +36,47 @@ public class ArticlePublishedEventHandler : INotificationHandler<ArticlePublishe
 
     public async Task Handle(ArticlePublishedEvent notification, CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Processing ArticlePublishedEvent for Article: {ArticleId} - {ArticleTitle}", 
-            notification.Article.Id, notification.Article.Title);
+        _logger.LogInformation("Processing ArticlePublishedEvent for Article: {ArticleId} - {ArticleTitle}",
+            notification.Article.Id, notification.Article.TitleEn);
 
         try
         {
+            // Retrieves separate URLs for the Frontend (Client) and Backend (API).
+            // This prevents port mismatches during local development and ensures absolute URLs in production.
+            var clientBaseUrl = _configuration["ClientSettings:BaseUrl"] ?? "https://hcioffi.dev";
+            var apiBaseUrl = _configuration["ApiSettings:BaseUrl"] ?? "https://hcioffi.dev";
+
+            // The article link points to the Client Base URL where the reader consumes the content.
+            var articleUrl = $"{clientBaseUrl}/article/{notification.Article.Id}";
+
+            // The subject and the language blocks depend only on the article, so the model is
+            // composed once and the per-subscriber unsubscribe link is applied inside the loop.
+            var baseViewModel = new NewPostNotificationViewModel(
+                notification.Article.TitleEn,
+                notification.Article.SummaryEn,
+                notification.Article.TitlePt,
+                notification.Article.SummaryPt,
+                articleUrl,
+                string.Empty);
+
+            // Guards the delivery boundary: an article with no renderable language would
+            // otherwise produce an email with a blank subject and an empty body.
+            if (!baseViewModel.HasContent)
+            {
+                _logger.LogWarning(
+                    "Article {ArticleId} has no renderable title and summary in either language. Skipping newsletter dispatch.",
+                    notification.Article.Id);
+                return;
+            }
+
             var subscribers = await _subscriberRepository.GetActiveSubscribersAsync();
-            
+
             if (!subscribers.Any())
             {
                 _logger.LogInformation("No active subscribers found. Skipping email notifications.");
                 return;
             }
 
-            // Retrieves separate URLs for the Frontend (Client) and Backend (API).
-            // This prevents port mismatches during local development and ensures absolute URLs in production.
-            var clientBaseUrl = _configuration["ClientSettings:BaseUrl"] ?? "https://hcioffi.dev";
-            var apiBaseUrl = _configuration["ApiSettings:BaseUrl"] ?? "https://hcioffi.dev";
-            
             // Limits the number of concurrent email tasks to avoid overwhelming the SMTP provider or local resources.
             var parallelOptions = new ParallelOptions 
             { 
@@ -70,17 +94,16 @@ public class ArticlePublishedEventHandler : INotificationHandler<ArticlePublishe
                 {
                     // The unsubscribe link must point to the API Base URL so the controller can process the request.
                     var unsubscribeUrl = $"{apiBaseUrl}/api/newsletter/unsubscribe?email={Uri.EscapeDataString(subscriber.Email)}&token={subscriber.UnsubscribeToken}";
-                    
-                    // The article link points to the Client Base URL where the reader consumes the content.
-                    var articleUrl = $"{clientBaseUrl}/article/{notification.Article.Id}";
-                    
+
+                    var viewModel = baseViewModel with { UnsubscribeUrl = unsubscribeUrl };
+
                     // Renders the HTML content for the specific article notification.
-                    var htmlBody = await _templateService.RenderTemplateAsync("Email/NewPostNotification", (notification.Article, articleUrl, unsubscribeUrl));
-                    
+                    var htmlBody = await _templateService.RenderTemplateAsync("Email/NewPostNotification", viewModel);
+
                     // Dispatches the email through the configured SMTP provider (e.g., Resend).
                     await _emailSender.SendEmailAsync(
-                        subscriber.Email, 
-                        $"New Post: {notification.Article.Title} - hcioffi.dev", 
+                        subscriber.Email,
+                        viewModel.Subject,
                         htmlBody,
                         ct);
                     

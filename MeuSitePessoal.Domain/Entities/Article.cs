@@ -17,13 +17,6 @@ public class Article
     public string ContentPt { get; set; } = string.Empty;
     public string SummaryPt { get; set; } = string.Empty;
 
-    // Legacy fields (maintained for backward compatibility with existing data)
-    // HC: SET is now independent to prevent mirroring logic. 
-    // New registers should ideally have these as null or empty, but we keep the properties for EF compatibility.
-    public string Title { get; set; } = string.Empty;
-    public string Content { get; set; } = string.Empty;
-    public string Summary { get; set; } = string.Empty;
-
     public List<string> Tags { get; set; }
     public ArticleCategory Category { get; set; }
     public DateTime CreatedAt { get; set; }
@@ -59,42 +52,6 @@ public class Article
         SummaryEn = summaryEn;
         SummaryPt = summaryPt;
 
-        // HC: We no longer populate legacy fields for new records.
-        // They will remain empty/null in the DB to avoid "Split Brain" issues.
-        Title = string.Empty;
-        Content = string.Empty;
-        Summary = string.Empty;
-
-        Tags = tags ?? new List<string>();
-        Category = category;
-        CreatedAt = DateTime.UtcNow;
-    }
-
-    [Obsolete("Use the multi-language constructor instead.")]
-    public Article(string title, string content, string summary, List<string> tags, ArticleCategory category)
-    {
-        if (string.IsNullOrWhiteSpace(title))
-            throw new ArgumentException("Title cannot be empty.", nameof(title));
-        if (string.IsNullOrWhiteSpace(content))
-            throw new ArgumentException("Content cannot be empty.", nameof(content));
-        if (string.IsNullOrWhiteSpace(summary))
-            throw new ArgumentException("Summary cannot be empty.", nameof(summary));
-
-        Id = Guid.NewGuid();
-        
-        // Populating legacy fields for old-style creation (migration only)
-        Title = title;
-        Content = content;
-        Summary = summary;
-
-        // Also filling EN/PT for safety during transition
-        TitleEn = title;
-        ContentEn = content;
-        SummaryEn = summary;
-        TitlePt = title;
-        ContentPt = content;
-        SummaryPt = summary;
-
         Tags = tags ?? new List<string>();
         Category = category;
         CreatedAt = DateTime.UtcNow;
@@ -102,7 +59,6 @@ public class Article
 
     /// <summary>
     /// Updates the article content for a specific language.
-    /// HC: No longer updates legacy fields.
     /// </summary>
     public void UpdateContent(string language, string title, string content, string summary)
     {

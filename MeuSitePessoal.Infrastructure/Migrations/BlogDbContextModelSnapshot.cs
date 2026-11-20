@@ -101,10 +101,6 @@ namespace MeuSitePessoal.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("Content")
-                        .IsRequired()
-                        .HasColumnType("text");
-
                     b.Property<string>("ContentEn")
                         .IsRequired()
                         .HasColumnType("text");
@@ -115,11 +111,6 @@ namespace MeuSitePessoal.Infrastructure.Migrations
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Summary")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)");
 
                     b.Property<string>("SummaryEn")
                         .IsRequired()
@@ -134,11 +125,6 @@ namespace MeuSitePessoal.Infrastructure.Migrations
                     b.Property<List<string>>("Tags")
                         .IsRequired()
                         .HasColumnType("text[]");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
 
                     b.Property<string>("TitleEn")
                         .IsRequired()

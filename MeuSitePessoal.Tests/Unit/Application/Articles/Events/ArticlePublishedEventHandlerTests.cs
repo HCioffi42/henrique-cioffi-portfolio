@@ -1,5 +1,7 @@
+using FluentAssertions;
 using MeuSitePessoal.Application.Articles.Events;
 using MeuSitePessoal.Application.Common.Interfaces;
+using MeuSitePessoal.Application.Common.Models.Email;
 using MeuSitePessoal.Domain;
 using MeuSitePessoal.Domain.Entities;
 using MeuSitePessoal.Domain.Events;
@@ -60,18 +62,108 @@ public class ArticlePublishedEventHandlerTests
             .ReturnsAsync(subscribers);
 
         // Mocks the template service to return a dummy HTML body for the notification.
-        _templateServiceMock.Setup(x => x.RenderTemplateAsync(It.IsAny<string>(), It.IsAny<object>()))
+        _templateServiceMock.Setup(x => x.RenderTemplateAsync(It.IsAny<string>(), It.IsAny<NewPostNotificationViewModel>()))
             .ReturnsAsync("<html>body</html>");
 
         // Act
         await _handler.Handle(notification, CancellationToken.None);
 
         // Assert
+        // The subject and body are asserted on content rather than It.IsAny: a permissive
+        // matcher here is what allowed blank emails to reach production. The body matcher
+        // additionally proves the template mock was reached, since a mismatched generic
+        // setup would silently yield a null body.
         _emailSenderMock.Verify(x => x.SendEmailAsync(
-            It.IsAny<string>(), 
-            It.IsAny<string>(), 
-            It.IsAny<string>(), 
+            It.IsAny<string>(),
+            It.Is<string>(subject => subject.Contains("Title")),
+            It.Is<string>(body => body == "<html>body</html>"),
             It.IsAny<CancellationToken>()), Times.Exactly(2));
+    }
+
+    [Fact]
+    public async Task Handle_SendsSubjectContainingBothTitles()
+    {
+        // Arrange
+        var article = new Article("Hello", "Olá", "Content", "Conteúdo", "Summary", "Resumo", new List<string>(), ArticleCategory.Technology);
+        var notification = new ArticlePublishedEvent(article);
+
+        var subscriber = new Subscriber("s1@test.com") { IsActive = true, IsVerified = true };
+        _subscriberRepositoryMock.Setup(x => x.GetActiveSubscribersAsync())
+            .ReturnsAsync(new List<Subscriber> { subscriber });
+
+        _templateServiceMock.Setup(x => x.RenderTemplateAsync(It.IsAny<string>(), It.IsAny<NewPostNotificationViewModel>()))
+            .ReturnsAsync("<html>body</html>");
+
+        string? capturedSubject = null;
+        _emailSenderMock
+            .Setup(x => x.SendEmailAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .Callback<string, string, string, CancellationToken>((_, subject, _, _) => capturedSubject = subject)
+            .Returns(Task.CompletedTask);
+
+        // Act
+        await _handler.Handle(notification, CancellationToken.None);
+
+        // Assert
+        capturedSubject.Should().Be("Hello | Olá");
+    }
+
+    [Fact]
+    public async Task Handle_WithIdenticalTitles_SendsSingleTitleSubject()
+    {
+        // Arrange
+        // Articles migrated from the single-language schema carry the same title
+        // in both localized columns and must not render "Hello | Hello".
+        var article = new Article("Hello", "Hello", "Content", "Conteúdo", "Summary", "Resumo", new List<string>(), ArticleCategory.Technology);
+        var notification = new ArticlePublishedEvent(article);
+
+        var subscriber = new Subscriber("s1@test.com") { IsActive = true, IsVerified = true };
+        _subscriberRepositoryMock.Setup(x => x.GetActiveSubscribersAsync())
+            .ReturnsAsync(new List<Subscriber> { subscriber });
+
+        _templateServiceMock.Setup(x => x.RenderTemplateAsync(It.IsAny<string>(), It.IsAny<NewPostNotificationViewModel>()))
+            .ReturnsAsync("<html>body</html>");
+
+        string? capturedSubject = null;
+        _emailSenderMock
+            .Setup(x => x.SendEmailAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .Callback<string, string, string, CancellationToken>((_, subject, _, _) => capturedSubject = subject)
+            .Returns(Task.CompletedTask);
+
+        // Act
+        await _handler.Handle(notification, CancellationToken.None);
+
+        // Assert
+        capturedSubject.Should().Be("Hello");
+    }
+
+    [Fact]
+    public async Task Handle_PassesViewModelCarryingLocalizedFields_ToTemplateService()
+    {
+        // Arrange
+        var article = new Article("Hello", "Olá", "Content", "Conteúdo", "Summary", "Resumo", new List<string>(), ArticleCategory.Technology);
+        var notification = new ArticlePublishedEvent(article);
+
+        var subscriber = new Subscriber("s1@test.com") { IsActive = true, IsVerified = true };
+        _subscriberRepositoryMock.Setup(x => x.GetActiveSubscribersAsync())
+            .ReturnsAsync(new List<Subscriber> { subscriber });
+
+        NewPostNotificationViewModel? capturedModel = null;
+        _templateServiceMock
+            .Setup(x => x.RenderTemplateAsync(It.IsAny<string>(), It.IsAny<NewPostNotificationViewModel>()))
+            .Callback<string, NewPostNotificationViewModel>((_, model) => capturedModel = model)
+            .ReturnsAsync("<html>body</html>");
+
+        // Act
+        await _handler.Handle(notification, CancellationToken.None);
+
+        // Assert
+        capturedModel.Should().NotBeNull();
+        capturedModel!.TitleEn.Should().Be("Hello");
+        capturedModel.TitlePt.Should().Be("Olá");
+        capturedModel.SummaryEn.Should().Be("Summary");
+        capturedModel.SummaryPt.Should().Be("Resumo");
+        capturedModel.ArticleUrl.Should().Contain(article.Id.ToString());
+        capturedModel.UnsubscribeUrl.Should().Contain(subscriber.UnsubscribeToken!);
     }
 
     [Fact]

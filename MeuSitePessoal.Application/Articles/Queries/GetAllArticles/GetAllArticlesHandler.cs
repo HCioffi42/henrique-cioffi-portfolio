@@ -28,23 +28,19 @@ public class GetAllArticlesHandler : IRequestHandler<GetAllArticlesQuery, PagedL
         
         var language = _languageProvider.GetCurrentLanguage();
 
-        // 2. Project to ArticleResponse manually to handle the legacy vs localized fallback logic.
-        // We prioritize localized columns (En/Pt) and fallback to legacy for older data.
+        // 2. Project to ArticleResponse, resolving the active language from the localized
+        // columns. Both variants are carried alongside so the dashboard can edit either one.
+        var isPortuguese = language.StartsWith("pt", StringComparison.OrdinalIgnoreCase);
+
         var projectedItems = items.Select(article => new ArticleResponse(
             article.Id,
-            language.StartsWith("pt") 
-                ? (!string.IsNullOrEmpty(article.TitlePt) ? article.TitlePt : article.Title)
-                : (!string.IsNullOrEmpty(article.TitleEn) ? article.TitleEn : article.Title),
+            isPortuguese ? article.TitlePt : article.TitleEn,
             article.TitleEn,
             article.TitlePt,
-            language.StartsWith("pt") 
-                ? (!string.IsNullOrEmpty(article.ContentPt) ? article.ContentPt : article.Content)
-                : (!string.IsNullOrEmpty(article.ContentEn) ? article.ContentEn : article.Content),
+            isPortuguese ? article.ContentPt : article.ContentEn,
             article.ContentEn,
             article.ContentPt,
-            language.StartsWith("pt") 
-                ? (!string.IsNullOrEmpty(article.SummaryPt) ? article.SummaryPt : article.Summary)
-                : (!string.IsNullOrEmpty(article.SummaryEn) ? article.SummaryEn : article.Summary),
+            isPortuguese ? article.SummaryPt : article.SummaryEn,
             article.SummaryEn,
             article.SummaryPt,
             article.CreatedAt,

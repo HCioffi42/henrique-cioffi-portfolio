@@ -44,3 +44,5 @@ http-client.private.env.json
 # HC: Ignore local database data and temporary docker volumes
 postgres-data/
 data/
+# HC: Local blog article drafts. Written locally, published through the app, never tracked here.
+articles/

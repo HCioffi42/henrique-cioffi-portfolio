@@ -140,4 +140,138 @@ public class ArticleSearchTests : BaseIntegrationTest
         Assert.NotNull(result);
         Assert.True(result.TotalCount > 0);
     }
+
+    [Theory]
+    [InlineData("pt")]
+    [InlineData("pt-BR")]
+    [InlineData("PT-BR")]
+    [InlineData("pt_BR")]
+    public async Task Search_ResolvesPortuguese_ForLanguageHeaderVariants(string language)
+    {
+        // Arrange
+        await AuthenticateAsync();
+        var command = new CreateArticleCommand(
+            "English Headline", "Manchete Portuguesa",
+            "Content", "Conteúdo", "Summary", "Resumo",
+            ArticleCategory.Technology, new List<string>());
+        await _client.PostAsJsonAsync("/api/articles", command);
+
+        // Act
+        // Region and casing variants must all select the Portuguese dictionary and columns
+        // rather than silently falling through to the English default.
+        var request = new HttpRequestMessage(HttpMethod.Get, "/api/articles/search?searchTerm=Manchete");
+        request.Headers.Add("Accept-Language", language);
+        var response = await _client.SendAsync(request);
+
+        // Assert
+        response.EnsureSuccessStatusCode();
+        var result = await response.Content.ReadFromJsonAsync<PagedResult<ArticleSummaryDto>>();
+
+        Assert.NotNull(result);
+        Assert.Contains(result.Items, a => a.Title == "Manchete Portuguesa");
+    }
+
+    [Fact]
+    public async Task Search_InPortuguese_DoesNotMatchEnglishOnlyText()
+    {
+        // Arrange
+        await AuthenticateAsync();
+        var command = new CreateArticleCommand(
+            "Quantum Supremacy", "Assunto Diferente",
+            "Content", "Conteúdo", "Summary", "Resumo",
+            ArticleCategory.Technology, new List<string>());
+        await _client.PostAsJsonAsync("/api/articles", command);
+
+        // Act
+        // Search is scoped to the reader's active language by design: a Portuguese reader
+        // matches Portuguese columns only.
+        var request = new HttpRequestMessage(HttpMethod.Get, "/api/articles/search?searchTerm=Quantum");
+        request.Headers.Add("Accept-Language", "pt-BR");
+        var response = await _client.SendAsync(request);
+
+        // Assert
+        response.EnsureSuccessStatusCode();
+        var result = await response.Content.ReadFromJsonAsync<PagedResult<ArticleSummaryDto>>();
+
+        Assert.NotNull(result);
+        Assert.DoesNotContain(result.Items, a => a.Title == "Assunto Diferente");
+    }
+
+    [Fact]
+    public async Task Search_InEnglish_MatchesEnglishTextWithStemming()
+    {
+        // Arrange
+        await AuthenticateAsync();
+        var command = new CreateArticleCommand(
+            "Testing Databases", "Testando Bancos",
+            "Content", "Conteúdo", "Summary", "Resumo",
+            ArticleCategory.Technology, new List<string>());
+        await _client.PostAsJsonAsync("/api/articles", command);
+
+        // Act
+        // The English dictionary stems "databases" to "database", so the singular matches.
+        var request = new HttpRequestMessage(HttpMethod.Get, "/api/articles/search?searchTerm=database");
+        request.Headers.Add("Accept-Language", "en");
+        var response = await _client.SendAsync(request);
+
+        // Assert
+        response.EnsureSuccessStatusCode();
+        var result = await response.Content.ReadFromJsonAsync<PagedResult<ArticleSummaryDto>>();
+
+        Assert.NotNull(result);
+        Assert.Contains(result.Items, a => a.Title == "Testing Databases");
+    }
+
+    [Fact]
+    public async Task Search_WithAccentedPortugueseTerm_MatchesTheAccentedText()
+    {
+        // Arrange
+        await AuthenticateAsync();
+        var command = new CreateArticleCommand(
+            "Programming Guide", "Guia de Programação",
+            "Content", "Conteúdo", "Summary", "Resumo",
+            ArticleCategory.Technology, new List<string>());
+        await _client.PostAsJsonAsync("/api/articles", command);
+
+        // Act
+        var request = new HttpRequestMessage(HttpMethod.Get, "/api/articles/search?searchTerm=programação");
+        request.Headers.Add("Accept-Language", "pt-BR");
+        var response = await _client.SendAsync(request);
+
+        // Assert
+        response.EnsureSuccessStatusCode();
+        var result = await response.Content.ReadFromJsonAsync<PagedResult<ArticleSummaryDto>>();
+
+        Assert.NotNull(result);
+        Assert.Contains(result.Items, a => a.Title == "Guia de Programação");
+    }
+
+    [Fact]
+    public async Task Search_WithUnaccentedPortugueseTerm_DoesNotMatchAccentedText()
+    {
+        // Arrange
+        await AuthenticateAsync();
+        var command = new CreateArticleCommand(
+            "Programming Guide", "Guia de Programação",
+            "Content", "Conteúdo", "Summary", "Resumo",
+            ArticleCategory.Technology, new List<string>());
+        await _client.PostAsJsonAsync("/api/articles", command);
+
+        // Act
+        var request = new HttpRequestMessage(HttpMethod.Get, "/api/articles/search?searchTerm=programacao");
+        request.Headers.Add("Accept-Language", "pt-BR");
+        var response = await _client.SendAsync(request);
+
+        // Assert
+        // Pins the real contract in the direction that costs readers results. The snowball
+        // dictionary stems "Programação" to "program" but "programacao" to "programaca",
+        // so an unaccented query finds nothing. Installing the unaccent extension would
+        // change this deliberately; until then the limitation is recorded here rather than
+        // discovered by a reader typing without accents.
+        response.EnsureSuccessStatusCode();
+        var result = await response.Content.ReadFromJsonAsync<PagedResult<ArticleSummaryDto>>();
+
+        Assert.NotNull(result);
+        Assert.DoesNotContain(result.Items, a => a.Title == "Guia de Programação");
+    }
 }

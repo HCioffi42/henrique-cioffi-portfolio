@@ -1,9 +1,11 @@
 # Project Roadmap: MeuSitePessoal
 
 **Current Milestone**: Phase 5: SDET Excellence (Quality Engineering)
-**Global Progress**: [██████████████████░░] 90% — Phase 4 reopened pending audit remediation
+**Global Progress**: [███████████████████░] 94% — Phase 4 remediation complete; Track 18.0 (security hardening) is the sole remaining blocker for Track 18.2
 
-> **2026-11-19 — Roadmap rewritten.** A full technical audit (`docs/TECHNICAL_AUDIT_REPORT.md`) found that Track 17 shipped with an unresolved regression (newsletter emails render blank) and that the platform currently has no rate limiting or login lockout. Phase 4 is marked reopened rather than completed until Track 17.5 and Track 18.0 close those gaps. See the audit report for full findings, file:line citations, and severity ratings — this roadmap only tracks the remediation work itself.
+> **2026-11-19 — Roadmap rewritten.** A full technical audit (`docs/TECHNICAL_AUDIT_REPORT.md`) found that Track 17 shipped with an unresolved regression (newsletter emails render blank) and that the platform currently has no rate limiting or login lockout. Phase 4 was marked reopened rather than completed until those gaps closed. See the audit report for full findings, file:line citations, and severity ratings — this roadmap only tracks the remediation work itself.
+>
+> **2026-11-20 — Track 17.5 completed.** The newsletter regression and the dead search index are fixed, and the legacy columns are gone from both code and database. Track 18.0 (security hardening) is now the only remaining blocker for Track 18.2.
 >
 > The `conductor/` agent-outsourcing workflow and `docs/tracks/` per-track spec folder have been retired as of this rewrite (see "Retired Tooling" at the bottom). Going forward, a separate automation-framework repository will own E2E, API, and contract test specs against this repo's surface — this roadmap stays scoped to what ships inside *this* repo.
 
@@ -81,13 +83,14 @@
 
 ---
 
-## Phase 4: Scalability & Engagement - REOPENED (pending remediation)
+## Phase 4: Scalability & Engagement - COMPLETED (Track 17.5 remediation closed 2026-11-20)
 
 ### [✓] Track 13: Advanced Search & Discovery
 - [x] **13.1**: Implement Full-Text Search in PostgreSQL using `tsvector`.
 - [x] **13.2**: Frontend search bar with debounce logic to optimize API calls.
 - [x] **13.3**: "Related Articles" recommendation system based on shared tags.
-- [!] **Known regression (audit P1/P9)**: the full-text search GIN index no longer matches the live query (dead index, sequential scan on every search); the debounce hook exists but is never wired into the search input. Fixed in Track 17.5 / 19.
+- [x] **Audit P1 — resolved in Track 17.5**: the dead GIN index was replaced by one index per language dictionary, verified in use via `EXPLAIN (ANALYZE, BUFFERS)`.
+- [!] **Known gap (audit P9)**: the debounce hook exists but is never wired into the search input, so there is still no type-ahead search. Open; tracked in Track 19.
 
 ### [✓] Track 14: Observability & Resilience
 - [x] **14.1**: ASP.NET Core Health Checks implementation (Endpoint: `/health`).
@@ -120,18 +123,20 @@
     - [x] **16.6.3 - Secure Unsubscribe**: Legal-compliant, token-based deactivation mechanism.
 - [!] **Known gaps (audit T1)**: two-factor verification and newsletter double opt-in confirmation (16.5.3) have zero test coverage at any level. Closed in Track 18.1.
 
-### [✗→!] Track 17: Internationalization — shipped with an unresolved regression
+### [✓] Track 17: Internationalization
 - [x] **17.1 - i18next Setup**: Configure the translation framework with lazy loading and browser detection.
 - [x] **17.2 - Language Toggle**: Add a responsive EN/PT selector to the header with persistence.
 - [x] **17.3 - Multi-language Schema**: Adjust the PostgreSQL schema to handle translated content (titles, summaries, and tags).
 - [x] **17.4 - Dashboard & UI localization**: Side-by-side editing and static string translation across the platform.
-- [!] **Regression introduced**: the "Flat Schema" migration cut legacy columns (`Title`/`Content`/`Summary`) over to translated columns (`TitleEn/TitlePt`, etc.) but the sync from legacy → translated was a one-time backfill, not a standing mechanism — and was explicitly disabled for new/updated records. Two live consumers (newsletter email dispatch, email template) still read the now-permanently-empty legacy fields. **Every newsletter email sent since this track shipped has a blank subject and blank body headline/summary.** Tracked as Track 17.5 below.
+- [x] **Regression closed by Track 17.5** (2026-11-20): the "Flat Schema" migration left `Title`/`Content`/`Summary` permanently empty while the newsletter dispatcher and email template still read them, so every notification shipped with a blank subject and body. The legacy columns are now gone and all consumers read the localized columns.
 
-### Track 17.5: i18n Flat Schema Cleanup & Newsletter Fix — **NEW, blocks Track 18**
-- [ ] **17.5.1**: Fix `ArticlePublishedEventHandler` and the `NewPostNotification` email template to read `TitleEn/TitlePt`/`SummaryEn/SummaryPt` instead of the empty legacy fields.
-- [ ] **17.5.2**: Decide the legacy-column endgame — drop `Title`/`Content`/`Summary` (and their now-dead full-text index) in a migration, or document why they're retained and implement the standing sync the current code claims not to need.
-- [ ] **17.5.3**: Rebuild the full-text search GIN index to match the live query against the translated columns (currently a dead index causing a sequential scan on every search — audit P1).
-- [ ] **17.5.4**: Add a regression test asserting newsletter emails render non-blank subject/body for a freshly published article, and a test covering legacy-only (pre-migration) data through every read path.
+### [✓] Track 17.5: i18n Flat Schema Cleanup & Newsletter Fix — COMPLETED 2026-11-20
+Spec: `docs/specs/track-17.5-i18n-and-newsletter.md` · Plan: `docs/plans/track-17.5-implementation-plan.md`
+- [x] **17.5.1**: `ArticlePublishedEventHandler` and the `NewPostNotification` template render both languages from `TitleEn/TitlePt` and `SummaryEn/SummaryPt`, behind a dedicated `NewPostNotificationViewModel` that owns the subject and block-visibility rules.
+- [x] **17.5.2**: Legacy `Title`/`Content`/`Summary` dropped from the entity, EF mapping, AutoMapper profile, and database (`RemoveLegacyArticleColumns`), together with the obsolete single-language constructor. Preceded by a verified production backup and a `rows_at_risk = 0` data audit.
+- [x] **17.5.3**: Replaced the dead index with `idx_articles_search_en` and `idx_articles_search_pt`, one per dictionary; `EXPLAIN (ANALYZE, BUFFERS)` over 20001 rows confirms a Bitmap Index Scan on each (audit P1 closed).
+- [x] **17.5.4**: Regression coverage added — newsletter subject/body content assertions, real-template rendering, the identical-titles shape every pre-migration row carries, and `Accept-Language` region/case variants.
+- **Behavior change to note**: search is now scoped to the reader's active language, so a Portuguese reader no longer matches English-only text. This follows from per-language dictionaries and is intentional.
 
 ---
 
@@ -153,6 +158,10 @@
 - [ ] **18.2.1**: End-to-End (E2E) testing suite with **Playwright** for critical flows.
 - [ ] **18.2.2**: Automated accessibility (A11y) audits in the CI pipeline.
 - [ ] **18.2.3**: Performance benchmarking using **k6** for API endpoints.
+    - [ ] **18.2.3.1**: Author k6 load-test scripts (JS) under `tests/load/`, covering the hottest read paths (article listing, search, article detail).
+    - [ ] **18.2.3.2**: Define pass/fail **thresholds** per script (e.g. p95 latency, error rate) so a regression fails the run instead of just reporting a number.
+    - [ ] **18.2.3.3**: Add a separate, on-demand/scheduled GitHub Actions workflow (not on every PR) using `grafana/k6-action`, run against a staging target or the CI-spun-up API+Postgres containers.
+    - [ ] **18.2.3.4**: Keep output lightweight for a project this size — CLI summary + CI artifact is enough; skip a hosted dashboard (Grafana Cloud k6, etc.) unless traffic/need grows.
 - [ ] **18.2.4**: API/contract specifications for this repo's surface (endpoints, DTOs, auth/RBAC matrix), written for consumption by the separate automation-framework repository described below.
 
 > **Sequencing note**: 18.0 and 17.5 are hard blockers for 18.2 — an E2E suite built before they land would either encode the newsletter/search bugs as expected behavior, or run against a forgeable Admin JWT with no login throttling. 18.1 can run in parallel with the start of 18.2 since it strengthens the foundation Playwright will also need fixtures from, but doesn't block starting the Playwright setup itself.
@@ -167,6 +176,9 @@
 - [ ] **19.4**: Centralize the category-label mapping (audit A10) and memoize `ThemeProvider`'s context value (audit A11).
 - [ ] **19.5**: Route-level code splitting (`React.lazy`) to isolate the admin dashboard/editor bundle from the public reading experience, and switch to the light/async `react-syntax-highlighter` build (audit P4/P5).
 - [ ] **19.6**: Memoize the recursive `CommentItem` tree and stop replacing the full comment array on every mutation (audit P6).
+- [ ] **19.7**: Promote nullable-reference warnings to build errors (`TreatWarningsAsErrors`, or scoped to the nullable warning codes) across all `.csproj` files — `Nullable` is enabled everywhere already, but nothing currently fails the build when a nullable warning is introduced.
+- [ ] **19.8**: Capture `PreferredLanguage` at newsletter signup (frontend sends the active i18next language; `SubscribeToNewsletterCommand` accepts and persists it) and switch the article notification from a single bilingual email to a per-subscriber localized one. Deferred from Track 17.5: the column exists but is populated for no subscriber, so localizing per recipient today would deliver English to everyone.
+- [ ] **19.9**: Make Portuguese search accent-insensitive. Found while verifying Track 17.5: the `portuguese` dictionary stems `programação` to `program` but `programacao` to `programaca`, so a reader typing without accents — common on mobile and ASCII keyboards — gets zero results for accented articles. The current behavior is pinned by `Search_WithUnaccentedPortugueseTerm_DoesNotMatchAccentedText`. The fix is `CREATE EXTENSION unaccent` plus an `unaccent`-wrapped tsvector; note the GIN index DDL and `ArticleSearchService` must change together or the index stops being used, and `unaccent` must be schema-qualified to stay IMMUTABLE for indexing.
 
 ---
 

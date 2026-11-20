@@ -33,11 +33,8 @@ public class ArticleTests
         Assert.Equal(expectedSummaryPt, article.SummaryPt);
         Assert.Equal(expectedTags, article.Tags);
         Assert.Equal(ArticleCategory.Technology, article.Category);
-        
-        // HC: Legacy fields should be empty for new multi-language constructor.
-        Assert.Equal(string.Empty, article.Title);
-        Assert.Equal(string.Empty, article.Content);
-        Assert.Equal(string.Empty, article.Summary);
+        Assert.Equal(expectedContentEn, article.ContentEn);
+        Assert.Equal(expectedContentPt, article.ContentPt);
     }
 
     [Fact]
@@ -64,7 +61,7 @@ public class ArticleTests
     }
 
     [Fact]
-    public void UpdateContent_ShouldMaintainSynchronization()
+    public void UpdateContent_ShouldUpdateOnlyTheTargetLanguage()
     {
         // Arrange
         var article = new Article("Original", "Original", "Content", "Conteúdo", "Summary", "Resumo", new List<string>(), ArticleCategory.Technology);
@@ -74,7 +71,12 @@ public class ArticleTests
 
         // Assert
         Assert.Equal("Updated Title", article.TitleEn);
-        Assert.Equal("Original", article.TitlePt); // PT stays original
-        Assert.Equal(string.Empty, article.Title); // Legacy stays empty
+        Assert.Equal("Updated Content", article.ContentEn);
+        Assert.Equal("Updated Summary", article.SummaryEn);
+
+        // The untargeted language is left untouched.
+        Assert.Equal("Original", article.TitlePt);
+        Assert.Equal("Conteúdo", article.ContentPt);
+        Assert.Equal("Resumo", article.SummaryPt);
     }
 }
