@@ -24,21 +24,14 @@ public class BaseIntegrationTest : IAsyncLifetime
     // Hardcodes the connection string for a local PostgreSQL instance used exclusively for integration tests.
     private const string TestConnectionString = "Host=localhost;Port=5432;Database=meusitepessoal_testdb;Username=postgres;Password=Anah@1418";
 
-    // Signs tokens that are issued and consumed entirely within the test process. This is not a
-    // credential and is deliberately recognisable as a test value.
-    private const string TestSigningKey = "integration-test-signing-key-not-a-production-secret";
-
     /// <summary>
     /// Publishes the signing key to the process environment before any host is constructed.
-    /// The key is resolved by startup code that runs while the application builder is being
-    /// configured, which is earlier than the point at which WebApplicationFactory merges its own
-    /// in-memory configuration sources. An environment variable is read by the builder
-    /// immediately, so it is the only source that reaches a build-time read — and it mirrors the
-    /// way deployed environments supply the same value.
+    /// See <see cref="TestSigningKey"/> for why the environment is the only source that reaches
+    /// the build-time read performed during startup.
     /// </summary>
     static BaseIntegrationTest()
     {
-        Environment.SetEnvironmentVariable("JwtSettings__Key", TestSigningKey);
+        TestSigningKey.PublishToEnvironment();
     }
 
     /// <summary>
@@ -121,7 +114,7 @@ public class BaseIntegrationTest : IAsyncLifetime
                         ["ClientSettings:BaseUrl"] = "http://localhost:5173",
                         // Mirrors the environment variable set in the static constructor, so any
                         // consumer resolving the key after the host is built sees the same value.
-                        ["JwtSettings:Key"] = TestSigningKey
+                        ["JwtSettings:Key"] = TestSigningKey.Value
                     });
                 });
 

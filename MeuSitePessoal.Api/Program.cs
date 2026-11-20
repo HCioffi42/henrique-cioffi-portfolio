@@ -13,6 +13,7 @@ using MeuSitePessoal.Infrastructure.Data;
 using MeuSitePessoal.Infrastructure.Logging;
 using MeuSitePessoal.Infrastructure.Repositories;
 using MeuSitePessoal.Infrastructure.Services;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -66,6 +67,31 @@ builder.Services.AddScoped<ISubscriberRepository, SubscriberRepository>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IStorageService, LocalStorageService>();
 builder.Services.AddSingleton<IFeatureToggleService, FeatureToggleService>();
+
+// Configure forwarded headers so the application attributes requests to the originating client
+// rather than to the reverse proxy. The trusted network is bound from configuration because
+// container addresses are assigned dynamically and the deployed bridge subnet may differ.
+var forwardedHeadersSection = builder.Configuration.GetSection("ForwardedHeaders");
+var trustedNetworkAddress = forwardedHeadersSection["TrustedNetwork"] ?? "172.16.0.0";
+var trustedNetworkPrefixLength = forwardedHeadersSection.GetValue<int?>("TrustedNetworkPrefixLength") ?? 12;
+
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+
+    // Exactly one hop is trusted. The proxy presents a single-entry chain, so any additional
+    // entry originated with the caller and must not be attributed to them.
+    options.ForwardLimit = 1;
+
+    // The defaults cover loopback only, which never matches a container peer on the bridge.
+    options.KnownNetworks.Clear();
+    options.KnownProxies.Clear();
+    options.KnownNetworks.Add(new Microsoft.AspNetCore.HttpOverrides.IPNetwork(
+        System.Net.IPAddress.Parse(trustedNetworkAddress), trustedNetworkPrefixLength));
+});
+
+Console.WriteLine(
+    $"--> Forwarded headers: trusting 1 hop from {trustedNetworkAddress}/{trustedNetworkPrefixLength}");
 
 // Configure JWT Authentication.
 // The signing key is resolved through JwtKeyResolver, which fails fast when the environment
@@ -187,6 +213,11 @@ builder.Services.AddCors(options =>
 });
 
 var app = builder.Build();
+
+// Resolves the originating client address before anything observes it. Request logging, and
+// any later consumer such as request throttling, must see the client rather than the proxy,
+// so this runs first.
+app.UseForwardedHeaders();
 
 // Enables the global exception handling middleware at the beginning of the pipeline.
 app.UseExceptionHandler();
