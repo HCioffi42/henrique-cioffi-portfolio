@@ -96,7 +96,7 @@
 - [x] **14.1**: ASP.NET Core Health Checks implementation (Endpoint: `/health`).
 - [x] **14.2**: Caching layer for article summaries using In-Memory or Redis.
 - [x] **14.3**: Structured logging enrichment with Serilog for production tracing.
-- [!] **Known gap (audit S3)**: "Resilience" here covers logging/health checks only — there is no rate limiting or login lockout anywhere in the API yet. Closed in Track 18.0.
+- [x] **Resilience follow-up (audit S3)**: request throttling and sign-in lockout were added in Track 18.0, extending this track's logging and health-check coverage.
 
 ### [✓] Track 15: Portfolio Polish & Social
 - [x] **15.1 - Sticky Footer & Padding**: Refactor Layout.tsx to fix the footer on the page or to make the container have a "always in viewport.
@@ -143,10 +143,13 @@ Spec: `docs/specs/track-17.5-i18n-and-newsletter.md` · Plan: `docs/plans/track-
 ## Phase 5: SDET Excellence (Quality Engineering) - IN PROGRESS
 
 ### Track 18.0: Critical Security Hardening — **NEW, before any shared-environment E2E run**
-- [ ] **18.0.1**: Move the JWT signing key out of `appsettings.json` into an environment variable / secret manager, and wire it into the production `docker-compose.yml` override (currently silently falls back to the committed secret in production — audit S1).
-- [ ] **18.0.2**: Rotate the database credential found in git history, regardless of current usage (audit S2).
-- [ ] **18.0.3**: Re-enable ASP.NET Identity lockout on failed logins (`lockoutOnFailure: true`) and add rate limiting to `/login`, `/register`, `/forgot-password`, comment creation, and newsletter subscription (audit S3).
-- [ ] **18.0.4**: Restrict `ImagesController` to Admin-only, or add ownership checks before delete (audit S5 — currently any authenticated Reader can delete any image on the server by URL).
+- [x] **18.0.1**: JWT signing key sourced from the environment, with fail-fast startup
+  validation and the production value supplied through `docker-compose.yml` (audit S1).
+- [x] **18.0.2**: Database credential rotated (audit S2). Completed operationally against
+  production on 2026-11-20, not by a code change in this track.
+- [x] **18.0.3**: Proxy-aware client address resolution, per-endpoint request rate limiting,
+  and Identity lockout with an administrative exemption (audit S3).
+- [x] **18.0.4**: Media upload and deletion restricted to administrators (audit S5).
 
 ### Track 18.1: Test Suite Foundations — **NEW, parallel with E2E build-out**
 - [ ] **18.1.1**: Replace the per-test full DB drop/migrate/reseed cycle with a respawn/transaction-rollback strategy to cut integration suite runtime (audit T2).

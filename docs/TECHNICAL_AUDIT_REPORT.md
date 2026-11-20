@@ -89,20 +89,21 @@ Findings are grouped by pillar, ranked High → Low within each group. File:line
 
 ### 3.3 Security & Resilience
 
-| # | Finding | Location | Severity |
-|---|---|---|---|
-| S1 | **JWT signing key is hardcoded in `appsettings.json` and never overridden in the production Docker Compose file.** `docker-compose.yml` overrides the DB connection string and email settings but omits `JwtSettings__Key` — the production container signs and validates tokens with the literal secret committed to source control, including role claims. Anyone with repo/image access can forge an Admin-role JWT and bypass every RBAC check in the system. | `appsettings.json:18`, `docker-compose.yml:27-34`, `TokenService.cs:34` | **Critical** |
-| S2 | **A real database password was committed to git history** on a prior commit of `appsettings.json` (later scrubbed from the working tree, but permanently retrievable from history). If this credential is still in use anywhere, it must be rotated immediately regardless of any other audit action. | git history on `appsettings.json` | **Critical** |
-| S3 | **Login is brute-forceable: Identity lockout is explicitly disabled, and no rate limiting exists anywhere in the API.** `CheckPasswordSignInAsync` is called with `lockoutOnFailure: false`, so failed attempts never increment Identity's lockout counter. Combined with zero `AddRateLimiter` usage anywhere in the codebase, `POST /api/auth/login`, `/register`, `/forgot-password`, comment creation, and newsletter subscription are all unthrottled. | `LoginCommandHandler.cs:60`; repo-wide grep for `RateLimit` returns nothing | **Critical** |
-| S4 | **No JWT refresh/revocation mechanism.** There is no `/refresh` or `/logout` endpoint, no `jti` blacklist, and no security-stamp validation — a stolen token remains valid for its full lifetime (60 minutes) with no way to revoke it early, e.g. after a password change. | `ITokenService.cs`, `TokenService.cs` | **High** |
-| S5 | **`ImagesController` has no role restriction** (`[Authorize]` only, not `[Authorize(Roles = "Admin")]`), and `DeleteFileAsync` performs no ownership check. Any authenticated Reader can consume unlimited upload storage and delete **any** image on the server by URL, including ones embedded in published Admin articles — an IDOR. | `ImagesController.cs:13,31,83`, `LocalStorageService.cs:57-71` | **High** |
-| S6 | JWT is passed as a plaintext query-string parameter on the OAuth redirect callback, exposing it to browser history, proxy/server access logs, and any `Referer` header leak from the landing page. | `AuthController.cs:263` | **Medium-High** |
-| S7 | Unhandled exceptions return the raw `.Message` to the client for every exception type, including unclassified 500s — in production this can leak internal details (connection info embedded in some ADO.NET exceptions, file paths, type names). | `GlobalExceptionHandler.cs:67-73` | **Medium** |
-| S8 | CORS origin is hardcoded to `http://localhost:5173` in all environments, with no production branch sourced from `ClientSettings:BaseUrl` (`https://hcioffi.dev`). Not a wildcard/credentials misconfiguration, but looks like a dormant functional bug for the production frontend. | `Program.cs:177-185` | **Medium** |
-| S9 | No security headers middleware anywhere (`HSTS` via `UseHsts()`, `X-Content-Type-Options`, `X-Frame-Options`, `Content-Security-Policy`) — a defense-in-depth gap independent of the XSS findings elsewhere, which are otherwise clean. | `Program.cs` (full pipeline reviewed) | **Medium** |
-| S10 | OAuth-provisioned accounts are created with `EmailConfirmed = true` directly from the provider's email claim, bypassing the app's own confirmation flow. Low practical risk today given the configured providers verify email themselves, but it's an implicit trust assumption worth documenting. | `AuthController.cs:234` | **Low-Medium** |
-| S11 | Timing-unsafe plain string comparison for the newsletter unsubscribe token (`!=` instead of `CryptographicOperations.FixedTimeEquals`). Low practical exploitability but worth fixing wherever token comparisons occur. | `UnsubscribeHandler.cs:34` | **Low** |
-| S12 | JWT is stored in `localStorage` on the frontend (XSS-exposed storage), though no live XSS vector was found elsewhere in the app — defense-in-depth concern, not an active exploit path today. | `storage.ts:1-29` | **Low** |
+The 2026-11-19 audit recorded **12 findings** in this category, scored 5/10 in the pillar
+table above.
+
+The findings themselves are kept in a private record rather than enumerated here. This
+repository is public, and an itemized list of weaknesses in a deployed system — with file
+and line references and severity ratings — serves someone probing that system far better
+than it serves anyone maintaining it.
+
+The `S#` identifiers remain in use as opaque labels, so the cross-references from
+`docs/roadmap.md`, `CLAUDE.md`, and §5 below still resolve. Track 18.0 closed S1, S2, S3,
+and S5; the rest are scheduled through the private record.
+
+This narrowing reduces casual discovery and nothing more. The content remains in this
+repository's git history and in any existing clone or fork, and it is not a substitute for
+closing the items still open.
 
 ### 3.4 Test Suite Health
 
