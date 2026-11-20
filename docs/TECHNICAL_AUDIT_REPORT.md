@@ -22,7 +22,7 @@ The i18n "Flat Schema" migration (Track 17) is the single largest source of debt
 |---|---|---|
 | Architecture & Code Quality | 7/10 | Clean layering mostly intact; repository pattern half-applied; one live i18n regression |
 | Performance & Scalability | 5/10 | Dead FTS index, missing indexes on hottest table, N+1-equivalent full-table scan in related-articles |
-| Security & Resilience | 5/10 | Strong RBAC/XSS posture undermined by secret management and zero rate limiting/lockout |
+| Security & Resilience | 5/10 | Strong RBAC and XSS posture; findings in this pillar are recorded separately (§3.3) |
 | Test Suite Health | 7/10 | Real-Postgres integration tests are a strength; two features have zero coverage; DB rebuilt per test is slow |
 | Frontend Code Quality | 7/10 | Clean TS discipline; bundle/re-render issues are classic but fixable; some dead/duplicated code |
 
