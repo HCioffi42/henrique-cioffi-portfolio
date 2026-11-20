@@ -178,6 +178,7 @@ Spec: `docs/specs/track-17.5-i18n-and-newsletter.md` · Plan: `docs/plans/track-
 - [ ] **19.6**: Memoize the recursive `CommentItem` tree and stop replacing the full comment array on every mutation (audit P6).
 - [ ] **19.7**: Promote nullable-reference warnings to build errors (`TreatWarningsAsErrors`, or scoped to the nullable warning codes) across all `.csproj` files — `Nullable` is enabled everywhere already, but nothing currently fails the build when a nullable warning is introduced.
 - [ ] **19.8**: Capture `PreferredLanguage` at newsletter signup (frontend sends the active i18next language; `SubscribeToNewsletterCommand` accepts and persists it) and switch the article notification from a single bilingual email to a per-subscriber localized one. Deferred from Track 17.5: the column exists but is populated for no subscriber, so localizing per recipient today would deliver English to everyone.
+- [ ] **19.9**: Make Portuguese search accent-insensitive. Found while verifying Track 17.5: the `portuguese` dictionary stems `programação` to `program` but `programacao` to `programaca`, so a reader typing without accents — common on mobile and ASCII keyboards — gets zero results for accented articles. The current behavior is pinned by `Search_WithUnaccentedPortugueseTerm_DoesNotMatchAccentedText`. The fix is `CREATE EXTENSION unaccent` plus an `unaccent`-wrapped tsvector; note the GIN index DDL and `ArticleSearchService` must change together or the index stops being used, and `unaccent` must be schema-qualified to stay IMMUTABLE for indexing.
 
 ---
 
