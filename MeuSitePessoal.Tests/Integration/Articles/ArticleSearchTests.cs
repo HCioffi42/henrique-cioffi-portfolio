@@ -239,13 +239,39 @@ public class ArticleSearchTests : BaseIntegrationTest
         var response = await _client.SendAsync(request);
 
         // Assert
-        // Records the real contract: the 'portuguese' dictionary is not accent-insensitive
-        // on its own, so an accented query matches the accented text. Making unaccented
-        // input match as well would require the unaccent extension.
         response.EnsureSuccessStatusCode();
         var result = await response.Content.ReadFromJsonAsync<PagedResult<ArticleSummaryDto>>();
 
         Assert.NotNull(result);
         Assert.Contains(result.Items, a => a.Title == "Guia de Programação");
+    }
+
+    [Fact]
+    public async Task Search_WithUnaccentedPortugueseTerm_DoesNotMatchAccentedText()
+    {
+        // Arrange
+        await AuthenticateAsync();
+        var command = new CreateArticleCommand(
+            "Programming Guide", "Guia de Programação",
+            "Content", "Conteúdo", "Summary", "Resumo",
+            ArticleCategory.Technology, new List<string>());
+        await _client.PostAsJsonAsync("/api/articles", command);
+
+        // Act
+        var request = new HttpRequestMessage(HttpMethod.Get, "/api/articles/search?searchTerm=programacao");
+        request.Headers.Add("Accept-Language", "pt-BR");
+        var response = await _client.SendAsync(request);
+
+        // Assert
+        // Pins the real contract in the direction that costs readers results. The snowball
+        // dictionary stems "Programação" to "program" but "programacao" to "programaca",
+        // so an unaccented query finds nothing. Installing the unaccent extension would
+        // change this deliberately; until then the limitation is recorded here rather than
+        // discovered by a reader typing without accents.
+        response.EnsureSuccessStatusCode();
+        var result = await response.Content.ReadFromJsonAsync<PagedResult<ArticleSummaryDto>>();
+
+        Assert.NotNull(result);
+        Assert.DoesNotContain(result.Items, a => a.Title == "Guia de Programação");
     }
 }

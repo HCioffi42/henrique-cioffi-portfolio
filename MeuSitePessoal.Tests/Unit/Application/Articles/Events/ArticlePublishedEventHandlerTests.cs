@@ -62,19 +62,21 @@ public class ArticlePublishedEventHandlerTests
             .ReturnsAsync(subscribers);
 
         // Mocks the template service to return a dummy HTML body for the notification.
-        _templateServiceMock.Setup(x => x.RenderTemplateAsync(It.IsAny<string>(), It.IsAny<object>()))
+        _templateServiceMock.Setup(x => x.RenderTemplateAsync(It.IsAny<string>(), It.IsAny<NewPostNotificationViewModel>()))
             .ReturnsAsync("<html>body</html>");
 
         // Act
         await _handler.Handle(notification, CancellationToken.None);
 
         // Assert
-        // The subject is asserted on content rather than It.IsAny: a permissive
-        // matcher here is what allowed blank subjects to reach production.
+        // The subject and body are asserted on content rather than It.IsAny: a permissive
+        // matcher here is what allowed blank emails to reach production. The body matcher
+        // additionally proves the template mock was reached, since a mismatched generic
+        // setup would silently yield a null body.
         _emailSenderMock.Verify(x => x.SendEmailAsync(
             It.IsAny<string>(),
             It.Is<string>(subject => subject.Contains("Title")),
-            It.IsAny<string>(),
+            It.Is<string>(body => body == "<html>body</html>"),
             It.IsAny<CancellationToken>()), Times.Exactly(2));
     }
 
@@ -89,7 +91,7 @@ public class ArticlePublishedEventHandlerTests
         _subscriberRepositoryMock.Setup(x => x.GetActiveSubscribersAsync())
             .ReturnsAsync(new List<Subscriber> { subscriber });
 
-        _templateServiceMock.Setup(x => x.RenderTemplateAsync(It.IsAny<string>(), It.IsAny<object>()))
+        _templateServiceMock.Setup(x => x.RenderTemplateAsync(It.IsAny<string>(), It.IsAny<NewPostNotificationViewModel>()))
             .ReturnsAsync("<html>body</html>");
 
         string? capturedSubject = null;
@@ -118,7 +120,7 @@ public class ArticlePublishedEventHandlerTests
         _subscriberRepositoryMock.Setup(x => x.GetActiveSubscribersAsync())
             .ReturnsAsync(new List<Subscriber> { subscriber });
 
-        _templateServiceMock.Setup(x => x.RenderTemplateAsync(It.IsAny<string>(), It.IsAny<object>()))
+        _templateServiceMock.Setup(x => x.RenderTemplateAsync(It.IsAny<string>(), It.IsAny<NewPostNotificationViewModel>()))
             .ReturnsAsync("<html>body</html>");
 
         string? capturedSubject = null;

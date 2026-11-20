@@ -79,4 +79,21 @@ public class NewPostNotificationTemplateTests
         html.Should().Contain(UnsubscribeUrl);
         html.Should().Contain(ArticleUrl);
     }
+
+    [Fact]
+    public async Task Render_WritesProperlyAccentedPortuguese()
+    {
+        var model = new NewPostNotificationViewModel(
+            "Getting Started", "An English summary.",
+            "Primeiros Passos", "Um resumo em portugues.",
+            ArticleUrl, UnsubscribeUrl);
+
+        var html = await CreateService().RenderTemplateAsync(TemplateName, model);
+
+        // The Portuguese half of a bilingual email is user-facing copy on a bilingual
+        // blog, so it carries its accents like the rest of the product.
+        html.Should().Contain("Você está recebendo");
+        html.Should().Contain("Cancelar inscrição");
+        html.Should().NotContain("Voce esta recebendo");
+    }
 }
