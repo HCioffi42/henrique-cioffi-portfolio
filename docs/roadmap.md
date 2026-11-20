@@ -1,11 +1,13 @@
 # Project Roadmap: MeuSitePessoal
 
 **Current Milestone**: Phase 5: SDET Excellence (Quality Engineering)
-**Global Progress**: [███████████████████░] 94% — Phase 4 remediation complete; Track 18.0 (security hardening) is the sole remaining blocker for Track 18.2
+**Global Progress**: [███████████████████░] 96% — Phase 4 remediation complete; Track 18.0 (security hardening) closed. Tracks 18.1 and 18.2 are the open work in Phase 5.
 
 > **2026-11-19 — Roadmap rewritten.** A full technical audit (`docs/TECHNICAL_AUDIT_REPORT.md`) found that Track 17 shipped with an unresolved regression (newsletter emails render blank) and that the platform currently has no rate limiting or login lockout. Phase 4 was marked reopened rather than completed until those gaps closed. See the audit report for full findings, file:line citations, and severity ratings — this roadmap only tracks the remediation work itself.
 >
 > **2026-11-20 — Track 17.5 completed.** The newsletter regression and the dead search index are fixed, and the legacy columns are gone from both code and database. Track 18.0 (security hardening) is now the only remaining blocker for Track 18.2.
+>
+> **2026-11-20 — Track 18.0 completed.** The signing key is sourced from the environment with fail-fast startup validation, ingress is narrowed to the web tier, the client address is resolved from the forwarded chain, per-endpoint request throttling is active, Identity lockout is enabled with an administrative exemption, and media management is restricted to administrators. Security findings are now tracked privately rather than enumerated in this repository. Tracks 18.1 and 18.2 are unblocked.
 >
 > The `conductor/` agent-outsourcing workflow and `docs/tracks/` per-track spec folder have been retired as of this rewrite (see "Retired Tooling" at the bottom). Going forward, a separate automation-framework repository will own E2E, API, and contract test specs against this repo's surface — this roadmap stays scoped to what ships inside *this* repo.
 
@@ -167,7 +169,9 @@ Spec: `docs/specs/track-17.5-i18n-and-newsletter.md` · Plan: `docs/plans/track-
     - [ ] **18.2.3.4**: Keep output lightweight for a project this size — CLI summary + CI artifact is enough; skip a hosted dashboard (Grafana Cloud k6, etc.) unless traffic/need grows.
 - [ ] **18.2.4**: API/contract specifications for this repo's surface (endpoints, DTOs, auth/RBAC matrix), written for consumption by the separate automation-framework repository described below.
 
-> **Sequencing note**: 18.0 and 17.5 are hard blockers for 18.2 — an E2E suite built before they land would either encode the newsletter/search bugs as expected behavior, or run against a forgeable Admin JWT with no login throttling. 18.1 can run in parallel with the start of 18.2 since it strengthens the foundation Playwright will also need fixtures from, but doesn't block starting the Playwright setup itself.
+> **Sequencing note**: 17.5 and 18.0 were hard blockers for 18.2 and both have landed, so 18.2 is clear to start. 18.1 can run in parallel with it, since it strengthens the fixtures Playwright will also need but does not block the Playwright setup itself.
+
+> **Threshold note for 18.2**: a browser suite authenticates from a single client address and therefore shares one rate-limit partition. Production thresholds (`auth-signin`: 10 per 15 minutes) are exhausted within ten sign-ins. The environment the suite runs against must declare its own `RateLimiting` configuration; thresholds bind from configuration for exactly this reason.
 
 ---
 
@@ -182,6 +186,8 @@ Spec: `docs/specs/track-17.5-i18n-and-newsletter.md` · Plan: `docs/plans/track-
 - [ ] **19.7**: Promote nullable-reference warnings to build errors (`TreatWarningsAsErrors`, or scoped to the nullable warning codes) across all `.csproj` files — `Nullable` is enabled everywhere already, but nothing currently fails the build when a nullable warning is introduced.
 - [ ] **19.8**: Capture `PreferredLanguage` at newsletter signup (frontend sends the active i18next language; `SubscribeToNewsletterCommand` accepts and persists it) and switch the article notification from a single bilingual email to a per-subscriber localized one. Deferred from Track 17.5: the column exists but is populated for no subscriber, so localizing per recipient today would deliver English to everyone.
 - [ ] **19.9**: Make Portuguese search accent-insensitive. Found while verifying Track 17.5: the `portuguese` dictionary stems `programação` to `program` but `programacao` to `programaca`, so a reader typing without accents — common on mobile and ASCII keyboards — gets zero results for accented articles. The current behavior is pinned by `Search_WithUnaccentedPortugueseTerm_DoesNotMatchAccentedText`. The fix is `CREATE EXTENSION unaccent` plus an `unaccent`-wrapped tsvector; note the GIN index DDL and `ArticleSearchService` must change together or the index stops being used, and `unaccent` must be schema-qualified to stay IMMUTABLE for indexing.
+- [ ] **19.10**: Restrict origin ingress on 80/443 to the CDN's published address ranges, so the forwarded-address chain cannot be presented by a caller reaching the origin directly. Recorded during Track 18.0 as residual scope (spec §4.4).
+- [ ] **19.11**: Add edge throttling (CDN rules or nginx `limit_req`) as a complement to the in-application limiter, rejecting excess traffic before it reaches the origin. Deferred from Track 18.0 so one enforcement point owned the behavior first.
 
 ---
 

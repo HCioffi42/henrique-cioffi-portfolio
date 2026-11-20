@@ -1,5 +1,7 @@
 # Track 18.0 — Security Hardening: Implementation Plan
 
+> **Status: complete (2026-11-20).** All nine tasks implemented on `feature/track-18.0-security-hardening` and verified against the full suite on real PostgreSQL. Residual scope was recorded as roadmap items 19.10 and 19.11; the three acceptance criteria a green suite cannot confirm are listed under Verification Summary below and remain out-of-band checks.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Source the JWT signing key from the environment with fail-fast validation, narrow ingress to the web tier, resolve the real client address behind the proxy chain, throttle seven sensitive endpoints across six per-endpoint policies, enable Identity lockout with an administrative exemption, and restrict media management to administrators.
@@ -63,7 +65,7 @@ The highest-risk task in the track. `WebApplicationFactory<Program>` builds the 
   }
   ```
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 ```csharp
 [Theory] [InlineData(null)] [InlineData("")] [InlineData("   ")]
@@ -87,18 +89,18 @@ Resolve_WithMissingKey_ThrowsNamingTheConfigurationPath(string? key)
 
 Build the `IConfiguration` with `ConfigurationBuilder().AddInMemoryCollection(...)`.
 
-- [ ] **Step 2: Run tests to verify they fail**
+- [x] **Step 2: Run tests to verify they fail**
 
 Run: `dotnet test --filter "FullyQualifiedName~JwtKeyResolverTests"`
 Expected: FAIL — `JwtKeyResolver` does not exist.
 
-- [ ] **Step 3: Implement the resolver and wire it into startup**
+- [x] **Step 3: Implement the resolver and wire it into startup**
 
 Implement `Resolve`. In `Program.cs`, replace `var key = Encoding.UTF8.GetBytes(jwtSettings["Key"]!);` with `var key = JwtKeyResolver.Resolve(builder.Configuration);`. The `TokenValidationParameters` construction at `Program.cs:89` is unchanged — it already consumes `key`.
 
 Leave `TokenService.cs:33-34` alone for now; it reads the key independently at token-generation time and still resolves correctly from configuration. Changing it is not required by any acceptance criterion and would widen this commit.
 
-- [ ] **Step 4: Remove the key from configuration and supply it to the fixture**
+- [x] **Step 4: Remove the key from configuration and supply it to the fixture**
 
 Delete the `"Key"` line from `appsettings.json`. Keep `Issuer`, `Audience`, and `ExpiresInMinutes`.
 
@@ -119,14 +121,14 @@ Also add a matching `["JwtSettings:Key"] = TestSigningKey` entry to the in-memor
 
 This is test-only configuration for an in-memory host that issues tokens consumed only by the same process. It is not a production credential and does not require rotation.
 
-- [ ] **Step 5: Run the full suite**
+- [x] **Step 5: Run the full suite**
 
 Run: `dotnet test`
 Expected: PASS, all tests. A sweeping failure here means the fixture configuration key is misspelled — the host cannot build and every integration test fails identically.
 
 **Caveat on this diagnosis:** `Program.cs:27` loads user secrets whenever the `ASPNETCORE_ENVIRONMENT` *process* variable is empty, which it is under `dotnet test` — the fixture sets the environment through `UseEnvironment`, not the variable. So once Step 6 sets a local user secret, a misspelled fixture key will still build the host on this machine and fail only in CI. Run this step **before** Step 6, or temporarily clear the secret, to get a trustworthy signal.
 
-- [ ] **Step 6: Document the local development requirement**
+- [x] **Step 6: Document the local development requirement**
 
 Add to `README.md`, under setup:
 
@@ -136,12 +138,12 @@ dotnet user-secrets set "JwtSettings:Key" "<a value of at least 32 bytes>" --pro
 
 State that the application will not start without it, and that the value must come from the environment rather than from a committed file.
 
-- [ ] **Step 7: Verify no key value remains in the working tree**
+- [x] **Step 7: Verify no key value remains in the working tree**
 
 Run: `git grep -n "JwtSettings" -- ':!docs'`
 Expected: references to the section and its non-secret members only; no key value in `appsettings.json`.
 
-- [ ] **Step 8: Commit**
+- [x] **Step 8: Commit**
 
 ```bash
 git add MeuSitePessoal.Api/Configuration/JwtKeyResolver.cs MeuSitePessoal.Api/Program.cs MeuSitePessoal.Api/appsettings.json MeuSitePessoal.Tests/Unit/Api/Configuration/JwtKeyResolverTests.cs MeuSitePessoal.Tests/Integration/BaseIntegrationTest.cs README.md
@@ -157,7 +159,7 @@ Infrastructure only, no application code and no test surface. Verified by render
 **Files:**
 - Modify: `docker-compose.yml` — `database.ports` (remove), `backend.ports` (remove), `backend.environment` (add the key)
 
-- [ ] **Step 1: Apply the Compose changes**
+- [x] **Step 1: Apply the Compose changes**
 
 Remove the `ports` block from `database` and from `backend` entirely. Leave `frontend.ports` as `80:80`.
 
@@ -167,17 +169,17 @@ Add to `backend.environment`, alongside the existing substitutions:
       - JwtSettings__Key=${JWT_SIGNING_KEY}
 ```
 
-- [ ] **Step 2: Verify the rendering**
+- [x] **Step 2: Verify the rendering**
 
 Run: `docker compose config`
 Expected: `database` and `backend` show no `ports`; `backend` shows `JwtSettings__Key`. Locally the value resolves empty with a warning because no `.env` is present in this worktree — that is correct and expected here; the value exists only on the server.
 
-- [ ] **Step 3: Confirm nothing in the repository depended on the published ports**
+- [x] **Step 3: Confirm nothing in the repository depended on the published ports**
 
 Run: `git grep -nE "localhost:(5000|5432)" -- ':!docs' ':!*.lock'`
 Expected: no results. The frontend resolves its API base to `/api` outside development mode and targets `25683` in development.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add docker-compose.yml
@@ -199,7 +201,7 @@ Establishes the identity that Task 5 partitions on. Without it every caller reso
 - Consumes: nothing.
 - Produces: `HttpContext.Connection.RemoteIpAddress` reflects the forwarded chain for every downstream consumer.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 The resolved address is not observable from any existing response, and no production endpoint should be added to expose it. Capture it with a test-only terminal middleware registered through the fixture:
 
@@ -217,12 +219,12 @@ Register the capturing middleware through an `IStartupFilter` added in `builder.
     // pins ForwardLimit = 1 so that a caller cannot prepend an address of their choosing
 ```
 
-- [ ] **Step 2: Run tests to verify they fail**
+- [x] **Step 2: Run tests to verify they fail**
 
 Run: `dotnet test --filter "FullyQualifiedName~ForwardedHeadersTests"`
 Expected: FAIL — forwarded headers are not processed, so the captured address is the test host's peer.
 
-- [ ] **Step 3: Configure forwarded headers**
+- [x] **Step 3: Configure forwarded headers**
 
 Register the options:
 
@@ -256,12 +258,12 @@ Record the observed subnet in the commit body.
 
 Add `app.UseForwardedHeaders();` as the **first** middleware, above `app.UseSerilogRequestLogging()`, so request logs carry the resolved address.
 
-- [ ] **Step 4: Run tests to verify they pass**
+- [x] **Step 4: Run tests to verify they pass**
 
 Run: `dotnet test --filter "FullyQualifiedName~ForwardedHeadersTests"`
 Expected: PASS.
 
-- [ ] **Step 5: Normalize the forwarded address in nginx**
+- [x] **Step 5: Normalize the forwarded address in nginx**
 
 Use the real-IP module, which is compiled into the stock nginx image, so that `CF-Connecting-IP` is honored **only** when the request actually arrives from Cloudflare (spec §4.4):
 
@@ -280,11 +282,11 @@ A plain `map` on `$http_cf_connecting_ip` is **not** an acceptable substitute: i
 
 Fetch the current ranges from Cloudflare's published list at implementation time rather than copying them from this document, and record the retrieval date in a comment above the block.
 
-- [ ] **Step 5a: Verify the conditional trust by request**
+- [x] **Step 5a: Verify the conditional trust by request**
 
 From outside, send a request to the origin carrying a forged `CF-Connecting-IP` and confirm it is not honored, then confirm a request through Cloudflare is attributed correctly. Spec acceptance criterion 14 is not satisfied by reading the configuration file.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add MeuSitePessoal.Api/Program.cs meupessoal-web/nginx.conf MeuSitePessoal.Tests/Integration/Api/ForwardedHeadersTests.cs
@@ -340,7 +342,7 @@ Registers the policies and the rejection contract. No endpoint is annotated yet,
   ```
   merged into the fixture's in-memory collection so a derived test class can override thresholds without duplicating the database and mail setup.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 ```csharp
 [Fact] Registration_WithMissingPolicyEntry_ThrowsNamingThePolicy()
@@ -354,12 +356,12 @@ Registers the policies and the rejection contract. No endpoint is annotated yet,
     // asserts PermitLimit and WindowMinutes round-trip for one policy
 ```
 
-- [ ] **Step 2: Run tests to verify they fail**
+- [x] **Step 2: Run tests to verify they fail**
 
 Run: `dotnet test --filter "FullyQualifiedName~RateLimitingOptionsTests"`
 Expected: FAIL — the types do not exist.
 
-- [ ] **Step 3: Implement options and policy registration**
+- [x] **Step 3: Implement options and policy registration**
 
 Register one fixed-window limiter per policy name, each partitioned on `httpContext.Connection.RemoteIpAddress?.ToString()` falling back to a single constant key when the address is null (spec §4.3). `QueueLimit` is 0 — reject rather than delay.
 
@@ -377,13 +379,13 @@ Validate that every name in `RateLimitPolicies` has a configured entry, throwing
 
 Without the eager check, .NET 8 does not serve such an endpoint unprotected — it throws `InvalidOperationException` naming the policy — but it throws on the first request to that endpoint, so an endpoint no test exercises ships broken and fails in production. Eager validation converts that into a deployment that refuses to start.
 
-- [ ] **Step 4: Add the configuration and the pipeline call**
+- [x] **Step 4: Add the configuration and the pipeline call**
 
 Add the `RateLimiting` section to `appsettings.json` exactly as given in spec §5.3.
 
 Add `app.UseRateLimiter();` after routing and before `app.UseAuthentication()`. Endpoint-level policy metadata requires routing to have run; placing it before authentication means unauthenticated floods are rejected before any identity work.
 
-- [ ] **Step 5: Add Testing thresholds and the fixture hook**
+- [x] **Step 5: Add Testing thresholds and the fixture hook**
 
 In `BaseIntegrationTest`, add generous thresholds to the in-memory configuration — a permit limit far above anything the suite can reach within a window long enough to span a full run:
 
@@ -395,12 +397,12 @@ In `BaseIntegrationTest`, add generous thresholds to the in-memory configuration
 
 Then merge `AdditionalConfiguration` over that dictionary so a derived class can override individual values.
 
-- [ ] **Step 6: Run the full suite**
+- [x] **Step 6: Run the full suite**
 
 Run: `dotnet test`
 Expected: PASS, all tests. The limiter is now active in every test but no endpoint is annotated yet, so behavior is unchanged. A failure here means registration throws — check that every policy name has a configured entry.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add MeuSitePessoal.Api/Configuration/RateLimitingOptions.cs MeuSitePessoal.Api/Configuration/RateLimiterSetup.cs MeuSitePessoal.Api/Program.cs MeuSitePessoal.Api/appsettings.json MeuSitePessoal.Tests/Unit/Api/Configuration/RateLimitingOptionsTests.cs MeuSitePessoal.Tests/Integration/BaseIntegrationTest.cs
@@ -507,7 +509,7 @@ Independent of Tasks 1-5.
 
 **Note on the existing unit tests:** three substitute setups specify `CheckPasswordSignInAsync(..., false)`. Once the handler passes `true` those setups stop matching and return a default result, so the tests fail. Updating the argument to `true` reflects a deliberate contract change, not a weakened assertion. The file uses **NSubstitute** (`Arg.Any<...>()` / `.Returns(...)`), not Moq — match the surrounding style.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 ```csharp
 // Integration, against real PostgreSQL — lockout state is a persisted column.
@@ -544,20 +546,20 @@ Independent of Tasks 1-5.
     // Review Focus 5
 ```
 
-- [ ] **Step 2: Run tests to verify they fail**
+- [x] **Step 2: Run tests to verify they fail**
 
 Run: `dotnet test --filter "FullyQualifiedName~AccountLockoutTests"`
 Expected: FAIL — the counter never increments and the administrator has lockout enabled.
 
-- [ ] **Step 3: Declare the lockout policy**
+- [x] **Step 3: Declare the lockout policy**
 
 In the `AddIdentity` options block, add `MaxFailedAccessAttempts = 5`, `DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15)`, `AllowedForNewUsers = true`. These match the framework defaults for the first and third, and are stated explicitly so the policy is visible rather than inherited.
 
-- [ ] **Step 4: Enable lockout on sign-in**
+- [x] **Step 4: Enable lockout on sign-in**
 
 Change `lockoutOnFailure: false` to `lockoutOnFailure: true` at `LoginCommandHandler.cs:60`. Add a distinct Warning log for `result.IsLockedOut`, naming the account. Do **not** branch the returned `LoginResult` — the response stays identical to the wrong-password path (spec §6.4).
 
-- [ ] **Step 5: Exempt administrators in the seeder**
+- [x] **Step 5: Exempt administrators in the seeder**
 
 In `DbInitializer.SeedAsync`, converge the administrative account's lockout state on every startup. Place this **outside** the `if (adminUser != null && !await userManager.IsInRoleAsync(adminUser, "Admin"))` block at `DbInitializer.cs:77`, after the role is known to be assigned — not inside the creation branch and not inside the promotion branch.
 
@@ -571,16 +573,16 @@ Converge three fields, writing only when something differs so a normal boot perf
 
 The last two are spec §6.5 — `AccessFailedAsync` writes them without consulting `LockoutEnabled`, so an exempt account accumulates lockout state that only looks alarming today but would lock the account instantly if the exemption were ever lifted.
 
-- [ ] **Step 6: Update the three existing mock setups**
+- [x] **Step 6: Update the three existing mock setups**
 
 Change the `false` argument to `true` at `LoginCommandHandlerTests.cs:72,114,133`.
 
-- [ ] **Step 7: Run the full suite**
+- [x] **Step 7: Run the full suite**
 
 Run: `dotnet test`
 Expected: PASS.
 
-- [ ] **Step 8: Commit**
+- [x] **Step 8: Commit**
 
 ```bash
 git add MeuSitePessoal.Api/Program.cs MeuSitePessoal.Application/Auth/Commands/Login/LoginCommandHandler.cs MeuSitePessoal.Infrastructure/Configuration/DbInitializer.cs MeuSitePessoal.Tests/
@@ -603,7 +605,7 @@ Independent of every preceding task.
 
 Follow the existing precedent in `ArticleAuthorizationTests.cs`, which already asserts 403 for non-administrative callers on article mutations.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 ```csharp
 [Fact] Upload_AsReader_ReturnsForbidden()
@@ -616,23 +618,23 @@ Follow the existing precedent in `ArticleAuthorizationTests.cs`, which already a
 
 Post a small in-memory `MultipartFormDataContent` with an allowed extension for the upload cases.
 
-- [ ] **Step 2: Run tests to verify they fail**
+- [x] **Step 2: Run tests to verify they fail**
 
 Run: `dotnet test --filter "FullyQualifiedName~ImagesAuthorizationTests"`
 Expected: FAIL on the two Reader cases — both currently succeed. The anonymous and administrator cases already pass.
 
-- [ ] **Step 3: Apply the role restriction**
+- [x] **Step 3: Apply the role restriction**
 
 Change `[Authorize]` to `[Authorize(Roles = "Admin")]` on the controller.
 
 Make no change to `LocalStorageService.DeleteFileAsync` (spec §7). Its `Path.GetFileName` call already collapses directory components.
 
-- [ ] **Step 4: Run tests to verify they pass**
+- [x] **Step 4: Run tests to verify they pass**
 
 Run: `dotnet test --filter "FullyQualifiedName~ImagesAuthorizationTests"`
 Expected: PASS.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add MeuSitePessoal.Api/Controllers/ImagesController.cs MeuSitePessoal.Tests/Integration/Api/ImagesAuthorizationTests.cs
@@ -649,13 +651,13 @@ Implements spec §8. This repository is public, and two committed documents desc
 - Modify: `docs/TECHNICAL_AUDIT_REPORT.md` — §3.3 only
 - Modify: `docs/roadmap.md` — Track 18.0 entries and the Track 14 known-gap note
 
-- [ ] **Step 1: Replace audit report §3.3**
+- [x] **Step 1: Replace audit report §3.3**
 
 Replace the Security & Resilience findings table with a short note: the audit date, the number of findings in that category, and a statement that security findings are tracked privately rather than enumerated here. Keep the section heading and its number so §1's pillar table, §4, §5, and the roadmap's cross-references still resolve.
 
 Retain every other section unchanged — §2 strengths, §3.1 performance, §3.2 architecture, §3.4 test health, §4, §5, §6. Those describe design and performance debt, not exploitable weakness, and Tracks 18.1, 18.2 and 19 are all scoped against them.
 
-- [ ] **Step 2: Rewrite the Track 18.0 roadmap entries**
+- [x] **Step 2: Rewrite the Track 18.0 roadmap entries**
 
 Lines 146-149 currently carry parenthetical descriptions of live weakness — for example that any authenticated reader can delete any uploaded image. Rewrite each as completed capability in the register the rest of the roadmap uses, retaining the `S#` label as an opaque reference:
 
@@ -671,14 +673,14 @@ Lines 146-149 currently carry parenthetical descriptions of live weakness — fo
 
 Rewrite the Track 14 known-gap note at line 99 as closed.
 
-- [ ] **Step 3: Verify nothing retained still describes a live weakness**
+- [x] **Step 3: Verify nothing retained still describes a live weakness**
 
 Re-read the retained sections of the audit report against the current state of the code. Any sentence written in the present tense about a weakness this track did not close is still an accurate description of the deployed system, and belongs in the private record instead.
 
 Run: `git diff --stat docs/`
 Expected: only the two intended files, with no change to the performance, architecture, or test-health sections.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add docs/TECHNICAL_AUDIT_REPORT.md docs/roadmap.md
@@ -695,7 +697,7 @@ git commit -m "docs: track security findings privately rather than in the reposi
 - Modify: `docs/roadmap.md` — Phase 5 status and the Track 19 additions
 - Modify: `docs/plans/track-18.0-implementation-plan.md` — this file
 
-- [ ] **Step 1: Add the Track 18.2 threshold note**
+- [x] **Step 1: Add the Track 18.2 threshold note**
 
 Task 8 already rewrote the Track 18.0 entries. Add one line under Track 18.2 recording a constraint it will otherwise discover the hard way:
 
@@ -707,7 +709,7 @@ Task 8 already rewrote the Track 18.0 entries. Add one line under Track 18.2 rec
 > configuration; thresholds bind from configuration for exactly this reason.
 ```
 
-- [ ] **Step 2: Add the deferred follow-ups**
+- [x] **Step 2: Add the deferred follow-ups**
 
 Add to Track 19, in the neutral register the rest of the roadmap uses:
 
@@ -720,11 +722,11 @@ Add to Track 19, in the neutral register the rest of the roadmap uses:
   Deferred from Track 18.0 so one enforcement point owned the behavior first.
 ```
 
-- [ ] **Step 3: Update the Phase 5 status line**
+- [x] **Step 3: Update the Phase 5 status line**
 
 Track 18.0 was the sole remaining blocker for Track 18.2. Update the milestone heading and the global progress note so 18.1 and 18.2 are the open work.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add docs/roadmap.md docs/plans/track-18.0-implementation-plan.md
