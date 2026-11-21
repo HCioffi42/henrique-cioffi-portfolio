@@ -148,16 +148,9 @@
       "password": "Senha",
       "signIn": "Entrar",
       "signingIn": "Entrando...",
-      "twoFactorTitle": "Verificação em Duas Etapas",
-      "twoFactorDesc": "Abra seu aplicativo de autenticação e digite o código de 6 dígitos para <1>{{username}}</1>.",
-      "verifyCode": "Verificar Código",
-      "verifying": "Verificando...",
-      "backToSignIn": "Voltar para o login",
       "welcome": "Bem-vindo de volta, {{username}}!",
       "invalidCredentials": "Usuário ou senha inválidos.",
-      "serverError": "Não foi possível conectar ao servidor. Por favor, tente novamente mais tarde.",
-      "invalidCode": "Código de verificação inválido ou expirado.",
-      "totpPrompt": "Digite seu código de autenticação para continuar."
+      "serverError": "Não foi possível conectar ao servidor. Por favor, tente novamente mais tarde."
     },
     "register": {
       "title": "Criar sua conta",

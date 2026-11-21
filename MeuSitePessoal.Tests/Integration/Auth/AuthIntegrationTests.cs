@@ -103,7 +103,7 @@ public class AuthIntegrationTests : BaseIntegrationTest
     }
 
     // Local helper record for type-safe assertion
-    private record LoginResponseDto(string Token, string Username, bool RequiresTwoFactor);
+    private record LoginResponseDto(string Token, string Username);
     
     // Internal record ensures type safety for the authentication response.
     private record AuthTokenResponse(string Token);

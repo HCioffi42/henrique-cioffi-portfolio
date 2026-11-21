@@ -34,9 +34,9 @@ public static class RateLimitPolicies
     public const string AuthSignIn = "auth-signin";
 
     /// <summary>
-    /// Verification of a secret the caller supplies rather than a password: the two-factor code
-    /// and the password-reset token. Deliberately separate from <see cref="AuthSignIn"/>, because
-    /// a two-factor sign-in calls both and a shared budget would charge two permits per attempt.
+    /// Verification of a secret the caller supplies rather than a password: currently the
+    /// password-reset token. Kept separate from <see cref="AuthSignIn"/> so that exhausting a
+    /// reset budget never consumes the sign-in allowance of a legitimate user on the same address.
     /// </summary>
     public const string AuthVerify = "auth-verify";
 

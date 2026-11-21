@@ -255,5 +255,5 @@ public class AccountLockoutTests : BaseIntegrationTest
         secondAdministrator.LockoutEnabled.Should().BeFalse();
         secondAdministrator.AccessFailedCount.Should().Be(0);
     }
-    private sealed record LoginResponse(string? Token, string? Username, bool RequiresTwoFactor);
+    private sealed record LoginResponse(string? Token, string? Username);
 }

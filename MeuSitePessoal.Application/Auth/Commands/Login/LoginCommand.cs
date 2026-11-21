@@ -8,11 +8,9 @@ namespace MeuSitePessoal.Application.Auth.Commands.Login;
 public record LoginCommand(string Username, string Password) : MediatR.IRequest<LoginResult>;
 
 /// <summary>
-/// Represents the result of a login attempt.
-/// When <see cref="RequiresTwoFactor"/> is true, the <see cref="Token"/> will be null
-/// and the frontend must redirect the user to the 2FA verification step.
+/// Represents the result of a login attempt. A failed attempt carries a null
+/// <see cref="Token"/> and a null <see cref="Username"/>.
 /// </summary>
-/// <param name="Token">The JWT token if authentication is complete; otherwise null.</param>
+/// <param name="Token">The JWT token if authentication succeeded; otherwise null.</param>
 /// <param name="Username">The authenticated username.</param>
-/// <param name="RequiresTwoFactor">Indicates if a 2FA verification step is required.</param>
-public record LoginResult(string? Token, string? Username, bool RequiresTwoFactor);
+public record LoginResult(string? Token, string? Username);

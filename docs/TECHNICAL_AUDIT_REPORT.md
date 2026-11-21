@@ -176,7 +176,7 @@ Proposed as discrete, sequenced tracks to execute **before or alongside** Track 
 - Replace the per-test `EnsureDeletedAsync`/`MigrateAsync` cycle with a respawn/transaction-rollback strategy (e.g. Respawn library or a single migrated database reset via checkpoint) to cut integration suite runtime (T2).
 - Fix the CI/test connection-string mismatch so `ci.yml`'s env var is actually load-bearing (T3), and move the hardcoded test password out of source (T4).
 - Mark or mock the live SMTP integration test so it doesn't depend on network access to a third party in CI (T5).
-- Add handler-level tests for two-factor verification and newsletter confirmation (T1) — both are exactly the kind of multi-step flow Playwright will also need fixtures for, so building the unit/integration layer first gives E2E a verified foundation to script against.
+- Add handler-level tests for newsletter confirmation (T1) — exactly the kind of multi-step flow Playwright will also need fixtures for, so building the unit/integration layer first gives E2E a verified foundation to script against. T1's other half, two-factor verification, was closed by removing the feature instead (roadmap 18.1.5): it shipped permanently disabled, so testing it would have been coverage of a path no user could reach.
 
 ### Track 19 (can follow Track 18, not blocking): Architecture Consolidation
 - Unify Article data access behind `IArticleRepository` consistently, and add an equivalent repository for Comments (A5).

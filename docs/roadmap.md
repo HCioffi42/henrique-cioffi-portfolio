@@ -1,7 +1,7 @@
 # Project Roadmap: MeuSitePessoal
 
 **Current Milestone**: Phase 5: SDET Excellence (Quality Engineering)
-**Global Progress**: [███████████████████░] 96% — Phase 4 remediation complete; Track 18.0 (security hardening) closed. Tracks 18.1 and 18.2 are the open work in Phase 5.
+**Global Progress**: [███████████████████░] 97% — Phase 4 remediation complete; Tracks 18.0 (security hardening) and 18.1 (test suite foundations) closed. Track 18.2 is the open work in Phase 5.
 
 > **2026-11-19 — Roadmap rewritten.** A full technical audit (`docs/TECHNICAL_AUDIT_REPORT.md`) found that Track 17 shipped with an unresolved regression (newsletter emails render blank) and that the platform currently has no rate limiting or login lockout. Phase 4 was marked reopened rather than completed until those gaps closed. See the audit report for full findings, file:line citations, and severity ratings — this roadmap only tracks the remediation work itself.
 >
@@ -10,6 +10,8 @@
 > **2026-11-20 — Track 18.0 completed.** The signing key is sourced from the environment with fail-fast startup validation, ingress is narrowed to the web tier, the client address is resolved from the forwarded chain, per-endpoint request throttling is active, Identity lockout is enabled with an administrative exemption, and media management is restricted to administrators. Security findings are now tracked privately rather than enumerated in this repository. Tracks 18.1 and 18.2 are unblocked.
 >
 > **2026-11-20 — Track 18.0 verified against production.** The out-of-band acceptance checks were carried out on the deployed system. The administrative lockout exemption was found not to apply there, because the convergence step sat inside the block guarded by the `AdminSetup` credentials that a deployed environment does not supply; `v2026.11.20.03` moved it outside that guard and keyed it on the `Admin` role. The forwarded-address range and conditional header trust both passed.
+>
+> **2026-11-21 — Track 18.1 completed.** The integration suite builds its schema once per run and clears data with Respawn, cutting runtime from 1m49s to 32s. Its connection string comes from configuration with no credential in source and no fallback, so CI's environment variable is load-bearing rather than decorative. The SMTP tests run against a server hosted in the test process instead of dialing a third party, which also revived a delivery test skipped since it was written. Newsletter double opt-in confirmation has handler tests, and two-factor authentication was removed rather than tested, since it shipped permanently disabled. Audit findings T1 through T5 are closed and the suite reports 273 passing with nothing skipped.
 >
 > The `conductor/` agent-outsourcing workflow and `docs/tracks/` per-track spec folder have been retired as of this rewrite (see "Retired Tooling" at the bottom). Going forward, a separate automation-framework repository will own E2E, API, and contract test specs against this repo's surface — this roadmap stays scoped to what ships inside *this* repo.
 
@@ -125,7 +127,7 @@
     - [x] **16.6.1 - "Check Email" UI**: Seamless feedback after registration.
     - [x] **16.6.2 - Content Dispatcher**: Automated newsletter emails when new articles are published via Domain Events.
     - [x] **16.6.3 - Secure Unsubscribe**: Legal-compliant, token-based deactivation mechanism.
-- [!] **Known gaps (audit T1)**: two-factor verification and newsletter double opt-in confirmation (16.5.3) have zero test coverage at any level. Closed in Track 18.1.
+- [x] **Known gaps (audit T1)**: closed in Track 18.1. Newsletter double opt-in confirmation (16.5.3) is covered by handler tests (18.1.4); the other half of T1, two-factor verification, was closed by removing the feature rather than by testing it (18.1.5).
 
 ### [✓] Track 17: Internationalization
 - [x] **17.1 - i18next Setup**: Configure the translation framework with lazy loading and browser detection.
@@ -156,11 +158,12 @@ Spec: `docs/specs/track-17.5-i18n-and-newsletter.md` · Plan: `docs/plans/track-
 - [x] **18.0.4**: Media upload and deletion restricted to administrators (audit S5).
 - [x] **18.0.5 — Deployed verification**: the three acceptance checks a green suite cannot confirm were carried out against production on 2026-11-20. The forwarded-address range and conditional header trust both passed; the administrative lockout exemption did not apply in the deployed environment and was closed by `v2026.11.20.03`. Results and evidence are recorded in `docs/plans/track-18.0-implementation-plan.md` under Verification Summary.
 
-### Track 18.1: Test Suite Foundations — **NEW, parallel with E2E build-out**
-- [ ] **18.1.1**: Replace the per-test full DB drop/migrate/reseed cycle with a respawn/transaction-rollback strategy to cut integration suite runtime (audit T2).
-- [ ] **18.1.2**: Fix the CI/test connection-string mismatch so CI's env var is actually load-bearing, and remove the hardcoded test password from source (audit T3/T4).
-- [ ] **18.1.3**: Stop the live outbound SMTP integration test from depending on third-party network access in CI (audit T5).
-- [ ] **18.1.4**: Add handler-level tests for two-factor verification and newsletter double opt-in confirmation — currently zero coverage at any level (audit T1).
+### [✓] Track 18.1: Test Suite Foundations — completed 2026-11-21
+- [x] **18.1.1**: Replace the per-test full DB drop/migrate/reseed cycle with a respawn/transaction-rollback strategy to cut integration suite runtime (audit T2). The schema is now built once per run and each test clears data with Respawn instead of dropping the database and replaying every migration. Suite runtime fell from 1m49s to 32s. Reseeding stays per-test, so the production `DbInitializer` path is still exercised. The suite remains sequential: the tests share one database, so `DisableTestParallelization` is still load-bearing and 18.1.1 does not close that on its own.
+- [x] **18.1.2**: Fix the CI/test connection-string mismatch so CI's env var is actually load-bearing, and remove the hardcoded test password from source (audit T3/T4). The suite resolves `ConnectionStrings:DefaultConnection` from user secrets then environment variables, with no fallback — an unconfigured run fails immediately with the `dotnet user-secrets set` command to run. CI's service container and its connection string now name the same database, and that string carries no credential.
+- [x] **18.1.3**: Stop the live outbound SMTP integration test from depending on third-party network access in CI (audit T5). An SMTP server now runs inside the test process on a loopback port, so connect/authenticate/send is still exercised for real with no network, DNS or provider involved. The delivery test that had been skipped since it was written now runs: the suite reports 268 passing and nothing skipped.
+- [x] **18.1.4**: Add handler-level tests for newsletter double opt-in confirmation — previously zero coverage at any level (audit T1). Five tests cover activation, unknown address, rejected token, repeat confirmation, and address-case normalization. Each was checked against a deliberately broken handler to confirm it fails when the behavior it names is removed.
+- [x] **18.1.5**: Remove Two-Factor Authentication. The flow was never enabled (`FeatureToggles:Enable2FA` shipped `false`), and a portfolio blog does not justify the reader friction or the maintenance surface of a TOTP enrolment, recovery-code and reset path. The `verify-2fa` endpoint, its command and handler, the `RequiresTwoFactor` field on the login response, the feature-toggle service that existed only to gate it, and the frontend verification view are all gone. The `auth-verify` rate-limit policy is retained for `reset-password`.
 
 ### Track 18.2: Automated Quality Suite (original Track 18)
 - [ ] **18.2.1**: End-to-End (E2E) testing suite with **Playwright** for critical flows.

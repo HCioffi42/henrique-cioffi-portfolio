@@ -6,7 +6,6 @@ using MeuSitePessoal.Application.Auth.Commands.ForgotPassword;
 using MeuSitePessoal.Application.Auth.Commands.Login;
 using MeuSitePessoal.Application.Auth.Commands.Register;
 using MeuSitePessoal.Application.Auth.Commands.ResetPassword;
-using MeuSitePessoal.Application.Auth.Commands.VerifyTwoFactor;
 
 using MeuSitePessoal.Application.Common.Interfaces;
 using Microsoft.AspNetCore.Authentication;
@@ -20,7 +19,7 @@ namespace MeuSitePessoal.Api.Controllers;
 
 /// <summary>
 /// Controller for handling authentication requests including local login,
-/// user registration, two-factor verification, and external OAuth2 providers.
+/// user registration, and external OAuth2 providers.
 /// </summary>
 [ApiController]
 [Route("api/[controller]")]
@@ -73,24 +72,22 @@ public class AuthController : ControllerBase
 
     /// <summary>
     /// Authenticates a user with username and password.
-    /// Returns a JWT token directly if 2FA is disabled, or a RequiresTwoFactor flag if enabled.
     /// </summary>
     /// <param name="request">The login request containing username and password.</param>
-    /// <returns>A JWT token response or a 2FA challenge indicator.</returns>
+    /// <returns>A JWT token response, or 401 Unauthorized when the credentials are rejected.</returns>
     [HttpPost("login")]
     [EnableRateLimiting(RateLimitPolicies.AuthSignIn)]
     public async Task<IActionResult> Login([FromBody] LoginRequest request)
     {
         var result = await _mediator.Send(new LoginCommand(request.Username, request.Password));
 
-        if (result.Token == null && !result.RequiresTwoFactor)
+        if (result.Token == null)
             return Unauthorized("Invalid credentials.");
 
         return Ok(new
         {
             token = result.Token,
-            username = result.Username,
-            requiresTwoFactor = result.RequiresTwoFactor
+            username = result.Username
         });
     }
 
@@ -157,25 +154,6 @@ public class AuthController : ControllerBase
             return BadRequest(new { errors = result.Errors });
 
         return Ok(new { message = "Password reset successfully. You can now sign in with your new credentials." });
-    }
-
-    /// <summary>
-    /// Verifies a TOTP code for a user who passed the initial login step with 2FA enabled.
-
-    /// Returns a JWT token upon successful verification.
-    /// </summary>
-    /// <param name="request">The 2FA verification request.</param>
-    /// <returns>A JWT token or 401 Unauthorized if the code is invalid.</returns>
-    [HttpPost("verify-2fa")]
-    [EnableRateLimiting(RateLimitPolicies.AuthVerify)]
-    public async Task<IActionResult> VerifyTwoFactor([FromBody] VerifyTwoFactorRequest request)
-    {
-        var result = await _mediator.Send(new VerifyTwoFactorCommand(request.Username, request.Code));
-
-        if (!result.Succeeded)
-            return Unauthorized("Invalid or expired verification code.");
-
-        return Ok(new { token = result.Token });
     }
 
     /// <summary>
@@ -279,9 +257,6 @@ public class AuthController : ControllerBase
     /// <summary>The request body for the registration endpoint.</summary>
     /// <remarks>UserName property is used as the public display name.</remarks>
     public record RegisterRequest(string UserName, string Email, string Password);
-
-    /// <summary>The request body for the 2FA verification endpoint.</summary>
-    public record VerifyTwoFactorRequest(string Username, string Code);
 
     /// <summary>The request body for the forgot password endpoint.</summary>
     public record ForgotPasswordRequest(string Email);

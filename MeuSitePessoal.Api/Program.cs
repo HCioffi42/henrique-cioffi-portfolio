@@ -73,7 +73,6 @@ builder.Services.AddScoped<IArticleRepository, ArticleRepository>();
 builder.Services.AddScoped<ISubscriberRepository, SubscriberRepository>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IStorageService, LocalStorageService>();
-builder.Services.AddSingleton<IFeatureToggleService, FeatureToggleService>();
 
 // Configure forwarded headers so the application attributes requests to the originating client
 // rather than to the reverse proxy. The trusted network is bound from configuration because

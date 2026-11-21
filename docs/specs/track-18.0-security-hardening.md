@@ -169,12 +169,12 @@ Implemented with nginx's real-IP module (`set_real_ip_from` over Cloudflare's ra
 
 ### 5.1 Policies
 
-Six named fixed-window policies covering seven endpoints, applied as endpoint metadata on specific actions and partitioned by resolved client address (§4).
+Six named fixed-window policies, applied as endpoint metadata on specific actions and partitioned by resolved client address (§4).
 
 | Policy | Endpoint | Permits | Window |
 |---|---|---|---|
 | `auth-signin` | `POST /api/auth/login` | 10 | 15 min |
-| `auth-verify` | `POST /api/auth/verify-2fa`, `POST /api/auth/reset-password` | 5 | 15 min |
+| `auth-verify` | `POST /api/auth/reset-password` | 5 | 15 min |
 | `auth-register` | `POST /api/auth/register` | 5 | 60 min |
 | `auth-recovery` | `POST /api/auth/forgot-password` | 5 | 60 min |
 | `comments-write` | `POST /api/comments` | 10 | 5 min |
@@ -182,7 +182,9 @@ Six named fixed-window policies covering seven endpoints, applied as endpoint me
 
 Thresholds are chosen so a genuine user does not meet them: ten sign-in attempts in a quarter hour exceeds normal mistyping, ten comments in five minutes exceeds conversational pace, and registration, recovery, and subscription each trigger an outbound email and are naturally rare.
 
-`auth-verify` covers the two endpoints that verify a secret the caller supplies rather than a password. It is **deliberately a separate policy rather than a reuse of `auth-signin`**: a two-factor sign-in calls login and then verification, so a shared budget would charge two permits per successful attempt and halve the effective sign-in allowance for exactly the users who enabled the stronger control. Five attempts per quarter hour is generous for a user entering a code once and ruinous for anyone enumerating a six-digit space.
+`auth-verify` covers the endpoints that verify a secret the caller supplies rather than a password. It is **deliberately a separate policy rather than a reuse of `auth-signin`**, so that a caller burning through reset attempts never consumes the sign-in allowance of a legitimate user sharing the same address. Five attempts per quarter hour is generous for a user following a reset link once and ruinous for anyone enumerating tokens.
+
+> **2026-11-21 amendment.** As written in Track 18.0, this policy also covered `POST /api/auth/verify-2fa`, and its separation from `auth-signin` was argued from the two-step cost of a two-factor sign-in. Roadmap 18.1.5 removed two-factor authentication, so that endpoint no longer exists and that argument no longer applies. The policy and its thresholds are unchanged; only the endpoint list and the rationale above were updated. Six named policies now cover six endpoints rather than seven.
 
 No queueing. A request over budget is rejected immediately rather than delayed.
 
