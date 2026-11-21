@@ -48,9 +48,10 @@ TypeScript (strict) + Tailwind CSS, i18next (EN/PT).
   no credential in source. A fresh clone must run the `dotnet user-secrets set` command
   the failure message prints before any integration test passes. The suite **drops and
   re-creates** that database, so never point it at a development instance.
-- The suite is forced sequential (`DisableTestParallelization`) because each test
-  drops/re-migrates the DB (audit T2, roadmap 18.1.1) — don't parallelize tests
-  without fixing that first.
+- The suite is forced sequential (`DisableTestParallelization`) because every test shares
+  one database and clears it on entry (`TestDatabase.ResetAsync`) — don't parallelize
+  without giving each worker its own database first. Roadmap 18.1.1 replaced the per-test
+  drop/re-migrate with a Respawn reset, which cut the runtime but not this constraint.
 - The frontend has no test framework yet; it will be introduced via the
   TypeScript/Playwright stack (roadmap Track 18.2.1), not vitest/jest — align any
   new frontend test tooling with that choice.

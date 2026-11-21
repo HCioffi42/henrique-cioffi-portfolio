@@ -195,9 +195,9 @@ public class BaseIntegrationTest : IAsyncLifetime
         var configuration = scope.ServiceProvider.GetRequiredService<Microsoft.Extensions.Configuration.IConfiguration>();
         var logger = scope.ServiceProvider.GetRequiredService<Microsoft.Extensions.Logging.ILogger<BaseIntegrationTest>>();
         
-        // Deletes and recreates the database from scratch to guarantee a clean state for every test execution.
-        await db.Database.EnsureDeletedAsync();
-        await db.Database.MigrateAsync();
+        // Returns the database to an empty state. The schema is built once for the whole run and
+        // reused; see TestDatabase for why this is not a drop and re-migrate per test.
+        await TestDatabase.ResetAsync(db);
 
         // Seed initial data for testing, including the admin user.
         await DbInitializer.SeedAsync(db, userManager, roleManager, configuration, logger);
