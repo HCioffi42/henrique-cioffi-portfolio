@@ -12,14 +12,13 @@ namespace MeuSitePessoal.Tests.Unit.Application.Auth.Commands;
 
 /// <summary>
 /// Tests the <see cref="LoginCommandHandler"/> logic.
-/// Validates hybrid login (email/username) and feature-toggled 2FA behavior.
+/// Validates hybrid login by either username or email address, and the failure paths.
 /// </summary>
 public class LoginCommandHandlerTests
 {
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly SignInManager<ApplicationUser> _signInManager;
     private readonly ITokenService _tokenService;
-    private readonly IFeatureToggleService _featureToggle;
     private readonly LoginCommandHandler _sut;
 
     public LoginCommandHandlerTests()
@@ -36,13 +35,11 @@ public class LoginCommandHandlerTests
         _signInManager = Substitute.For<SignInManager<ApplicationUser>>(_userManager, contextAccessor, claimsFactory, null, null, null, null);
         
         _tokenService = Substitute.For<ITokenService>();
-        _featureToggle = Substitute.For<IFeatureToggleService>();
-        
+
         _sut = new LoginCommandHandler(
             _userManager,
             _signInManager,
             _tokenService,
-            _featureToggle,
             Substitute.For<ILogger<LoginCommandHandler>>());
     }
 
@@ -72,7 +69,6 @@ public class LoginCommandHandlerTests
         _signInManager.CheckPasswordSignInAsync(Arg.Any<ApplicationUser>(), Arg.Any<string>(), true)
             .Returns(SignInResult.Success);
     
-        _featureToggle.Is2FAEnabled().Returns(false);
         _tokenService.GenerateToken(Arg.Any<ApplicationUser>(), Arg.Any<IList<string>>()).Returns("valid-jwt-token");
 
         // Act
@@ -118,29 +114,6 @@ public class LoginCommandHandlerTests
         var result = await _sut.Handle(new LoginCommand("Cioffi", "wrong_pass"), CancellationToken.None);
 
         // Assert
-        result.Token.Should().BeNull();
-    }
-    
-    /// <summary>
-    /// The test verifies that the handler signals a 2FA requirement when the corresponding feature toggle is enabled.
-    /// </summary>
-    [Fact]
-    public async Task Handle_When2FAIsEnabled_ReturnsRequiresTwoFactor()
-    {
-        // Arrange
-        var user = new ApplicationUser { UserName = "Cioffi" };
-        _userManager.FindByNameAsync("Cioffi").Returns(user);
-        _signInManager.CheckPasswordSignInAsync(user, "pass", true)
-            .Returns(Microsoft.AspNetCore.Identity.SignInResult.Success);
-    
-        // HC: Forcing the feature toggle to return true.
-        _featureToggle.Is2FAEnabled().Returns(true);
-
-        // Act
-        var result = await _sut.Handle(new LoginCommand("Cioffi", "pass"), CancellationToken.None);
-
-        // Assert: Token must be null and flag must be true.
-        result.RequiresTwoFactor.Should().BeTrue();
         result.Token.Should().BeNull();
     }
 }

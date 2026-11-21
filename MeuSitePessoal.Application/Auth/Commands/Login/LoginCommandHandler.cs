@@ -7,16 +7,14 @@ using Microsoft.Extensions.Logging;
 namespace MeuSitePessoal.Application.Auth.Commands.Login;
 
 /// <summary>
-/// Handles the <see cref="LoginCommand"/> by verifying user credentials and applying
-/// the 2FA feature toggle. If 2FA is disabled, the handler returns the JWT token immediately.
-/// If 2FA is enabled, it returns a signal for the frontend to prompt for a TOTP code.
+/// Handles the <see cref="LoginCommand"/> by verifying user credentials and issuing
+/// a JWT token for the authenticated identity.
 /// </summary>
 public class LoginCommandHandler : IRequestHandler<LoginCommand, LoginResult>
 {
     private readonly UserManager<ApplicationUser> _userManager;
-    private readonly SignInManager<ApplicationUser> _signInManager; // "Cannot resolve symbol 'SignInManager'"
+    private readonly SignInManager<ApplicationUser> _signInManager;
     private readonly ITokenService _tokenService;
-    private readonly IFeatureToggleService _featureToggle;
     private readonly ILogger<LoginCommandHandler> _logger;
 
     /// <summary>
@@ -24,25 +22,22 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, LoginResult>
     /// </summary>
     public LoginCommandHandler(
         UserManager<ApplicationUser> userManager,
-        SignInManager<ApplicationUser> signInManager, // "Cannot resolve symbol 'SignInManager'"
+        SignInManager<ApplicationUser> signInManager,
         ITokenService tokenService,
-        IFeatureToggleService featureToggle,
         ILogger<LoginCommandHandler> logger)
     {
         _userManager = userManager;
         _signInManager = signInManager;
         _tokenService = tokenService;
-        _featureToggle = featureToggle;
         _logger = logger;
     }
 
     /// <summary>
-    /// Validates credentials, then either returns a JWT token directly or signals that
-    /// a 2FA step is required, based on the <c>FeatureToggles:Enable2FA</c> configuration flag.
+    /// Validates credentials and returns a JWT token for the authenticated user.
     /// </summary>
     /// <param name="request">The login command.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>A <see cref="LoginResult"/> with a token or a RequiresTwoFactor flag.</returns>
+    /// <returns>A <see cref="LoginResult"/> carrying the token, or an empty result on failure.</returns>
     public async Task<LoginResult> Handle(LoginCommand request, CancellationToken cancellationToken)
     {
         // Attempts to find the user by their unique username (handle) first.
@@ -53,7 +48,7 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, LoginResult>
         if (user == null)
         {
             _logger.LogWarning("Login failed: identity not found for '{Username}'.", request.Username);
-            return new LoginResult(null, null, false);
+            return new LoginResult(null, null);
         }
 
         // Verifies the provided password against the stored hash. Lockout is applied
@@ -75,14 +70,7 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, LoginResult>
                 _logger.LogWarning("Login failed: incorrect password for user '{Username}'.", user.UserName);
             }
 
-            return new LoginResult(null, null, false);
-        }
-
-        // Evaluates the 2FA feature toggle before proceeding with token issuance.
-        if (_featureToggle.Is2FAEnabled())
-        {
-            _logger.LogInformation("2FA challenge triggered for user '{Username}'.", user.UserName);
-            return new LoginResult(null, user.UserName, RequiresTwoFactor: true);
+            return new LoginResult(null, null);
         }
 
         // Retrieves user roles and generates the JWT token with the display name (UserName).
@@ -92,7 +80,6 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, LoginResult>
         _logger.LogInformation("User '{Username}' authenticated successfully.", user.UserName);
         
         // Returns the token and the actual UserName (display name) to the frontend.
-        return new LoginResult(token, user.UserName, RequiresTwoFactor: false);
+        return new LoginResult(token, user.UserName);
     }
 }
-

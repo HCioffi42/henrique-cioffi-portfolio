@@ -125,7 +125,7 @@
     - [x] **16.6.1 - "Check Email" UI**: Seamless feedback after registration.
     - [x] **16.6.2 - Content Dispatcher**: Automated newsletter emails when new articles are published via Domain Events.
     - [x] **16.6.3 - Secure Unsubscribe**: Legal-compliant, token-based deactivation mechanism.
-- [!] **Known gaps (audit T1)**: two-factor verification and newsletter double opt-in confirmation (16.5.3) have zero test coverage at any level. Closed in Track 18.1.
+- [!] **Known gaps (audit T1)**: newsletter double opt-in confirmation (16.5.3) has zero test coverage at any level. Closed in Track 18.1. The other half of T1, two-factor verification, was closed by removing the feature rather than by testing it (see 18.1.5).
 
 ### [✓] Track 17: Internationalization
 - [x] **17.1 - i18next Setup**: Configure the translation framework with lazy loading and browser detection.
@@ -160,7 +160,8 @@ Spec: `docs/specs/track-17.5-i18n-and-newsletter.md` · Plan: `docs/plans/track-
 - [ ] **18.1.1**: Replace the per-test full DB drop/migrate/reseed cycle with a respawn/transaction-rollback strategy to cut integration suite runtime (audit T2).
 - [ ] **18.1.2**: Fix the CI/test connection-string mismatch so CI's env var is actually load-bearing, and remove the hardcoded test password from source (audit T3/T4).
 - [ ] **18.1.3**: Stop the live outbound SMTP integration test from depending on third-party network access in CI (audit T5).
-- [ ] **18.1.4**: Add handler-level tests for two-factor verification and newsletter double opt-in confirmation — currently zero coverage at any level (audit T1).
+- [ ] **18.1.4**: Add handler-level tests for newsletter double opt-in confirmation — currently zero coverage at any level (audit T1).
+- [x] **18.1.5**: Remove Two-Factor Authentication. The flow was never enabled (`FeatureToggles:Enable2FA` shipped `false`), and a portfolio blog does not justify the reader friction or the maintenance surface of a TOTP enrolment, recovery-code and reset path. The `verify-2fa` endpoint, its command and handler, the `RequiresTwoFactor` field on the login response, the feature-toggle service that existed only to gate it, and the frontend verification view are all gone. The `auth-verify` rate-limit policy is retained for `reset-password`.
 
 ### Track 18.2: Automated Quality Suite (original Track 18)
 - [ ] **18.2.1**: End-to-End (E2E) testing suite with **Playwright** for critical flows.

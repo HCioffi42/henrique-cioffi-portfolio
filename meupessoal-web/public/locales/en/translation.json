@@ -148,16 +148,9 @@
       "password": "Password",
       "signIn": "Sign in",
       "signingIn": "Signing in...",
-      "twoFactorTitle": "Two-Factor Verification",
-      "twoFactorDesc": "Open your authenticator app and enter the 6-digit code for <1>{{username}}</1>.",
-      "verifyCode": "Verify Code",
-      "verifying": "Verifying...",
-      "backToSignIn": "Back to sign in",
       "welcome": "Welcome back, {{username}}!",
       "invalidCredentials": "Invalid username or password.",
-      "serverError": "Unable to connect to the server. Please try again later.",
-      "invalidCode": "Invalid or expired verification code.",
-      "totpPrompt": "Enter your authenticator code to continue."
+      "serverError": "Unable to connect to the server. Please try again later."
     },
     "register": {
       "title": "Create your account",

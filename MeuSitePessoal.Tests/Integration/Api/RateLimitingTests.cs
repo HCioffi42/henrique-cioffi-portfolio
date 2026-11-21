@@ -56,7 +56,6 @@ public class RateLimitingTests : BaseIntegrationTest
     [InlineData("/api/auth/register")]
     [InlineData("/api/auth/forgot-password")]
     [InlineData("/api/auth/reset-password")]
-    [InlineData("/api/auth/verify-2fa")]
     [InlineData("/api/newsletter/subscribe")]
     public async Task Endpoint_ReturnsTooManyRequests_OnceBudgetIsExhausted(string path)
     {
@@ -128,16 +127,16 @@ public class RateLimitingTests : BaseIntegrationTest
     }
 
     [Fact]
-    public async Task TwoFactorVerification_DoesNotConsumeTheSignInBudget()
+    public async Task SecretVerification_DoesNotConsumeTheSignInBudget()
     {
-        // Pins the separation of auth-verify from auth-signin. Sharing one policy would charge
-        // a two-factor sign-in two permits per attempt and halve the real sign-in allowance.
+        // Pins the separation of auth-verify from auth-signin. Sharing one policy would let a
+        // caller exhausting reset attempts lock out sign-in for everyone on the same address.
         for (var i = 0; i < TestPermitLimit; i++)
         {
-            await PostAsync("/api/auth/verify-2fa");
+            await PostAsync("/api/auth/reset-password");
         }
 
-        var verifyRejected = await PostAsync("/api/auth/verify-2fa");
+        var verifyRejected = await PostAsync("/api/auth/reset-password");
         var signInStillAllowed = await PostAsync("/api/auth/login");
 
         verifyRejected.StatusCode.Should().Be(HttpStatusCode.TooManyRequests);
