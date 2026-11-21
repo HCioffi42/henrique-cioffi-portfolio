@@ -33,6 +33,7 @@
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
         <PackageReference Include="Respawn" Version="7.0.0" />
+        <PackageReference Include="SmtpServer" Version="11.1.0" />
         <PackageReference Include="xunit" Version="2.5.3" />
         <PackageReference Include="xunit.runner.visualstudio" Version="2.5.3" />
     </ItemGroup>
@@ -48,11 +49,6 @@
       <ProjectReference Include="..\MeuSitePessoal.Infrastructure\MeuSitePessoal.Infrastructure.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-        <Content Include="appsettings.Test.json">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </Content>
-    </ItemGroup>
 
 
     <ItemGroup>
