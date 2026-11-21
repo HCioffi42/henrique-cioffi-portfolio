@@ -15,7 +15,12 @@ jobs:
         image: postgres:latest
         env:
           POSTGRES_USER: postgres
-          POSTGRES_DB: MeuSiteDb
+          # Names the database the integration suite drops and re-creates. It must match the
+          # database in the connection string below, which is the only thing the tests read.
+          POSTGRES_DB: meusitepessoal_testdb
+          # The container is ephemeral and reachable only from this job, so it accepts local
+          # connections without a password. That is also why the connection string carries no
+          # credential: there is none to commit.
           POSTGRES_HOST_AUTH_METHOD: trust
         ports:
           - 5432:5432
@@ -42,7 +47,9 @@ jobs:
       - name: Run Tests
         run: dotnet test --configuration Release --no-build
         env:
-          ConnectionStrings__DefaultConnection: "Host=localhost;Port=5432;Database=MeuSiteDb;Username=postgres;Password=password_ci_test;Include Error Detail=true"
+          # The integration suite has no fallback: it fails fast when this is absent, so the
+          # value below is the one the tests actually connect with.
+          ConnectionStrings__DefaultConnection: "Host=localhost;Port=5432;Database=meusitepessoal_testdb;Username=postgres;Include Error Detail=true"
 
   # Job 2: Frontend (React) Validation
   frontend-validation:

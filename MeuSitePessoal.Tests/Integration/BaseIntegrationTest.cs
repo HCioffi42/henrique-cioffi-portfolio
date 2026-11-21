@@ -22,9 +22,6 @@ public class BaseIntegrationTest : IAsyncLifetime
     protected WebApplicationFactory<Program> _factory = default!;
     protected HttpClient _client = default!;
 
-    // Hardcodes the connection string for a local PostgreSQL instance used exclusively for integration tests.
-    private const string TestConnectionString = "Host=localhost;Port=5432;Database=meusitepessoal_testdb;Username=postgres;Password=Anah@1418";
-
     /// <summary>
     /// Publishes the signing key to the process environment before any host is constructed.
     /// See <see cref="TestHostEnvironment"/> for why the environment is the only source reaching
@@ -166,10 +163,10 @@ public class BaseIntegrationTest : IAsyncLifetime
                         services.Remove(descriptor);
                     }
 
-                    // Injects the DbContext configured to use the dedicated local test database.
+                    // Injects the DbContext configured to use the dedicated test database.
                     services.AddDbContext<BlogDbContext>(options =>
                     {
-                        options.UseNpgsql(TestConnectionString);
+                        options.UseNpgsql(TestDatabase.ConnectionString);
                     });
                     
                     var emailSenderDescriptor = services.SingleOrDefault(

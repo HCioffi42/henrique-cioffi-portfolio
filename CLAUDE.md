@@ -43,6 +43,11 @@ TypeScript (strict) + Tailwind CSS, i18next (EN/PT).
   (`BaseIntegrationTest.cs`), not SQLite/InMemory — preserve this; InMemory diverges
   from Postgres-specific behavior (tsvector, arrays) and has already hidden one
   regression (audit T7).
+- The test database is named by `ConnectionStrings:DefaultConnection`, resolved in
+  `TestDatabase.cs` from user secrets then environment variables, with no fallback and
+  no credential in source. A fresh clone must run the `dotnet user-secrets set` command
+  the failure message prints before any integration test passes. The suite **drops and
+  re-creates** that database, so never point it at a development instance.
 - The suite is forced sequential (`DisableTestParallelization`) because each test
   drops/re-migrates the DB (audit T2, roadmap 18.1.1) — don't parallelize tests
   without fixing that first.
