@@ -46,3 +46,4 @@ postgres-data/
 data/
 # HC: Local blog article drafts. Written locally, published through the app, never tracked here.
 articles/
+
