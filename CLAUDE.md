@@ -58,10 +58,12 @@ TypeScript (strict) + Tailwind CSS, i18next (EN/PT).
 
 ## Blog article writing conventions
 
-- **Storage path.** Drafts live in `articles/YYYY-MM-DD/`, dated by target publication
-  day, as three clean Markdown files: `metadata.md`, `article-en.md`, `article-pt.md`.
-  `articles/` is in `.gitignore` and stays there. Drafts reach the site through the
-  application, not through a commit.
+- **Storage path.** Drafts live **outside this repository**, in the `articles/` folder that
+  sits beside the project root (`../articles/YYYY-MM-DD/` relative to this file), dated by
+  target publication day, as three clean Markdown files: `metadata.md`, `article-en.md`,
+  `article-pt.md`. Never create an `articles/` folder inside the repository: it is no longer
+  in `.gitignore`, so drafts written there would be picked up by `git add`. Drafts reach the
+  site through the application, not through a commit.
 - **No AI attribution in articles. This overrides the PR and Issue rule.** GitHub Issues
   and Pull Requests carry the standard attribution blockquote. Articles carry nothing:
   no header, blockquote, disclaimer, footnote, byline, or passing mention of AI tools or
