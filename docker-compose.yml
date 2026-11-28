@@ -1,3 +1,15 @@
+# HC: Caps the container log files. Docker's json-file driver keeps no limit of its own, and the
+# host declares no daemon-wide default, so each container log is an unbounded writer on the root
+# volume. Ordinary traffic would take decades to matter; what this guards against is the anomaly
+# — a sustained scanner, or a service that starts logging in a loop — where the volume fills and
+# takes the database down with it. Five files of ten megabytes bounds each service at fifty,
+# which at the observed rate is still several weeks of history to read back.
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "5"
+
 services:
   # Database Service: Persistent PostgreSQL instance
   database:
@@ -16,6 +28,7 @@ services:
       - postgres_production_data:/var/lib/postgresql/data
     networks:
       - blog-network
+    logging: *default-logging
 
   # Backend Service: .NET 8 Web API
   backend:
@@ -40,6 +53,7 @@ services:
       - blog_uploads:/app/wwwroot/uploads
     networks:
       - blog-network
+    logging: *default-logging
 
   # Frontend Service: React Application (Vite + Nginx)
   frontend:
@@ -52,6 +66,7 @@ services:
       - "80:80"
     networks:
       - blog-network
+    logging: *default-logging
 
 # Network definition to allow services to communicate by name
 networks:
