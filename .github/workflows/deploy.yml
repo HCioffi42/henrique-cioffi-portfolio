@@ -58,8 +58,18 @@ jobs:
           host: ${{ secrets.SERVER_IP }}
           username: opc
           key: ${{ secrets.SSH_PRIVATE_KEY }}
+          # Stops at the first failing command. Without this the step reported the exit code of
+          # the last command alone, so a failed checkout update was masked by a successful
+          # 'docker compose up' and the server ran a stale compose file for months unnoticed.
+          #
+          # The checkout is moved to the release with fetch and reset rather than pull. A pull
+          # merges into whatever the server holds and refuses when a tracked file was edited by
+          # hand; the reset makes the server's tracked files exactly the release, every time.
+          # Untracked files such as .env are not touched by a reset.
           script: |
+            set -e
             cd ~/blog-portfolio
-            git pull origin ${{ github.ref_name }}
+            git fetch origin
+            git reset --hard "origin/${{ github.ref_name }}"
             docker compose pull
             docker compose up -d
