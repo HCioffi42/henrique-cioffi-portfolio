@@ -8,13 +8,23 @@ TypeScript (strict) + Tailwind CSS, i18next (EN/PT).
 
 - `docs/roadmap.md` — the Track system (numbered phases/tracks/sub-items). Check
   the current in-progress track before starting work; update checkboxes as items land.
+  Track IDs are permanent: never renumber or reuse one. A new track takes the next free
+  number, and a track that moves to another phase keeps its ID, because plans, specs,
+  the audit and commit messages cite tracks by ID.
+- `docs/IDEAS.md` — a local, git-ignored parking lot for ideas kept out of the roadmap,
+  with the technical notes gathered when they were discussed. It may be absent in a fresh
+  clone. Nothing in it is committed work: promote an idea to a roadmap track before
+  implementing it.
 - `docs/TECHNICAL_AUDIT_REPORT.md` — 2026-11-19 full audit (architecture, perf,
   security, test health). Findings are cited as `P#`/`A#`/`S#`/`T#` and cross-referenced
   from the roadmap. Read it before touching Articles, search, caching, auth, or the
   i18n "Flat Schema" columns — several open bugs live there.
 - This repo's scope ends at unit/integration tests and (per Track 18.2.4) published
-  API/contract specs. A separate automation-framework repo owns E2E/API/contract test
-  execution against the deployed app — don't build E2E specs inside this repo.
+  API/contract specs. A separate automation-framework repo owns E2E, API, contract and
+  k6 load test execution — don't build E2E or load specs inside this repo. That repo runs
+  only against ephemeral environments its own CI starts from the published images, never
+  against production: the site runs on a free-tier Oracle Cloud VM with little spare
+  capacity.
 
 ## Architecture conventions — known inconsistencies, don't "fix" by guessing
 
@@ -52,9 +62,10 @@ TypeScript (strict) + Tailwind CSS, i18next (EN/PT).
   one database and clears it on entry (`TestDatabase.ResetAsync`) — don't parallelize
   without giving each worker its own database first. Roadmap 18.1.1 replaced the per-test
   drop/re-migrate with a Respawn reset, which cut the runtime but not this constraint.
-- The frontend has no test framework yet; it will be introduced via the
-  TypeScript/Playwright stack (roadmap Track 18.2.1), not vitest/jest — align any
-  new frontend test tooling with that choice.
+- The frontend has no test framework, and this repo will not get one: Playwright
+  (roadmap Track 18.2.1) lives in the external automation repo. Don't add Playwright,
+  vitest or jest here. The frontend checks in this repo are `npm run lint` and
+  `npm run build`.
 
 ## Blog article writing conventions
 
