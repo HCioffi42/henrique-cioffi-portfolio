@@ -120,6 +120,14 @@ closing the items still open.
 | T9 | Several integration tests use weak assertions (status-code-only, non-null-only) where DB-state or claims-content assertions would catch real regressions — e.g. newsletter subscribe doesn't assert a `Subscriber` row was created; login success doesn't assert token claims/role content. | `NewsletterIntegrationTests.cs:23-24`, `AuthIntegrationTests.cs:58` | **Low-Medium** |
 | T10 | Comment-thread tests only cover single-level replies; no coverage for reply-to-reply (depth ≥ 2), cross-article parent IDs, or replying to a deleted comment. | `CommentsIntegrationTests.cs:52-102` | **Low** |
 
+Track 18.1 closed T1, T2, T3, T4, and T5; T6 through T10 remain open. T1 closed in two
+halves: handler tests now cover newsletter confirmation, and two-factor authentication was
+removed rather than tested. T3 closed in part. The suite now reads CI's connection string and
+that string names the database the service container creates, so the variable is
+load-bearing. The container still accepts connections through `trust` authentication,
+though, so hardening its authentication would still break the suite until CI supplies a
+credential generated at run time.
+
 ---
 
 ## 4. Performance Optimization Roadmap
