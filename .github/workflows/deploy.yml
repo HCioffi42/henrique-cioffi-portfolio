@@ -51,9 +51,13 @@ jobs:
     needs: build-and-push
     runs-on: ubuntu-latest
     steps:
-      # Connects to Oracle Cloud via SSH to update the services
+      # Connects to Oracle Cloud via SSH to update the services.
+      # Pinned to a commit rather than a branch or tag: this third-party action receives the
+      # production SSH key, and a branch or tag can be moved to different code without this
+      # workflow changing. A SHA cannot. To upgrade, resolve the new release tag to its commit
+      # and replace both the SHA and the version comment.
       - name: SSH Deploy to Oracle Cloud
-        uses: appleboy/ssh-action@master
+        uses: appleboy/ssh-action@0ff4204d59e8e51228ff73bce53f80d53301dee2 # v1.2.5
         with:
           host: ${{ secrets.SERVER_IP }}
           username: opc
