@@ -1,7 +1,7 @@
 # Project Roadmap: MeuSitePessoal
 
-**Current Milestone**: Phase 5: SDET Excellence (Quality Engineering)
-**Global Progress**: [███████████████████░] 97% — Phase 4 remediation complete; Tracks 18.0 (security hardening) and 18.1 (test suite foundations) closed. Track 18.2 is the open work in Phase 5.
+**Current Milestone**: Phase 5: Pre-Automation Readiness
+**Global Progress**: [███████████████░░░░░] 77% — 20 of 26 tracks closed. Phases 1 through 4 are complete. Phase 5 has Track 18.1 closed and Tracks 20 to 23 open. Phase 6 (external quality) starts once Track 23 lands; Track 19 runs alongside, non-blocking.
 
 > **2026-11-19 — Roadmap rewritten.** A full technical audit (`docs/TECHNICAL_AUDIT_REPORT.md`) found that Track 17 shipped with an unresolved regression (newsletter emails render blank) and that the platform currently has no rate limiting or login lockout. Phase 4 was marked reopened rather than completed until those gaps closed. See the audit report for full findings, file:line citations, and severity ratings — this roadmap only tracks the remediation work itself.
 >
@@ -12,6 +12,10 @@
 > **2026-11-20 — Track 18.0 verified against production.** The out-of-band acceptance checks were carried out on the deployed system. The administrative lockout exemption was found not to apply there, because the convergence step sat inside the block guarded by the `AdminSetup` credentials that a deployed environment does not supply; `v2026.11.20.03` moved it outside that guard and keyed it on the `Admin` role. The forwarded-address range and conditional header trust both passed.
 >
 > **2026-11-21 — Track 18.1 completed.** The integration suite builds its schema once per run and clears data with Respawn, cutting runtime from 1m49s to 32s. Its connection string comes from configuration with no credential in source and no fallback, so CI's environment variable is load-bearing rather than decorative. The SMTP tests run against a server hosted in the test process instead of dialing a third party, which also revived a delivery test skipped since it was written. Newsletter double opt-in confirmation has handler tests, and two-factor authentication was removed rather than tested, since it shipped permanently disabled. Audit findings T1 through T5 are closed and the suite reports 273 passing with nothing skipped.
+>
+> **2026-11-28 — Track 18.0 ingress narrowing reached production.** The 2026-11-20 notes above say ingress is narrowed to the web tier. That held in the repository but not on the server until 2026-11-28: ports 5000 (API) and 5432 (PostgreSQL) stayed published on the host, and port 5000 answered from the internet without passing through Cloudflare. The server checkout had not moved since April and carried a hand-edited `docker-compose.yml`, so `git pull` failed on every deploy. The deploy script had no `set -e` and reported the exit code of its last command, `docker compose up -d`, which succeeded. Images still updated through `docker compose pull`, so application code shipped on every release while compose changes never did. The 2026-11-20 verification (18.0.5) covered the forwarded-address range and header trust, not the published ports, so it could not catch the gap. On 2026-11-28 the server checkout was reset to `dev`, the `docker-compose.override.yml` was removed and the containers were recreated; only port 80 is published now, confirmed from outside. The deploy now runs with `set -e` and moves the checkout with `git fetch` and `git reset --hard` instead of `git pull`, so a failed checkout update fails the deployment. The notes above stay as written: they record what was believed on their date.
+>
+> **2026-11-28 — Roadmap 2.0.** Phases now group tracks by domain instead of by the order the work happened. Track IDs stay fixed and nobody reuses them: new tracks take the next free number, and a track that changes phase keeps its ID. Track 18.0 moved to Phase 4 on that rule, so the plan, spec, audit and commits that cite it still resolve. Phase 5 now holds what must land before the external suite starts: the CI gate (Track 20), SemVer releases (Track 21), new categories (Track 22) and the reading layout (Track 23). Track 23 ships last so the external suite starts against a frozen DOM. Track 18.2 moved to a new Phase 6 and runs entirely in the separate automation repository, against ephemeral CI environments only.
 >
 > The `conductor/` agent-outsourcing workflow and `docs/tracks/` per-track spec folder have been retired as of this rewrite (see "Retired Tooling" at the bottom). Going forward, a separate automation-framework repository will own E2E, API, and contract test specs against this repo's surface — this roadmap stays scoped to what ships inside *this* repo.
 
@@ -89,7 +93,7 @@
 
 ---
 
-## Phase 4: Scalability & Engagement - COMPLETED (Track 17.5 remediation closed 2026-11-20)
+## Phase 4: Scalability, Engagement & Security - COMPLETED (Track 17.5 remediation closed 2026-11-20, Track 18.0 hardening closed 2026-11-20)
 
 ### [✓] Track 13: Advanced Search & Discovery
 - [x] **13.1**: Implement Full-Text Search in PostgreSQL using `tsvector`.
@@ -128,6 +132,7 @@
     - [x] **16.6.2 - Content Dispatcher**: Automated newsletter emails when new articles are published via Domain Events.
     - [x] **16.6.3 - Secure Unsubscribe**: Legal-compliant, token-based deactivation mechanism.
 - [x] **Known gaps (audit T1)**: closed in Track 18.1. Newsletter double opt-in confirmation (16.5.3) is covered by handler tests (18.1.4); the other half of T1, two-factor verification, was closed by removing the feature rather than by testing it (18.1.5).
+- [x] **Cross-reference, two-factor authentication**: 16.3 introduced a TOTP flow behind `FeatureToggles:Enable2FA`, which shipped `false` and never reached a reader. Track 18.1.5 removed the flow, its endpoint and its toggle.
 
 ### [✓] Track 17: Internationalization
 - [x] **17.1 - i18next Setup**: Configure the translation framework with lazy loading and browser detection.
@@ -144,11 +149,11 @@ Spec: `docs/specs/track-17.5-i18n-and-newsletter.md` · Plan: `docs/plans/track-
 - [x] **17.5.4**: Regression coverage added — newsletter subject/body content assertions, real-template rendering, the identical-titles shape every pre-migration row carries, and `Accept-Language` region/case variants.
 - **Behavior change to note**: search is now scoped to the reader's active language, so a Portuguese reader no longer matches English-only text. This follows from per-language dictionaries and is intentional.
 
----
+### [✓] Track 18.0: Critical Security Hardening — COMPLETED 2026-11-20
+Spec: `docs/specs/track-18.0-security-hardening.md` · Plan: `docs/plans/track-18.0-implementation-plan.md`
 
-## Phase 5: SDET Excellence (Quality Engineering) - IN PROGRESS
+> **Moved from Phase 5 in Roadmap 2.0, ID unchanged.** The track hardened the application itself, which is Phase 4's domain. It sat in Phase 5 because its spec made it a precondition for Track 18.2: a browser suite that exercises authentication repeatedly against a shared environment needs throttling and lockout in place to produce results instead of noise.
 
-### Track 18.0: Critical Security Hardening — **NEW, before any shared-environment E2E run**
 - [x] **18.0.1**: JWT signing key sourced from the environment, with fail-fast startup
   validation and the production value supplied through `docker-compose.yml` (audit S1).
 - [x] **18.0.2**: Database credential rotated (audit S2). Completed operationally against
@@ -157,36 +162,80 @@ Spec: `docs/specs/track-17.5-i18n-and-newsletter.md` · Plan: `docs/plans/track-
   and Identity lockout with an administrative exemption (audit S3).
 - [x] **18.0.4**: Media upload and deletion restricted to administrators (audit S5).
 - [x] **18.0.5 — Deployed verification**: the three acceptance checks a green suite cannot confirm were carried out against production on 2026-11-20. The forwarded-address range and conditional header trust both passed; the administrative lockout exemption did not apply in the deployed environment and was closed by `v2026.11.20.03`. Results and evidence are recorded in `docs/plans/track-18.0-implementation-plan.md` under Verification Summary.
+  **Correction (2026-11-28)**: the ingress narrowing (18.0 Task 2) took effect in production only on 2026-11-28. See the dated note at the top of this roadmap.
+
+---
+
+## Phase 5: Pre-Automation Readiness - IN PROGRESS
+
+Everything the external suite (Phase 6) depends on: a test gate it can trust, releases it can pin to, a stable content model, and a DOM that stops moving. Tracks run in the order listed. Track 23 goes last because it fixes the markup and selectors the external suite will target.
 
 ### [✓] Track 18.1: Test Suite Foundations — completed 2026-11-21
 - [x] **18.1.1**: Replace the per-test full DB drop/migrate/reseed cycle with a respawn/transaction-rollback strategy to cut integration suite runtime (audit T2). The schema is now built once per run and each test clears data with Respawn instead of dropping the database and replaying every migration. Suite runtime fell from 1m49s to 32s. Reseeding stays per-test, so the production `DbInitializer` path is still exercised. The suite remains sequential: the tests share one database, so `DisableTestParallelization` is still load-bearing and 18.1.1 does not close that on its own.
 - [x] **18.1.2**: Fix the CI/test connection-string mismatch so CI's env var is actually load-bearing, and remove the hardcoded test password from source (audit T3/T4). The suite resolves `ConnectionStrings:DefaultConnection` from user secrets then environment variables, with no fallback — an unconfigured run fails immediately with the `dotnet user-secrets set` command to run. CI's service container and its connection string now name the same database, and that string carries no credential.
 - [x] **18.1.3**: Stop the live outbound SMTP integration test from depending on third-party network access in CI (audit T5). An SMTP server now runs inside the test process on a loopback port, so connect/authenticate/send is still exercised for real with no network, DNS or provider involved. The delivery test that had been skipped since it was written now runs: the suite reports 268 passing and nothing skipped.
 - [x] **18.1.4**: Add handler-level tests for newsletter double opt-in confirmation — previously zero coverage at any level (audit T1). Five tests cover activation, unknown address, rejected token, repeat confirmation, and address-case normalization. Each was checked against a deliberately broken handler to confirm it fails when the behavior it names is removed.
-- [x] **18.1.5**: Remove Two-Factor Authentication. The flow was never enabled (`FeatureToggles:Enable2FA` shipped `false`), and a portfolio blog does not justify the reader friction or the maintenance surface of a TOTP enrolment, recovery-code and reset path. The `verify-2fa` endpoint, its command and handler, the `RequiresTwoFactor` field on the login response, the feature-toggle service that existed only to gate it, and the frontend verification view are all gone. The `auth-verify` rate-limit policy is retained for `reset-password`.
+- [x] **18.1.5**: Remove Two-Factor Authentication. The flow was never enabled (`FeatureToggles:Enable2FA` shipped `false`), and a portfolio blog does not justify the reader friction or the maintenance surface of a TOTP enrolment, recovery-code and reset path. The `verify-2fa` endpoint, its command and handler, the `RequiresTwoFactor` field on the login response, the feature-toggle service that existed only to gate it, and the frontend verification view are all gone. The `auth-verify` rate-limit policy is retained for `reset-password`. This also kept the removed endpoint out of the first contract the external suite consumes (18.2.4).
+
+### Track 20: CI Test Gate
+`ci.yml` already runs the backend suite against a PostgreSQL service and lints and builds the frontend on every pull request to `dev`. Nothing makes either result binding: the `dev` ruleset requires only `check-branch-name`, and the release workflow builds images without running tests.
+- [ ] **20.1**: Add `backend-validation` and `frontend-validation` to the `dev` ruleset's required status checks, next to `check-branch-name`.
+- [ ] **20.2**: Decide the owner bypass and record the decision here. The ruleset grants the repository admin an `always` bypass. That bypass lets small infrastructure changes go straight to `dev`, and it also lets those pushes skip every required check. Either remove it, so the gate binds the owner and every change goes through a pull request, or keep it and accept that the gate binds external contributors only.
+- [ ] **20.3**: Run the suite before every release. Expose `ci.yml` through `workflow_call` and make the release workflow's `build-and-push` job depend on it, so the pipeline never builds an image from a commit whose tests fail.
+- [ ] **20.4**: Pin the CI PostgreSQL service to `postgres:16-alpine`, the image production runs, instead of `postgres:latest`. A new PostgreSQL major on Docker Hub can change CI behavior today without any commit in this repository.
+- [ ] **20.5**: Move Node 20 to the current LTS in `ci.yml` and in the frontend `Dockerfile` build stage together, and update the GitHub Actions that warn about the Node 20 runtime deprecation.
+
+### Track 21: Releases via SemVer Tags
+- [ ] **21.1 - Versioning policy**: `vMAJOR.MINOR.PATCH`. MAJOR changes when the public API contract breaks (the contract that 18.2.4 publishes and the external suite consumes), MINOR when a feature ships, PATCH for fixes. Record the policy in this track once adopted.
+- [ ] **21.2 - Tag trigger**: the release workflow triggers on pushed tags matching `v<major>.<minor>.<patch>` instead of `release/v*` branches. The server script fetches tags and resets the checkout to the tag (`git fetch --tags --force origin` then `git reset --hard "refs/tags/<tag>"`), keeping `set -e`. The current script resets to `origin/<ref_name>`, which only resolves for a branch.
+- [ ] **21.3 - Image tags**: Docker images carry the SemVer version alongside `latest`.
+- [ ] **21.4 - Footer release date**: the footer shows the release date instead of the version string, as `© 2026 Henrique Cioffi - Desenvolvido com .NET & React | 2026.11.21` (localized `footer.copy`, unchanged). The workflow computes the date in `America/Sao_Paulo` and passes it as a build argument; a UTC date would show the next day for any release cut after 21:00 local time.
+- [ ] **21.5 - Retire release branches**: releases become annotated tags on `dev`, which drops the `release/v*` branch and its merge back into `dev`. The existing CalVer tags (`v2026.MM.DD.NN`) stay as history. Tools that sort tags by version will rank them above `v1.0.0`; GitHub Releases orders by date and is unaffected.
+
+### Track 22: Category Expansion
+- [ ] **22.1 - Backend**: append `Culture = 7`, `Philosophy = 8` and `Psychology = 9` to `ArticleCategory`. Existing values keep their numbers. EF persists the enum as a string (`HasConversion<string>()`), so the change needs no migration, and both validators accept the new values through `IsInEnum()`. Add a test that creates and reads back an article in each new category.
+- [ ] **22.2 - Single category map (audit A10, category half)**: the frontend maps categories in three places today: `models/ArticleCategory.ts`, `util/categoryMapping.ts`, and an inline map in `ArticleCard.tsx`. Keep one source in `models/ArticleCategory.ts`, derive display labels from the `categories.*` translation keys, and delete the other two. The `ThemeProvider` half of the old 19.4 stays in Track 19.
+- [ ] **22.3 - Translations**: add `culture`/`philosophy`/`psychology` under `categories` in both locale files: Culture, Philosophy, Psychology (EN) and Cultura, Filosofia, Psicologia (PT).
+
+### Track 23: Reading Layout & Summary Lead (DOM freeze)
+Last functional change before Phase 6. Once it lands, the markup and test hooks below are the contract the external suite targets.
+- [ ] **23.1 - Prose measure**: paragraphs, headings, lists and blockquotes keep the current `max-w-3xl` column (768px). At `text-lg` that holds about 70 characters per line, the upper bound for comfortable reading, so the text column does not grow.
+- [ ] **23.2 - Wide blocks**: at the `lg` breakpoint (1024px) and above, code blocks, images and tables may extend to `max-w-5xl` (1024px), centered on the prose column, which matches the header and footer width. Below `lg` they fill the prose column, and code blocks scroll horizontally. No viewport from 360px up shows a page-level horizontal scrollbar.
+- [ ] **23.3 - Summary lead**: the article page renders the summary in the reader's active language as a single paragraph between `ArticleHeader` and the body, styled apart from body text (larger, muted). The detail response already carries `summary`, so the API does not change. The lead appears only once; the body does not repeat it.
+- [ ] **23.4 - Home cards**: the card summary clamps at 4 lines (up from 3), and cards in the same grid row share one height. The article lead now shows the full summary, so the card stays a preview.
+- [ ] **23.5 - Stable test hooks**: add `data-testid` to the card root, card title, card summary, article title, summary lead and article body. From this point a rename of any of them counts as a breaking change for the external suite.
+- [ ] **23.6 - Visual check**: capture the home page and one article at 360px, 768px and 1280px, in light and dark themes, and attach the captures to the pull request.
+
+---
+
+## Phase 6: External Quality (Separate Repository) - NOT STARTED
+
+Starts once Track 23 lands. Everything in this phase except 18.2.4 lives and runs in the separate automation repository.
+
+**Target environments**: ephemeral only. The external repository's CI starts the API, web and PostgreSQL containers from the published images, runs the suite against them, and discards them. No E2E, API, contract or load run ever targets production. Production runs on a free-tier Oracle Cloud VM with little spare capacity, and test traffic there would compete with real readers and trip the production rate limits.
 
 ### Track 18.2: Automated Quality Suite (original Track 18)
-- [ ] **18.2.1**: End-to-End (E2E) testing suite with **Playwright** for critical flows.
-- [ ] **18.2.2**: Automated accessibility (A11y) audits in the CI pipeline.
-- [ ] **18.2.3**: Performance benchmarking using **k6** for API endpoints.
-    - [ ] **18.2.3.1**: Author k6 load-test scripts (JS) under `tests/load/`, covering the hottest read paths (article listing, search, article detail).
+- [ ] **18.2.1**: End-to-End (E2E) testing suite with **Playwright** for critical flows, in the external repository.
+- [ ] **18.2.2**: Automated accessibility (A11y) audits in the external repository's CI pipeline.
+- [ ] **18.2.3**: Performance benchmarking using **k6** for API endpoints, in the external repository.
+    - [ ] **18.2.3.1**: Author k6 load-test scripts (JS) covering the hottest read paths (article listing, search, article detail).
     - [ ] **18.2.3.2**: Define pass/fail **thresholds** per script (e.g. p95 latency, error rate) so a regression fails the run instead of just reporting a number.
-    - [ ] **18.2.3.3**: Add a separate, on-demand/scheduled GitHub Actions workflow (not on every PR) using `grafana/k6-action`, run against a staging target or the CI-spun-up API+Postgres containers.
+    - [ ] **18.2.3.3**: Run on demand or on a schedule (not on every PR) using `grafana/k6-action`, against the ephemeral containers only.
     - [ ] **18.2.3.4**: Keep output lightweight for a project this size — CLI summary + CI artifact is enough; skip a hosted dashboard (Grafana Cloud k6, etc.) unless traffic/need grows.
-- [ ] **18.2.4**: API/contract specifications for this repo's surface (endpoints, DTOs, auth/RBAC matrix), written for consumption by the separate automation-framework repository described below.
+- [ ] **18.2.4**: API/contract specifications for this repo's surface (endpoints, DTOs, auth/RBAC matrix), written for consumption by the separate automation-framework repository described below. The one 18.2 item authored in this repository.
 
-> **Sequencing note**: 17.5 and 18.0 were hard blockers for 18.2 and both have landed, so 18.2 is clear to start. 18.1 can run in parallel with it, since it strengthens the fixtures Playwright will also need but does not block the Playwright setup itself.
+> **Sequencing note**: 17.5 and 18.0 were hard blockers for 18.2 and both have landed. Roadmap 2.0 adds Phase 5 as the remaining precondition: 18.2 starts after Track 23 freezes the DOM.
 
 > **Threshold note for 18.2**: a browser suite authenticates from a single client address and therefore shares one rate-limit partition. Production thresholds (`auth-signin`: 10 per 15 minutes) are exhausted within ten sign-ins. The environment the suite runs against must declare its own `RateLimiting` configuration; thresholds bind from configuration for exactly this reason.
 
 ---
 
-## Track 19: Architecture Consolidation (post-Phase 5, non-blocking)
+## Track 19: Architecture Consolidation (non-blocking, runs alongside Phases 5 and 6)
 
 - [ ] **19.1**: Unify Article data access behind `IArticleRepository` consistently (currently split between the repository and direct `DbSet<Article>` access); add an equivalent repository for Comments, which currently has none (audit A5).
 - [ ] **19.2**: Extract the duplicated "localized Markdown field" block in `CreateArticle.tsx`/`EditArticle.tsx` into a shared component + `useArticleForm` hook (audit A9).
 - [ ] **19.3**: Move `AuthController.UpdateLanguage`/`ExternalLoginCallback` business logic into proper MediatR commands with validation (audit A7).
-- [ ] **19.4**: Centralize the category-label mapping (audit A10) and memoize `ThemeProvider`'s context value (audit A11).
+- [ ] **19.4**: Memoize `ThemeProvider`'s context value (audit A11). The category-label half (audit A10) moved to Track 22.2 in Roadmap 2.0.
 - [ ] **19.5**: Route-level code splitting (`React.lazy`) to isolate the admin dashboard/editor bundle from the public reading experience, and switch to the light/async `react-syntax-highlighter` build (audit P4/P5).
 - [ ] **19.6**: Memoize the recursive `CommentItem` tree and stop replacing the full comment array on every mutation (audit P6).
 - [ ] **19.7**: Promote nullable-reference warnings to build errors (`TreatWarningsAsErrors`, or scoped to the nullable warning codes) across all `.csproj` files — `Nullable` is enabled everywhere already, but nothing currently fails the build when a nullable warning is introduced.
@@ -199,10 +248,11 @@ Spec: `docs/specs/track-17.5-i18n-and-newsletter.md` · Plan: `docs/plans/track-
 
 ## Relationship to the Separate Automation Framework
 
-A dedicated repository will own **E2E (Playwright), API, and contract tests** exercising this application from the outside. This repo's roadmap stays scoped to what ships inside it:
+A dedicated repository will own **E2E (Playwright), API, contract, and load (k6) tests** exercising this application from the outside. This repo's roadmap stays scoped to what ships inside it:
 
 - This repo is responsible for: unit tests, integration tests (MediatR handlers, controllers via `WebApplicationFactory`), and — per Track 18.2.4 — the API/contract specs that describe its own stable surface.
-- The automation-framework repo is responsible for: consuming those specs, driving the deployed app through real HTTP/browser interactions, and maintaining its own test-authoring conventions independent of this codebase's release cadence.
+- The automation-framework repo is responsible for: consuming those specs, driving the app through real HTTP/browser interactions, running load benchmarks, and maintaining its own test-authoring conventions independent of this codebase's release cadence.
+- The automation-framework repo runs only against ephemeral environments its own CI starts from the published images. It never targets production (see Phase 6).
 - Specs for "what needs fixing" are **not** written as formal contracts — they live as roadmap tracks (above) and the audit report, and only become specs once the corresponding fix has actually landed, so the automation framework is never built against intentionally-temporary broken behavior.
 
 ---

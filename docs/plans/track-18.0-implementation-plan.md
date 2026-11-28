@@ -1,6 +1,6 @@
 # Track 18.0 — Security Hardening: Implementation Plan
 
-> **Status: complete and verified (2026-11-20).** All nine tasks implemented on `feature/track-18.0-security-hardening`, released as `v2026.11.20.02`, and the three out-of-band acceptance checks carried out against the deployed system — results recorded under Verification Summary. Criterion 11 failed in production and was closed by `v2026.11.20.03`. Residual scope is recorded as roadmap items 19.10 and 19.11.
+> **Status: complete and verified (2026-11-20).** All nine tasks implemented on `feature/track-18.0-security-hardening`, released as `v2026.11.20.02`, and the three out-of-band acceptance checks carried out against the deployed system — results recorded under Verification Summary. Criterion 11 failed in production and was closed by `v2026.11.20.03`. Residual scope is recorded as roadmap items 19.10 and 19.11. Task 2 took effect in production only on 2026-11-28; see the correction under Verification Summary.
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
@@ -790,6 +790,14 @@ All three were carried out after `v2026.11.20.02` deployed. One failed and produ
 **Note on 11.** The defect was invisible to the suite because every integration test configures `AdminSetup` through the shared fixture, so the guarded block always ran under test. Two tests now construct the missing shapes: a seed run against a configuration declaring no `AdminSetup` section, and a second administrator that configuration never names.
 
 **Note on roadmap 19.10.** The verification clarified its status as defence in depth rather than an open gap. A caller reaching the origin directly does not match `set_real_ip_from`, so `$remote_addr` stays that caller's own address and the forwarded header carries it; no spoofing is available on either path. 19.10 removes the direct-reach path, it does not close a trust gap.
+
+### Correction (2026-11-28): Task 2 reached production eight days late
+
+Task 2 (narrow the deployment ingress) was complete in the repository on 2026-11-20 but did not take effect on the server until 2026-11-28. Until then ports 5000 and 5432 stayed published on the host, and port 5000 answered from the internet without passing through Cloudflare.
+
+- **Cause.** The server checkout had not moved since April and carried a hand-edited `docker-compose.yml`, so `git pull` failed on every deploy. The deploy script had no `set -e`, so the step reported the exit code of `docker compose up -d` and showed success. Images updated through `docker compose pull`, which is why the rest of this track shipped while compose changes did not. The Deployment Notes below expected a failed `git pull` to stop the deploy; it did not.
+- **Why the checks above missed it.** None of the three out-of-band checks covered published ports, and `docker compose config` ran against the repository file, not the server's checkout.
+- **Fix.** On 2026-11-28 the server checkout was reset to `dev`, `docker-compose.override.yml` was removed and the containers were recreated. Only port 80 is published now; ports 5000 and 5432 are closed from outside, and `/`, `/health` and `/api/articles` return 200. The deploy workflow now runs with `set -e` and moves the checkout with `git fetch` and `git reset --hard` instead of `git pull`.
 ## Deployment Notes
 
 Not part of the implementation, but required for the release to land cleanly:
