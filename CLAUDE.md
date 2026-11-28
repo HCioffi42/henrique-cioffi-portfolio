@@ -15,10 +15,14 @@ TypeScript (strict) + Tailwind CSS, i18next (EN/PT).
   with the technical notes gathered when they were discussed. It may be absent in a fresh
   clone. Nothing in it is committed work: promote an idea to a roadmap track before
   implementing it.
-- `docs/TECHNICAL_AUDIT_REPORT.md` — 2026-11-19 full audit (architecture, perf,
-  security, test health). Findings are cited as `P#`/`A#`/`S#`/`T#` and cross-referenced
-  from the roadmap. Read it before touching Articles, search, caching, auth, or the
-  i18n "Flat Schema" columns — several open bugs live there.
+- Technical audits live outside this public repository, in `../articles/docs/`:
+  `TECHNICAL_AUDIT_REPORT.md` (2026-11-19 baseline) and
+  `TECHNICAL_AUDIT_REPORT-2026-11-28.md` (re-assessment, private, lists open security
+  findings). Findings are cited as `P#`/`A#`/`S#`/`T#` (and `N-*` for the re-assessment)
+  from the roadmap, specs and plans. Read the re-assessment before touching Articles,
+  search, caching, auth or the deploy path; several open bugs live there. Never copy its
+  security findings into this repository. The folder may be absent outside the owner's
+  machine.
 - This repo's scope ends at unit/integration tests and (per Track 18.2.4) published
   API/contract specs. A separate automation-framework repo owns E2E, API, contract and
   k6 load test execution — don't build E2E or load specs inside this repo. That repo runs
@@ -69,24 +73,14 @@ TypeScript (strict) + Tailwind CSS, i18next (EN/PT).
 
 ## Blog article writing conventions
 
-- **Storage path.** Drafts live **outside this repository**, in the `articles/` folder that
-  sits beside the project root (`../articles/YYYY-MM-DD/` relative to this file), dated by
-  target publication day, as three clean Markdown files: `metadata.md`, `article-en.md`,
-  `article-pt.md`. Never create an `articles/` folder inside the repository: it is no longer
-  in `.gitignore`, so drafts written there would be picked up by `git add`. Drafts reach the
-  site through the application, not through a commit.
+- **The rules live in `../articles/CLAUDE.md`.** Read that file before drafting or
+  reviewing an article from this repository; it owns layout, field limits, categories,
+  tags and the security-topic rule.
+- **Storage path.** Drafts live **outside this repository**, in `../articles/YYYY-MM-DD/`.
+  Never create an `articles/` folder inside the repository: it is not in `.gitignore`, so
+  drafts written there would be picked up by `git add`.
 - **No AI attribution in articles. This overrides the PR and Issue rule.** GitHub Issues
-  and Pull Requests carry the standard attribution blockquote. Articles carry nothing:
-  no header, blockquote, disclaimer, footnote, byline, or passing mention of AI tools or
-  agents, in either language. Every article reads as Henrique Cioffi writing in the first
-  person about his own engineering work.
-- **Prose and schema discipline.** Invoke `stop-slop` when drafting or reviewing an
-  article. Respect the PostgreSQL column limits the schema enforces: `TitleEn` and
-  `TitlePt` at 200 characters, `SummaryEn` and `SummaryPt` at 500 characters. `Category`
-  must be a valid `ArticleCategory` name (`MeuSitePessoal.Domain/Entities/ArticleCategory.cs`:
-  Technology, Tutorial, Life, News, Opinion, Projects). Never publish an unpatched
-  security finding from `docs/TECHNICAL_AUDIT_REPORT.md`; write about a vulnerability only
-  once the fix has shipped.
+  and Pull Requests carry the standard attribution blockquote. Articles carry nothing.
 
 ## Secrets
 

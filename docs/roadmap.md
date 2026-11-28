@@ -259,5 +259,7 @@ A dedicated repository will own **E2E (Playwright), API, contract, and load (k6)
 
 ## Retired Tooling
 
+- **`docs/TECHNICAL_AUDIT_REPORT.md` — moved out of the repository 2026-11-28.** The audit and its 2026-11-28 re-assessment are kept privately, because a public itemized list of open weaknesses helps someone probing the deployed system more than it helps maintenance. Finding labels (`P#`, `A#`, `S#`, `T#`) cited in this roadmap, the specs and the plans stay valid as references to that private record.
+
 - **`conductor/` folder (agent-outsourcing workflow) — removed 2026-11-19.** It had grown past the point of being useful and was creating more overhead than value; its only cross-reference was the "Agent Strategy" table that lived in this file, which is dropped in this rewrite.
 - **`docs/tracks/` folder (per-track spec files) — removed 2026-11-19.** Superseded by this roadmap's inline track descriptions and `docs/TECHNICAL_AUDIT_REPORT.md` for anything requiring deeper detail. Future per-feature specs that need this level of depth belong in the separate automation-framework repo once a track is actually in flight, not pre-written here.
